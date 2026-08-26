@@ -6,6 +6,7 @@ import type { TabSummary } from "../shared/messages";
 import { containsPoint } from "../shared/geometry";
 import type { Point } from "../shared/recognizer";
 import type { GridSize } from "../shared/settings";
+import type { PanelBox } from "./trail";
 
 /** Kept clear of the left and right edges, so a panel's border is never clipped. */
 const MARGIN = 12;
@@ -20,6 +21,13 @@ const EDGE_GAP = 24;
  */
 const TILES_SHARE = 0.5;
 const CHEATSHEET_SHARE = 0.28;
+
+/**
+ * The corner radius `rounded-3xl` gives the panels, in CSS pixels. Duplicated
+ * here for the trail's feathered mask, which needs the shape in numbers rather
+ * than in a class — keep the two in step.
+ */
+const PANEL_RADIUS = 24;
 
 const PANEL_CHROME =
   "overflow-y-auto rounded-3xl border border-white/10 bg-mist-950/70 text-mist-50 " +
@@ -175,9 +183,22 @@ export class TabGrid {
    * Where the panels are, in viewport pixels, for anything drawing over them.
    * Empty while the grid is hidden, so a stroke on its own is never clipped.
    */
-  panelRects(): readonly DOMRect[] {
+  panelRects(): readonly PanelBox[] {
     if (!this.#visible) return [];
-    return [this.#panel.getBoundingClientRect(), this.#cheatPanel.getBoundingClientRect()];
+    // Measured, not computed: the panels carry a scale transform that is still
+    // animating for the first frames after they appear, and `getBoundingClientRect`
+    // is the only thing that reports where a transformed box actually is right now.
+    // The radius is scaled by hand, because that part is not in the rect.
+    return [this.#panel, this.#cheatPanel].map((panel) => {
+      const rect = panel.getBoundingClientRect();
+      return {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
+        radius: PANEL_RADIUS * this.#scale,
+      };
+    });
   }
 
   /**
@@ -252,8 +273,11 @@ export class TabGrid {
    */
   #room(): { width: number; height: number } {
     return {
-      width: window.innerWidth / this.#scale - 2 * MARGIN,
-      height: window.innerHeight / this.#scale - 2 * EDGE_GAP,
+      // The layout viewport, which is what the bars span — `window.innerWidth`
+      // counts a classic scrollbar the bars do not reach across, so budgeting
+      // against it lets a wide panel run out past the right edge and under it.
+      width: document.documentElement.clientWidth / this.#scale - 2 * MARGIN,
+      height: document.documentElement.clientHeight / this.#scale - 2 * EDGE_GAP,
     };
   }
 

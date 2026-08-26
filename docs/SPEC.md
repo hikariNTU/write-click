@@ -332,9 +332,19 @@ panel visibly reflows as the tab count lands.
   readout `z-30`. The trail sits **above** the grid because the grid stays open while a stroke is
   being drawn, so putting the trail underneath would hide the feedback exactly when it is needed.
   Where it crosses a panel it drops to **30% strength**, which is the other half of that trade: at
-  full strength it hides the tile title the tile exists to show. Drawn as two complementary clipped
-  passes — full outside the panels, faint inside — rather than one translucent pass over the whole
-  path, which would darken every corner where the stroke overlaps itself into a knot.
+  full strength it hides the tile title the tile exists to show. Drawn faint across the whole stroke,
+  then full strength composited back on everywhere the panels are not — through a mask erased with
+  `blur()`, so the two strengths meet in a gradient centred on the panel's edge rather than a step.
+  Clipping is what a first version did, and a clip has a hard edge by definition.
+
+  Overlapping the two passes is safe because a single `stroke()` composites the whole path at once:
+  a self-crossing is painted exactly as dark as a plain segment, verified rather than assumed.
+
+  The mask is cut from `getBoundingClientRect()`, which is the only thing that reports where a
+  transformed box actually is. The panels fade in on a scale transform, so a mask cut on the first
+  frame is 5% short of where the panel ends up — the trail keeps repainting until the transform
+  settles (§6.4).
+
 - For `tab.closeRight` / `tab.closeLeft` the readout names the number of tabs that will actually
   close — "Close 3 tabs to the right" — because the stroke is destructive and undo is per-tab, so
   one gesture can cost several. When nothing would close, it says so and takes the unassigned tone

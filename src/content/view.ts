@@ -77,6 +77,12 @@ export interface View {
  * the top frame, and renders gestures drawn in sub-frames just the same, so a
  * stroke started inside an iframe still gets a trail across the whole page.
  */
+/**
+ * How long the trail keeps repainting after the tab grid opens: the panels'
+ * reveal transition, plus a frame. See `settle`.
+ */
+const PANEL_SETTLE_MS = 200;
+
 function swallow(event: Event): void {
   event.preventDefault();
   event.stopPropagation();
@@ -108,6 +114,26 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     trail.setScale(scale);
     hud.setScale(scale);
     grid?.setScale(scale);
+  };
+
+  /**
+   * Repaints the trail while the panels animate in.
+   *
+   * The panels appear under a stroke that is already drawn, and the trail only
+   * repaints on movement — so without this it would stay at full strength
+   * across them until the pointer moved again. Worse, one repaint is not
+   * enough: the panels fade in on a scale transform, so a single frame cuts
+   * the trail's mask from a box that is still 5% short of where the panel ends
+   * up, and the mask stays that way. Repainting until the transform settles is
+   * what keeps the fade lined up with the panel edge.
+   */
+  const settle = (): void => {
+    const until = performance.now() + PANEL_SETTLE_MS;
+    const tick = (): void => {
+      trail.render(points);
+      if (performance.now() < until) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   };
 
   const paint = (): void => {
@@ -212,10 +238,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       void tabsPending.then((list) => {
         if (holding && list.length > 0) {
           grid.show(list);
-          // The panels just appeared under a stroke that is already drawn, and
-          // the trail only repaints on movement. Hold still and it would stay
-          // at full strength across them until the pointer moved again.
-          trail.render(points);
+          settle();
           return;
         }
         console.debug("[write-click] grid skipped", { holding, count: list.length });
