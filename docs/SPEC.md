@@ -147,8 +147,16 @@ end of the strip, and a leading `R`/`L` with a `D` tail closes something. Order 
 Vertical page strokes are **inverted on purpose**: `U` pushes the page up, which scrolls down, the
 way a touch surface behaves. Do not "fix" this.
 
-`page.end` ships unbound — every remaining short stroke collides with something. It exists so it can
-be bound in options.
+Back and forward take `DL` and `DR`, mirroring the direction they travel. Every other gesture product
+puts them on a plain `L`/`R`; those are spent on tab switching here.
+
+Most of the catalogue ships **unbound**. There is no short stroke left that does not collide, and
+inventing bindings nobody asked for is worse than leaving them for the options page. `page.end` is in
+the same position.
+
+`nav.stop` has no extension API — the frame calling `window.stop()` on itself is the only way, so it
+is a content command. Home page and bookmark toggling are absent for the same reason: Chrome exposes
+no API for either.
 
 Rules:
 
@@ -199,6 +207,10 @@ Rules:
 - Hovering a tile highlights it. **Left-click while the trigger is still held** activates that tab
   and sets `cancelled`, so the pending stroke is discarded when the trigger is released.
 - Moving off every tile and releasing the trigger falls through to normal stroke matching.
+- Under the tiles sits the **cheatsheet**: every bound gesture, as arrow chips beside its command
+  name. The panel is already open while the trigger is held, which is exactly when someone wonders
+  what else they could draw, so the reference belongs there rather than buried in settings. It can
+  be switched off.
 - `Escape` closes the grid and cancels the gesture.
 
 ## 7. Overlay

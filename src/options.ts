@@ -321,6 +321,13 @@ function overlayCard(): HTMLElement {
       "Appears while the trigger is held; click a tile to switch tabs.",
     ),
     row(
+      "Gesture cheatsheet",
+      toggle(sync.grid.cheatsheet, (value) => {
+        void patchSync({ grid: { ...sync.grid, cheatsheet: value } });
+      }),
+      "Lists every bound gesture under the tabs.",
+    ),
+    row(
       "Grid size",
       select(
         [

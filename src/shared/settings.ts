@@ -10,7 +10,7 @@ export type GridSize = "compact" | "normal" | "large";
 export interface SyncSettings {
   version: 2;
   gestures: Record<string, CommandId>;
-  grid: { enabled: boolean; holdMs: number; size: GridSize };
+  grid: { enabled: boolean; holdMs: number; size: GridSize; cheatsheet: boolean };
   trail: { color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
@@ -26,7 +26,7 @@ export function defaultSyncSettings(): SyncSettings {
   return {
     version: 2,
     gestures: { ...DEFAULT_GESTURES },
-    grid: { enabled: true, holdMs: 180, size: "normal" },
+    grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true },
     trail: { color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };

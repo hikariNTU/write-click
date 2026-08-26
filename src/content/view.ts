@@ -72,6 +72,7 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   const trail = new Trail(overlay, sync.trail);
   const hud = new Hud(overlay);
   const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
+  if (sync.grid.cheatsheet) grid?.setGestures(sync.gestures);
 
   let points: Point[] = [];
   let stroke = "";

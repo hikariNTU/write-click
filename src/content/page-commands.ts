@@ -38,6 +38,10 @@ export function runPageCommand(id: ContentCommandId, at: Point): void {
     case "page.end":
       target.scrollTo({ top: target.scrollHeight, behavior });
       return;
+    case "nav.stop":
+      // No extension API for this; the frame stopping itself is the only way.
+      window.stop();
+      return;
     default: {
       // Exhaustive: adding a content command must break this build.
       const unreachable: never = id;

@@ -11,6 +11,20 @@ export const COMMANDS = {
   "window.minimize": { label: "Minimize window", where: "background" },
   "tab.reload": { label: "Reload", where: "background" },
   "tab.reloadHard": { label: "Reload without cache", where: "background" },
+  "tab.new": { label: "New tab", where: "background" },
+  "tab.duplicate": { label: "Duplicate tab", where: "background" },
+  "tab.closeOthers": { label: "Close other tabs", where: "background" },
+  "tab.togglePin": { label: "Pin or unpin tab", where: "background" },
+  "tab.toggleMute": { label: "Mute or unmute tab", where: "background" },
+  "tab.detach": { label: "Move tab to a new window", where: "background" },
+  "nav.back": { label: "Back", where: "background" },
+  "nav.forward": { label: "Forward", where: "background" },
+  "nav.stop": { label: "Stop loading", where: "content" },
+  "window.new": { label: "New window", where: "background" },
+  "window.fullscreen": { label: "Toggle fullscreen", where: "background" },
+  "zoom.in": { label: "Zoom in", where: "background" },
+  "zoom.out": { label: "Zoom out", where: "background" },
+  "zoom.reset": { label: "Reset zoom", where: "background" },
   "page.up": { label: "Page up", where: "content" },
   "page.down": { label: "Page down", where: "content" },
   "page.top": { label: "Scroll to top", where: "content" },
@@ -27,7 +41,13 @@ export type CommandId = keyof typeof COMMANDS;
  * `D` tail closes something. Vertical strokes are inverted on purpose — `U`
  * pushes the page up, which scrolls down, the way a touch surface behaves.
  *
- * `page.end` ships unbound; there is no stroke left that does not collide.
+ * Back and forward get `DL` and `DR`, mirroring the direction they travel.
+ * Other gesture products put them on a plain `L`/`R`, but those are spent on
+ * tab switching here.
+ *
+ * `page.end` and the rest of the catalogue ship unbound: there is no short
+ * stroke left that does not collide, and guessing at bindings nobody asked for
+ * is worse than leaving them for the options page.
  */
 export const DEFAULT_GESTURES: Record<string, CommandId> = {
   L: "tab.prev",
@@ -44,4 +64,7 @@ export const DEFAULT_GESTURES: Record<string, CommandId> = {
   D: "page.up",
   UD: "tab.reload",
   UDU: "tab.reloadHard",
+  DL: "nav.back",
+  DR: "nav.forward",
+  DU: "tab.new",
 };

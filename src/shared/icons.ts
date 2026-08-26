@@ -1,4 +1,17 @@
+import add from "../icons/material/add.svg?raw";
 import arrowBack from "../icons/material/arrow_back.svg?raw";
+import zoomReset from "../icons/material/center_focus_weak.svg?raw";
+import chevronLeft from "../icons/material/chevron_left.svg?raw";
+import chevronRight from "../icons/material/chevron_right.svg?raw";
+import duplicate from "../icons/material/content_copy.svg?raw";
+import fullscreen from "../icons/material/fullscreen.svg?raw";
+import keep from "../icons/material/keep.svg?raw";
+import newWindow from "../icons/material/select_window_2.svg?raw";
+import stopCircle from "../icons/material/stop_circle.svg?raw";
+import tabCloseInactive from "../icons/material/tab_close_inactive.svg?raw";
+import mute from "../icons/material/volume_off.svg?raw";
+import zoomIn from "../icons/material/zoom_in.svg?raw";
+import zoomOut from "../icons/material/zoom_out.svg?raw";
 import arrowForward from "../icons/material/arrow_forward.svg?raw";
 import help from "../icons/material/help.svg?raw";
 import doubleDown from "../icons/material/keyboard_double_arrow_down.svg?raw";
@@ -48,8 +61,24 @@ function prepare(svg: string): string {
 }
 
 export const COMMAND_ICONS: Record<CommandId, string> = {
-  "tab.next": prepare(arrowForward),
-  "tab.prev": prepare(arrowBack),
+  // Chevrons step through the strip; the plain arrows are history, which is
+  // what they mean everywhere else in a browser.
+  "tab.next": prepare(chevronRight),
+  "tab.prev": prepare(chevronLeft),
+  "nav.back": prepare(arrowBack),
+  "nav.forward": prepare(arrowForward),
+  "nav.stop": prepare(stopCircle),
+  "tab.new": prepare(add),
+  "tab.duplicate": prepare(duplicate),
+  "tab.closeOthers": prepare(tabCloseInactive),
+  "tab.togglePin": prepare(keep),
+  "tab.toggleMute": prepare(mute),
+  "tab.detach": prepare(newWindow),
+  "window.new": prepare(newWindow),
+  "window.fullscreen": prepare(fullscreen),
+  "zoom.in": prepare(zoomIn),
+  "zoom.out": prepare(zoomOut),
+  "zoom.reset": prepare(zoomReset),
   "tab.close": prepare(tabClose),
   "tab.reopen": prepare(restore),
   "tab.closeRight": prepare(tabCloseRight),

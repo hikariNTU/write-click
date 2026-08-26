@@ -1,6 +1,8 @@
+import { COMMANDS } from "../shared/commands";
+import type { CommandId } from "../shared/commands";
+import { FALLBACK_FAVICON, strokeChipsHtml } from "../shared/icons";
 import type { TabSummary } from "../shared/messages";
 import type { GridSize } from "../shared/settings";
-import { FALLBACK_FAVICON } from "../shared/icons";
 
 const PANEL_HIDDEN = ["opacity-0", "scale-95"] as const;
 
@@ -30,6 +32,7 @@ export class TabGrid {
   readonly #grid = document.createElement("div");
   readonly #caption = document.createElement("div");
   readonly #size: { tile: number; panel: number };
+  readonly #cheatsheet = document.createElement("div");
   #onSelect: (tabId: number) => void = () => {};
   #visible = false;
   #teardown = 0;
@@ -50,9 +53,52 @@ export class TabGrid {
     this.#panel.style.width = `min(${this.#size.panel}px, 86vw)`;
     this.#grid.className = "grid gap-2";
     this.#grid.style.gridTemplateColumns = `repeat(auto-fit, minmax(${this.#size.tile}px, 1fr))`;
-    this.#panel.append(this.#caption, this.#grid);
+    this.#panel.append(this.#caption, this.#grid, this.#cheatsheet);
     this.#root.append(this.#panel);
     root.append(this.#root);
+  }
+
+  /**
+   * The gesture list, under the tiles. The panel is already on screen while the
+   * trigger is held, which is exactly the moment someone is wondering what else
+   * they could draw — so the reference belongs here rather than buried in
+   * settings.
+   */
+  setGestures(gestures: Record<string, CommandId>): void {
+    const entries = Object.entries(gestures).toSorted(([, a], [, b]) =>
+      COMMANDS[a].label.localeCompare(COMMANDS[b].label),
+    );
+    if (entries.length === 0) {
+      this.#cheatsheet.replaceChildren();
+      return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "grid gap-x-4 gap-y-1.5";
+    wrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(180px, 1fr))";
+
+    for (const [stroke, command] of entries) {
+      const line = document.createElement("div");
+      line.className = "flex min-w-0 items-center gap-2";
+
+      const chips = document.createElement("div");
+      chips.className = "flex shrink-0 items-center gap-0.5 text-slate-300 [&>svg]:h-3 [&>svg]:w-3";
+      chips.innerHTML = strokeChipsHtml(stroke);
+
+      const name = document.createElement("span");
+      name.className = "truncate text-[11px] text-slate-400";
+      name.textContent = COMMANDS[command].label;
+
+      line.append(chips, name);
+      wrap.append(line);
+    }
+
+    const heading = document.createElement("div");
+    heading.className =
+      "mb-2 mt-4 border-t border-white/5 px-1 pt-3 text-[10px] font-medium uppercase tracking-wider text-slate-500";
+    heading.textContent = "Gestures";
+
+    this.#cheatsheet.replaceChildren(heading, wrap);
   }
 
   get visible(): boolean {

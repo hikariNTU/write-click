@@ -48,6 +48,12 @@ at all. `Control` is never a default modifier: on macOS that is right-click emul
 | `U`    | page down     |     | `LD`   | minimize window         |
 | `D`    | page up       |     | `RU`   | scroll to top           |
 | `UD`   | reload        |     | `UDU`  | reload without cache    |
+| `DL`   | back          |     | `DR`   | forward                 |
+| `DU`   | new tab       |     |        |                         |
+
+Another dozen commands ship unbound, waiting for a stroke you pick: duplicate tab, close other tabs,
+pin, mute, move to a new window, new window, fullscreen, zoom in/out/reset, stop loading, and scroll
+to bottom.
 
 A single flick steps sideways through tabs; doubling back runs to that end of the strip; a leading
 `R`/`L` with a `D` tail closes something.
@@ -65,7 +71,8 @@ the options page lands, and `page.end` ships unbound waiting for a stroke you li
 
 ## Tab grid
 
-Hold the trigger without moving and a panel of the current window's tabs fades in. Click a tile —
+Hold the trigger without moving and a panel of the current window's tabs fades in, with every bound
+gesture listed underneath it as a cheatsheet. Click a tile —
 left button, trigger still held — to switch to that tab; whatever stroke was underway is thrown
 away. Flick straight into a gesture and the panel never appears.
 
