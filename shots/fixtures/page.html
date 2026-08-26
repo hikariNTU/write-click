@@ -2,22 +2,42 @@
 <!--
   A page to draw over.
 
-  Deliberately plain, and deliberately ours. Gestures work over any HTML5
-  document, so there is nothing to gain from automating somebody else's site
-  and inheriting its redesigns and sign-in walls — and a store screenshot
-  showing an interface that does not exist is a fabricated context. This is a
-  real page; it just belongs to the harness.
+  Deliberately ours, and deliberately not plain. Gestures work over any HTML5
+  document, so there is nothing to gain from automating somebody else's site and
+  inheriting its redesigns and sign-in walls — and a store screenshot showing an
+  interface that does not exist is a fabricated context. This is a real page; it
+  just belongs to the harness.
 
-  `?title=` names the tab, which is the only thing the tab grid draws.
+  It does need colour, though. A grey wall of text under the overlay says
+  nothing about how the overlay reads over a real page, which is the one thing a
+  screenshot of an overlay is for. Everything below is drawn from two query
+  parameters, so one file dresses every tab in the strip:
+
+    ?title=  names the tab, the heading, and the wordmark
+    ?hue=    picks the whole palette, so no two tabs look alike
+
+  Art is inline SVG on purpose: the fixture server has one route, and a shot
+  that depends on a binary in the repository is a shot that breaks when it moves.
 -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Document</title>
+    <!-- Served by the harness, not embedded: `chrome.tabs` reports a data: URL
+         favicon as a data: URL, and the grid only draws http(s) ones. -->
+    <link id="favicon" rel="icon" type="image/svg+xml" href="/icon.svg" />
     <style>
       :root {
         color-scheme: light;
+        --hue: 210;
+        --ink: hsl(var(--hue) 30% 14%);
+        --muted: hsl(var(--hue) 14% 42%);
+        --line: hsl(var(--hue) 26% 90%);
+        --brand: hsl(var(--hue) 74% 46%);
+        --brand-soft: hsl(var(--hue) 82% 96%);
+        --accent: hsl(calc(var(--hue) + 140) 68% 45%);
+        --paper: hsl(var(--hue) 40% 99%);
       }
       * {
         box-sizing: border-box;
@@ -25,43 +45,140 @@
       body {
         margin: 0;
         font:
-          16px/1.7 -apple-system,
+          16px/1.65 -apple-system,
           "Segoe UI",
           Roboto,
           "Helvetica Neue",
           Arial,
           sans-serif;
-        color: #1f2430;
-        background: #fbfbfd;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      header {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.85rem 2rem;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--paper) 88%, transparent);
+        backdrop-filter: blur(8px);
+      }
+      .mark {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      .mark .glyph {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: linear-gradient(140deg, var(--brand), var(--accent));
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      nav {
+        display: flex;
+        gap: 1.25rem;
+        margin-left: auto;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      nav .on {
+        color: var(--brand);
+        font-weight: 600;
+      }
+      .cta {
+        padding: 0.4rem 0.85rem;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
       }
       main {
-        max-width: 44rem;
+        max-width: 60rem;
         margin: 0 auto;
-        padding: 4rem 2rem 6rem;
+        padding: 2.5rem 2rem 5rem;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 2rem;
+        align-items: center;
+        padding: 1.75rem;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background:
+          radial-gradient(120% 140% at 100% 0%, var(--brand-soft), transparent 60%),
+          linear-gradient(180deg, #fff, var(--paper));
+      }
+      .pill {
+        display: inline-block;
+        margin-bottom: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
       }
       h1 {
-        font-size: 2rem;
-        line-height: 1.25;
-        letter-spacing: -0.02em;
-        margin: 0 0 0.5rem;
+        font-size: 2.1rem;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+        margin: 0 0 0.6rem;
       }
       h2 {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         letter-spacing: -0.01em;
-        margin: 2.5rem 0 0.75rem;
+        margin: 2.25rem 0 0.75rem;
       }
       p {
-        margin: 0 0 1.1rem;
+        margin: 0 0 1rem;
       }
       .lede {
-        color: #5b6472;
-        font-size: 1.05rem;
+        color: var(--muted);
+        font-size: 1.02rem;
+        margin: 0;
       }
-      .rule {
-        height: 1px;
-        background: #e4e7ec;
-        margin: 2rem 0;
-        border: 0;
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+      .card {
+        padding: 1rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 12px 30px -24px hsl(var(--hue) 60% 20% / 0.7);
+      }
+      .card .dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+        margin-bottom: 0.6rem;
+        background: linear-gradient(140deg, var(--brand), var(--accent));
+        opacity: 0.9;
+      }
+      .card h3 {
+        font-size: 0.9rem;
+        margin: 0 0 0.3rem;
+      }
+      .card p {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin: 0;
       }
       .cols {
         display: grid;
@@ -69,53 +186,126 @@
         gap: 2rem;
       }
       code {
-        background: #eef0f4;
+        background: var(--brand-soft);
+        color: var(--brand);
         border-radius: 4px;
         padding: 0.1em 0.35em;
-        font-size: 0.9em;
+        font-size: 0.88em;
+      }
+      figure {
+        margin: 1.5rem 0 0;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
       }
     </style>
   </head>
   <body>
+    <header>
+      <div class="mark">
+        <span class="glyph" id="glyph">W</span><span id="wordmark">Fixture</span>
+      </div>
+      <nav>
+        <span class="on">Overview</span><span>Guides</span><span>Reference</span
+        ><span>Changelog</span>
+      </nav>
+      <span class="cta">Sign in</span>
+    </header>
     <main>
-      <h1 id="heading">A page to draw over</h1>
-      <p class="lede">
-        Nothing here reacts to the gesture. That is the point: the overlay is drawn above whatever
-        the tab happens to be showing, and takes no pointer events of its own.
-      </p>
-      <hr class="rule" />
-      <h2>Holding the trigger</h2>
-      <p>
-        The stroke is drawn in the page's own coordinates, so it follows the cursor exactly. Only
-        its thickness answers to the overlay scale — page zoom would otherwise make the line fatter
-        as the page grows.
-      </p>
+      <section class="hero">
+        <div>
+          <span class="pill" id="kicker">Fixture</span>
+          <h1 id="heading">A page to draw over</h1>
+          <p class="lede">
+            Nothing here reacts to the gesture. That is the point: the overlay is drawn above
+            whatever the tab happens to be showing, and takes no pointer events of its own.
+          </p>
+        </div>
+        <figure>
+          <!-- A chart, because a real page has something with colour in it. -->
+          <svg viewBox="0 0 320 180" role="img" aria-label="Sample chart">
+            <defs>
+              <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--brand)" stop-opacity="0.45" />
+                <stop offset="100%" stop-color="var(--brand)" stop-opacity="0.02" />
+              </linearGradient>
+            </defs>
+            <g stroke="var(--line)" stroke-width="1">
+              <line x1="0" y1="45" x2="320" y2="45" />
+              <line x1="0" y1="90" x2="320" y2="90" />
+              <line x1="0" y1="135" x2="320" y2="135" />
+            </g>
+            <path
+              d="M0 140 L45 118 L90 128 L135 84 L180 96 L225 52 L270 62 L320 24 L320 180 L0 180 Z"
+              fill="url(#fill)"
+            />
+            <path
+              d="M0 140 L45 118 L90 128 L135 84 L180 96 L225 52 L270 62 L320 24"
+              fill="none"
+              stroke="var(--brand)"
+              stroke-width="2.5"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+            <circle cx="225" cy="52" r="11" fill="var(--accent)" opacity="0.18" />
+            <circle cx="225" cy="52" r="4.5" fill="var(--accent)" />
+          </svg>
+        </figure>
+      </section>
+
+      <div class="cards">
+        <div class="card">
+          <div class="dot"></div>
+          <h3>Draw anywhere</h3>
+          <p>Hold the trigger and move. The stroke follows the cursor in the page's own pixels.</p>
+        </div>
+        <div class="card">
+          <div class="dot"></div>
+          <h3>Read the match</h3>
+          <p>The readout names whatever the stroke matches, and says so when nothing does.</p>
+        </div>
+        <div class="card">
+          <div class="dot"></div>
+          <h3>Pick a tab</h3>
+          <p>Hold still and the grid opens. Release over a tile to land on that tab.</p>
+        </div>
+      </div>
+
+      <h2>Where things sit</h2>
       <div class="cols">
         <p>
-          The readout in the middle names whatever the stroke currently matches, and updates as the
-          stroke changes. An unrecognised stroke says so rather than guessing.
+          The tab grid docks to the top edge and the gesture list to the bottom, which leaves the
+          middle of the window to the stroke being drawn. Try <code>D</code> then <code>L</code> for
+          back, or hold still and let the grid open.
         </p>
         <p>
-          A close-to-the-side command counts the tabs it would actually close, using the same filter
-          the background uses, so the number shown and the number closed agree.
+          Everything the extension draws lives in a closed shadow root, so none of this page's
+          styles reach it and none of its styles reach this page — including the colour scheme
+          above, which changes with every tab in the strip.
         </p>
       </div>
-      <h2>Where things sit</h2>
-      <p>
-        The tab grid docks to the top edge and the gesture list to the bottom, which leaves the
-        middle of the window to the stroke being drawn. Try
-        <code>D</code> then <code>L</code> for back, or hold still and let the grid open.
-      </p>
-      <p>
-        Everything above lives in a closed shadow root, so none of the page's own styles reach it
-        and none of its styles reach the page.
-      </p>
     </main>
     <script>
-      const title = new URL(location.href).searchParams.get("title");
+      const query = new URL(location.href).searchParams;
+      const title = query.get("title");
+      const hue = query.get("hue");
+      if (hue) {
+        document.documentElement.style.setProperty("--hue", hue);
+        const icon = document.getElementById("favicon");
+        const letter = location.hostname.slice(0, 1).toUpperCase();
+        icon.href = `/icon.svg?hue=${encodeURIComponent(hue)}&letter=${encodeURIComponent(letter)}`;
+      }
       if (title) {
         document.title = title;
         document.getElementById("heading").textContent = title;
+        // The wordmark is the host's first label — "docs.example.com" reads as
+        // "docs" in the corner, which is what a real site would put there.
+        const site = location.hostname.split(".")[0];
+        document.getElementById("wordmark").textContent = site;
+        document.getElementById("glyph").textContent = site.slice(0, 1).toUpperCase();
+        document.getElementById("kicker").textContent = site;
       }
     </script>
   </body>

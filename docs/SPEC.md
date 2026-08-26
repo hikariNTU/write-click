@@ -189,7 +189,7 @@ Rules:
 - The tab list is requested the instant the trigger goes down, in parallel with that timer, so the
   panel has no fetch latency when it appears.
 - Data comes from the background: `{ id, title, favIconUrl, active, index }` for the current window.
-- Layout is a **grid** of tiles — favicon plus truncated title, active tab highlighted. A radial or
+- Layout is a **grid** of tiles — favicon plus truncated title, active tab marked. A radial or
   pie layout was considered and dropped: it stops scaling past roughly eight tabs.
 - Tiles are **sized, not counted**: the track list is `repeat(auto-fit, minmax(<tile>px, 1fr))`, so
   how many fit per row falls out of the window width. A fixed column count was tried first and made
@@ -280,7 +280,10 @@ Two rules keep it from firing on a tab nobody chose:
 - The highlight is only ever set by a **move**. A panel that happens to open under a resting cursor
   therefore has nothing highlighted, and a release there falls through to normal stroke matching.
 - The **active tab's tile is never highlighted**, so releasing over it does nothing rather than
-  re-activating the tab already in front.
+  re-activating the tab already in front. It carries its own marking instead — a different colour
+  from the hover highlight, plus a dot, since colour alone carries it for most people and not for
+  everyone. Painting the two alike said the opposite of what is true: hover means "release here and
+  you land on this tab", and the current tab is the one tile where releasing does nothing.
 
 **Sub-frames hold their command until the top frame answers.** A gesture drawn in an iframe runs its
 command in that frame, but only the top frame owns the grid and knows whether the release landed on a

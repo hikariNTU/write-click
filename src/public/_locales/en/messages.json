@@ -95,6 +95,9 @@
   "grid_cheatsheet": {
     "message": "Gestures"
   },
+  "grid_current": {
+    "message": "This tab"
+  },
   "grid_hint": {
     "message": "Click a tile to switch"
   },

@@ -95,6 +95,9 @@
   "grid_cheatsheet": {
     "message": "手勢清單"
   },
+  "grid_current": {
+    "message": "目前分頁"
+  },
   "grid_hint": {
     "message": "點選項目即可切換分頁"
   },

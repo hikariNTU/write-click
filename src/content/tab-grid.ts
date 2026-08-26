@@ -55,6 +55,15 @@ function bar(edge: "top" | "bottom"): HTMLDivElement {
  */
 const HOVER = ["border-emerald-300/40", "bg-emerald-400/10"] as const;
 
+/**
+ * The tile for the tab already in front.
+ *
+ * Deliberately a different colour from HOVER, not the same one: hover means
+ * "release here and you land on this tab", and the current tab is the single
+ * tile where releasing does nothing. Painting the two alike said the opposite.
+ */
+const ACTIVE = "border-sky-300/45 bg-sky-400/[0.12]";
+
 /** Must match the panel's `duration-150`, or the teardown cuts the fade short. */
 const FADE_MS = 150;
 
@@ -338,7 +347,7 @@ export class TabGrid {
       "group flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left " +
       "transition-colors duration-100 " +
       (tab.active
-        ? "border-emerald-300/40 bg-emerald-400/10"
+        ? ACTIVE
         : "border-white/5 bg-white/[0.03] hover:border-emerald-300/40 hover:bg-emerald-400/10");
 
     const icon = document.createElement("div");
@@ -364,6 +373,14 @@ export class TabGrid {
     host.textContent = hostOf(tab.url);
     text.append(title, host);
     tile.append(icon, text);
+
+    if (tab.active) {
+      // Colour alone would carry this for most people and not for everyone.
+      const dot = document.createElement("div");
+      dot.className = "ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-sky-300";
+      dot.title = t("grid_current");
+      tile.append(dot);
+    }
 
     return tile;
   }

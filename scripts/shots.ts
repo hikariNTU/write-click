@@ -27,6 +27,7 @@ import { chromium } from "playwright";
 import type { BrowserContext, Page, Worker } from "playwright";
 
 import type { Locale } from "../src/shared/i18n.ts";
+import type { Point } from "../src/shared/recognizer.ts";
 import type { LocalSettings, SyncSettings } from "../src/shared/settings.ts";
 
 const root = resolve(import.meta.dirname, "..");
@@ -40,23 +41,48 @@ const HEIGHT = 800;
 const SCALE = 2;
 
 const PORT = 8971;
-const page = (title: string): string =>
-  `http://localhost:${PORT}/page.html?title=${encodeURIComponent(title)}`;
 
 /**
- * The tab strip the shot is taken in, split around the tab the shot is taken
- * on. Long enough that the grid fills a row and the close-to-the-right count is
- * a number worth reading, and ordinary enough to pass for a real morning's
+ * The tab strip the shot is taken in, split around the tab the shot is taken on.
+ *
+ * Long enough that the grid fills a row and the close-to-the-right count is a
+ * number worth reading, and ordinary enough to pass for a real morning's
  * browsing.
+ *
+ * Every one of these is the same fixture file, served from the same server, on
+ * a hostname Chrome resolves back to it (see `launch`). The names are all under
+ * `example.com` — the domain reserved for exactly this — because the tiles show
+ * the host, and seven tiles all reading `localhost:8971` says nothing about
+ * what the grid is for. Each site gets its own hue, which colours both the page
+ * and the favicon, so the strip does not come out as one page seven times.
  */
-const BEFORE = ["Inbox", "Pull requests · write-click"] as const;
-const SHOT = "MDN — PointerEvent";
-const AFTER = [
-  "Chrome extensions — chrome.tabs",
-  "Tailwind CSS — Theme",
-  "Hacker News",
-  "Notes",
-] as const;
+interface Site {
+  host: string;
+  title: string;
+  hue: number;
+}
+
+const BEFORE: readonly Site[] = [
+  { host: "mail.example.com", title: "Inbox — 12 unread", hue: 210 },
+  { host: "code.example.com", title: "Pull requests · write-click", hue: 265 },
+];
+const SHOT: Site = { host: "docs.example.com", title: "Pointer events — Web docs", hue: 22 };
+const AFTER: readonly Site[] = [
+  { host: "developer.example.com", title: "chrome.tabs — extension reference", hue: 150 },
+  { host: "design.example.com", title: "Theme tokens and palette", hue: 320 },
+  { host: "news.example.com", title: "Front page", hue: 15 },
+  { host: "notes.example.com", title: "Notes — this week", hue: 250 },
+];
+
+const page = (site: Site): string =>
+  `http://${site.host}/page.html?title=${encodeURIComponent(site.title)}&hue=${site.hue}`;
+
+/**
+ * The trail, at its shipped defaults. Spelled out because a settings patch is a
+ * whole top-level key: writing `{ showLabel }` alone would be typed as a
+ * partial trail and read back as one. Keep in step with `defaultSyncSettings`.
+ */
+const TRAIL = { color: "#34d399", width: 4 } as const;
 
 /** Everything except `enabled`, which each shot sets for itself. */
 const GRID = {
@@ -73,12 +99,46 @@ const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css",
   ".js": "text/javascript",
+  ".svg": "image/svg+xml",
 };
+
+/**
+ * A favicon, drawn rather than stored.
+ *
+ * The tiles show one, and seven tabs with none is seven copies of the fallback
+ * glyph — which is the grid's error state, not its normal one. Generated per
+ * hue so the strip reads as seven different sites at a glance, and served over
+ * http because `chrome.tabs` hands back a data: URL favicon verbatim and the
+ * grid only draws http(s).
+ */
+function favicon(hue: number, letter: string): string {
+  const text = letter.replace(/[<&>]/g, "");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="hsl(${hue} 74% 52%)"/>
+    <stop offset="100%" stop-color="hsl(${hue + 140} 68% 48%)"/>
+  </linearGradient></defs>
+  <rect width="32" height="32" rx="8" fill="url(#g)"/>
+  <text x="16" y="22" text-anchor="middle" fill="#fff"
+    font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="700">${text}</text>
+</svg>`;
+}
 
 /** Served rather than opened as `file://`, which needs its own per-extension grant. */
 function serve(): Promise<Server> {
   const server = createServer((request, response) => {
-    const name = (request.url ?? "/").split("?")[0]?.replace(/^\/+/, "") || "page.html";
+    const url = new URL(request.url ?? "/", "http://fixture");
+    const name = url.pathname.replace(/^\/+/, "") || "page.html";
+
+    if (name === "icon.svg") {
+      const hue = Number(url.searchParams.get("hue") ?? 210);
+      response.writeHead(200, { "content-type": MIME[".svg"] as string });
+      response.end(
+        favicon(Number.isFinite(hue) ? hue : 210, url.searchParams.get("letter") ?? "W"),
+      );
+      return;
+    }
+
     const path = resolve(fixtures, name);
     if (!path.startsWith(fixtures) || !existsSync(path)) {
       response.writeHead(404).end("not found");
@@ -97,7 +157,16 @@ async function launch(dir: string): Promise<BrowserContext> {
     headless: true,
     viewport: { width: WIDTH, height: HEIGHT },
     deviceScaleFactor: SCALE,
-    args: [`--disable-extensions-except=${dist}`, `--load-extension=${dist}`],
+    args: [
+      `--disable-extensions-except=${dist}`,
+      `--load-extension=${dist}`,
+      // Every hostname in the strip resolves to the fixture server. The tiles
+      // show the host, so the strip needs real hostnames to look like anything
+      // at all — and the pages behind them are still ours, served from this
+      // process. `EXCLUDE localhost` keeps the loopback name itself resolving
+      // normally, which is what Playwright's own plumbing uses.
+      `--host-resolver-rules=MAP * 127.0.0.1:${PORT}, EXCLUDE localhost`,
+    ],
   });
 }
 
@@ -196,28 +265,96 @@ async function shootRegion(
   console.log(`  ${locale}/${name}.png`);
 }
 
+interface Leg {
+  x: number;
+  y: number;
+  /**
+   * How far the leg bows out from the straight line between its ends, in
+   * pixels, positive to the left of travel. Zero would be a ruler.
+   */
+  bow?: number;
+}
+
+/** Deterministic noise in [-1, 1], so a re-run captures the same stroke. */
+function wobble(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let x = Math.imul(state ^ (state >>> 15), 1 | state);
+    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+    return (((x ^ (x >>> 14)) >>> 0) / 2 ** 32) * 2 - 1;
+  };
+}
+
+/** One pass of Chaikin's corner cutting: every corner becomes a short curve. */
+function round(points: readonly Point[]): Point[] {
+  if (points.length < 3) return [...points];
+  const cut: Point[] = [points[0] as Point];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const a = points[i] as Point;
+    const b = points[i + 1] as Point;
+    cut.push({ x: a.x * 0.75 + b.x * 0.25, y: a.y * 0.75 + b.y * 0.25 });
+    cut.push({ x: a.x * 0.25 + b.x * 0.75, y: a.y * 0.25 + b.y * 0.75 });
+  }
+  cut.push(points[points.length - 1] as Point);
+  return cut;
+}
+
+/** How far each sample strays from the path, in pixels. A hand is not steady. */
+const JITTER = 1.1;
+
+/**
+ * A path a hand might have drawn.
+ *
+ * A gesture captured as a ruled polyline looks like a diagram of a gesture, not
+ * a gesture. Three things fix that and none of them is randomness alone: each
+ * leg bows out from its straight line, the corners are cut rather than turned
+ * on a point, and every sample strays a pixel or so. The noise is seeded, so
+ * two runs of the harness still produce the same stroke.
+ *
+ * The result stays recognisable: the recognizer quantizes by dominant
+ * direction, and a bow of a dozen pixels across a leg of two hundred does not
+ * change which way that leg went.
+ */
+function handPath(from: Point, legs: readonly Leg[], seed: number): Point[] {
+  const stray = wobble(seed);
+  const points: Point[] = [from];
+  let at = from;
+
+  for (const leg of legs) {
+    const length = Math.hypot(leg.x, leg.y) || 1;
+    // Perpendicular to travel, which is the only direction a bow can go.
+    const nx = -leg.y / length;
+    const ny = leg.x / length;
+    const bow = leg.bow ?? 0;
+    const steps = 10;
+    for (let i = 1; i <= steps; i += 1) {
+      const t = i / steps;
+      // A half sine: zero at both ends, so consecutive legs still meet.
+      const off = Math.sin(Math.PI * t) * bow;
+      points.push({ x: at.x + leg.x * t + nx * off, y: at.y + leg.y * t + ny * off });
+    }
+    at = { x: at.x + leg.x, y: at.y + leg.y };
+  }
+
+  return round(round(points)).map((point) => ({
+    x: point.x + stray() * JITTER,
+    y: point.y + stray() * JITTER,
+  }));
+}
+
 /**
  * Draws a stroke and leaves the trigger held, so the caller shoots what is on
  * screen mid-gesture rather than after it has been cleared.
  *
- * Moved in small steps rather than jumped: the recognizer quantizes a path, and
+ * Moved point by point rather than jumped: the recognizer quantizes a path, and
  * a single move from one corner to another is one sample, not a stroke.
  */
-async function draw(
-  target: Page,
-  from: { x: number; y: number },
-  legs: readonly { x: number; y: number }[],
-): Promise<void> {
+async function draw(target: Page, from: Point, legs: readonly Leg[], seed: number): Promise<void> {
+  const path = handPath(from, legs, seed);
   await target.mouse.move(from.x, from.y);
   await target.mouse.down({ button: "right" });
-  let at = from;
-  for (const leg of legs) {
-    const steps = 12;
-    for (let i = 1; i <= steps; i += 1) {
-      await target.mouse.move(at.x + (leg.x * i) / steps, at.y + (leg.y * i) / steps);
-    }
-    at = { x: at.x + leg.x, y: at.y + leg.y };
-  }
+  for (const point of path) await target.mouse.move(point.x, point.y);
 }
 
 /**
@@ -283,7 +420,7 @@ async function strip(context: BrowserContext, sw: Worker): Promise<Page> {
       await chrome.tabs.update(self.id, { active: true });
       return (await chrome.tabs.query({ windowId })).length;
     },
-    { title: SHOT, before: BEFORE.map(page), after: AFTER.map(page) },
+    { title: SHOT.title, before: BEFORE.map(page), after: AFTER.map(page) },
   );
 
   const want = BEFORE.length + 1 + AFTER.length;
@@ -311,7 +448,11 @@ async function capture(
   // 1. Mid-gesture: the stroke, and the readout naming what it matched. The
   //    grid is off for this one, so the middle of the window is the subject.
   await settings(sw, {
-    sync: { language: locale, grid: { ...GRID, enabled: false } },
+    sync: {
+      language: locale,
+      grid: { ...GRID, enabled: false },
+      trail: { ...TRAIL, showLabel: true },
+    },
     local: { trigger, uiScale: 1 },
   });
 
@@ -323,24 +464,43 @@ async function capture(
   // something a static list cannot: how many tabs it would actually close.
   // Drawn in the lower half: the readout is centred, and a stroke through it
   // hides the half of itself that says what shape was drawn.
-  await draw(shot, { x: 470, y: 700 }, [
-    { x: 0, y: -160 },
-    { x: 220, y: 0 },
-    { x: 0, y: 160 },
-  ]);
+  await draw(
+    shot,
+    { x: 455, y: 690 },
+    [
+      { x: 0, y: -170, bow: 9 },
+      { x: 235, y: 6, bow: -11 },
+      { x: 8, y: 168, bow: 8 },
+    ],
+    7,
+  );
   await shot.waitForTimeout(250);
   await shoot(shot, locale, "1-gesture");
   await release(shot);
 
-  // 2. The grid, open, with the gesture list under it. Drawn from near the top
-  //    so the pointer reaches a tile without a long stroke across the shot.
-  await settings(sw, { sync: { grid: { ...GRID, enabled: true } } });
+  // 2. The grid, open, with the gesture list under it.
+  // The readout is off for this one. The grid is the subject, and a stroke
+  // drawn to reach a particular tile is drawn for its endpoint, not its shape —
+  // so the readout would sit in the middle of the shot saying "Unassigned".
+  await settings(sw, {
+    sync: { grid: { ...GRID, enabled: true }, trail: { ...TRAIL, showLabel: false } },
+  });
   await shot.reload();
   await shot.waitForTimeout(400);
 
-  // Up onto a tile, and short: releasing over a tile is how a tab is picked, so
-  // the highlight under the pointer is part of what this shot is about.
-  await draw(shot, { x: 410, y: 300 }, [{ x: 0, y: -205 }]);
+  // A sweep up onto a tile: releasing over one is how a tab is picked, so the
+  // highlight under the pointer is part of what this shot is about. It ends on
+  // a tile other than the active one, which is the whole difference the two
+  // highlight colours are drawing.
+  await draw(
+    shot,
+    { x: 300, y: 640 },
+    [
+      { x: 200, y: -140, bow: -46 },
+      { x: 140, y: -350, bow: 52 },
+    ],
+    21,
+  );
   // Past holdMs, and past the reveal transition that follows it.
   await shot.waitForTimeout(600);
   await shoot(shot, locale, "2-grid");

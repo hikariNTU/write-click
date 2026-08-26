@@ -55,12 +55,29 @@ rewritten fifteen times, and rewriting it should not mean re-capturing the set.
 so the harness writes what each shot needs through the service worker and reloads. Nothing here
 needs a person to click a permission prompt, which means a run is repeatable and cold-startable.
 
-**The target is ours.** `shots/fixtures/page.html` is a plain page with a `<title>` set from
-`?title=`, served over `localhost`. Gestures work over any HTML5 document, so there is nothing to
-gain from automating somebody else's site and inheriting its redesigns and sign-in walls — and a
-store screenshot showing an interface that does not exist is a fabricated context.
+**The target is ours.** `shots/fixtures/page.html` is one page, dressed by two query parameters:
+`?title=` names the tab and the heading, `?hue=` picks the whole palette. Gestures work over any
+HTML5 document, so there is nothing to gain from automating somebody else's site and inheriting its
+redesigns and sign-in walls — and a store screenshot showing an interface that does not exist is a
+fabricated context. It is not a grey page, though: a wall of text under the overlay says nothing
+about how the overlay reads over a real one, which is the only thing a screenshot of an overlay is
+for.
 
-Four things about it are less obvious than they look, and each was a wrong screenshot first:
+**Every tab in the strip is a hostname, not `localhost`.** Chromium is launched with
+`--host-resolver-rules=MAP * 127.0.0.1:<port>`, so `mail.example.com` and the rest resolve back to
+the fixture server. The tiles show the host, and seven tiles all reading `localhost:8971` say
+nothing about what the grid is for. The names sit under `example.com`, the domain reserved for
+exactly this, and the pages behind them are still ours. Favicons are generated per hue by the same
+server and served over http — `chrome.tabs` hands back a `data:` URL favicon verbatim, and the grid
+only draws `http(s)` ones, so an embedded icon would come out as seven copies of the fallback glyph.
+
+**Strokes are drawn by hand, not ruled.** Each leg bows out from its straight line, the corners are
+cut rather than turned on a point, and every sample strays about a pixel. A ruled polyline is a
+diagram of a gesture rather than a gesture. The noise is seeded, so two runs still capture the same
+stroke, and the bows are small next to the legs — the recognizer quantizes by dominant direction, so
+what is drawn is still what is matched.
+
+Four more things are less obvious than they look, and each was a wrong screenshot first:
 
 **It waits for `migrate()` before seeding anything.** The migration reads storage and writes the
 merged result back, and a fresh profile means it is running at exactly the moment the harness
