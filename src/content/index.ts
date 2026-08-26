@@ -115,6 +115,7 @@ async function main(): Promise<void> {
     if (message?.type !== "menu.suppress") return;
     if (local.trigger.kind !== "button" || local.trigger.button !== 2) return;
     armMenuSuppression();
+    console.debug("[write-click] menu suppression armed");
   });
 
   // Settings changed in the options page or the popup take effect here without

@@ -34,10 +34,9 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
       };
     }
     case "tabs.activate": {
-      await chrome.tabs.update(request.tabId, { active: true });
-      // The trigger button is still held, and the tab it was pressed in is no
-      // longer the one on screen. Whatever the release does next happens here,
-      // so this tab is the one that has to swallow the context menu.
+      // Armed before the switch, not after. The trigger button is still held,
+      // and the release can land the instant the tab changes; arming afterwards
+      // races that release over two more round trips.
       const notice: TabMessage = { type: "menu.suppress" };
       try {
         await chrome.tabs.sendMessage(request.tabId, notice);
@@ -45,6 +44,7 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
         // A tab with no content script — a settings page, the web store — has
         // no menu of ours to suppress, and cannot be reached anyway.
       }
+      await chrome.tabs.update(request.tabId, { active: true });
       return { ok: true };
     }
     default: {

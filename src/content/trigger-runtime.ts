@@ -157,6 +157,7 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     if (suppressMenuUntil > Date.now()) {
       suppressMenuUntil = 0;
       event.preventDefault();
+      console.debug("[write-click] menu suppressed after a pick");
       return;
     }
     if (trigger.kind !== "button" || trigger.button !== 2) return;
