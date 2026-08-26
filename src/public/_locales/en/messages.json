@@ -185,6 +185,55 @@
   "options_autosave": {
     "message": "Changes are saved automatically."
   },
+  "options_backup_desc": {
+    "message": "Settings can be written to a file, and read back after a reinstall or on another computer."
+  },
+  "options_backup_done": {
+    "message": "Settings imported."
+  },
+  "options_backup_dropped_one": {
+    "message": "Settings imported. $COUNT$ binding was left out.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_backup_dropped_other": {
+    "message": "Settings imported. $COUNT$ bindings were left out.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_backup_export": {
+    "message": "Export to a file"
+  },
+  "options_backup_export_action": {
+    "message": "Export"
+  },
+  "options_backup_export_hint": {
+    "message": "Includes the trigger and the overlay size, which are otherwise kept per device."
+  },
+  "options_backup_failed_json": {
+    "message": "That file is not JSON."
+  },
+  "options_backup_failed_shape": {
+    "message": "That file is not a write-click backup."
+  },
+  "options_backup_import": {
+    "message": "Import from a file"
+  },
+  "options_backup_import_action": {
+    "message": "Import"
+  },
+  "options_backup_import_hint": {
+    "message": "Replaces every setting on this device. Bindings this version does not recognise are left out."
+  },
+  "options_backup_title": {
+    "message": "Backup"
+  },
   "options_gestures_clear": {
     "message": "Clear"
   },
@@ -256,12 +305,6 @@
   "options_overlay_grid_hint": {
     "message": "Appears while the trigger is held. Click a tile to switch to that tab."
   },
-  "options_overlay_trail": {
-    "message": "Draw the trail"
-  },
-  "options_overlay_trail_hint": {
-    "message": "Off still recognises the stroke and runs the command."
-  },
   "options_overlay_readout": {
     "message": "Show the readout"
   },
@@ -288,6 +331,12 @@
   },
   "options_overlay_title": {
     "message": "Overlay"
+  },
+  "options_overlay_trail": {
+    "message": "Draw the trail"
+  },
+  "options_overlay_trail_hint": {
+    "message": "Off still recognises the stroke and runs the command."
   },
   "options_overlay_width": {
     "message": "Trail thickness"

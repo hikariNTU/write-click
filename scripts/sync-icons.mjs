@@ -60,6 +60,9 @@ const ICONS = [
   "translate",
   "vertical_align_bottom",
   "vertical_align_top",
+  "download",
+  "upload",
+  "package_2",
 ];
 
 const from = new URL("../node_modules/@material-symbols/svg-700/rounded/", import.meta.url);

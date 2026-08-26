@@ -1,6 +1,15 @@
+import { backupFilename, buildBackup, parseBackup } from "./shared/backup";
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
-import { LOCALES, applyStaticMessages, dynamic, formatPercent, setLocale, t } from "./shared/i18n";
+import {
+  LOCALES,
+  applyStaticMessages,
+  dynamic,
+  formatNumber,
+  formatPercent,
+  setLocale,
+  t,
+} from "./shared/i18n";
 import type { LanguageSetting, Localized, MessageKey } from "./shared/i18n";
 import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
@@ -420,6 +429,84 @@ function overlayCard(): HTMLElement {
   return section;
 }
 
+/* ----------------------------------------------------------------- backup */
+
+/**
+ * Hands the file to the browser through an object URL and a synthetic click.
+ *
+ * `chrome.downloads` would need a permission the extension asks for nothing
+ * else, and this page is an ordinary tab, so the ordinary way works.
+ */
+function download(text: string, filename: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const link = el("a", "hidden");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // Held until the download has certainly started; revoking it in the same task
+  // cancels the download in Chromium.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+async function importFrom(file: File): Promise<void> {
+  const result = parseBackup(await file.text());
+  if (!result.ok) {
+    notice(
+      t(result.reason === "json" ? "options_backup_failed_json" : "options_backup_failed_shape"),
+    );
+    return;
+  }
+
+  // Written whole, not patched: an import restores a state, and merging would
+  // leave behind whatever the file does not mention.
+  await saveSync(result.sync);
+  await saveLocal(result.local);
+  ({ sync, local } = await loadSettings());
+  setLocale(sync.language);
+  flashSaved();
+  render();
+  if (result.dropped === 0) {
+    notice(t("options_backup_done"));
+    return;
+  }
+  const key = result.dropped === 1 ? "options_backup_dropped_one" : "options_backup_dropped_other";
+  notice(t(key, formatNumber(result.dropped)));
+}
+
+function backupCard(): HTMLElement {
+  const section = card(t("options_backup_title"), t("options_backup_desc"), UI_ICONS.backup);
+
+  const exportButton = iconButton(UI_ICONS.export, t("options_backup_export_action"), () => {
+    const file = buildBackup(sync, local, chrome.runtime.getManifest().version);
+    download(JSON.stringify(file, null, 2), backupFilename());
+  });
+
+  // The input is what actually opens the picker; the button is only what it
+  // looks like, because a file input cannot be styled to match the rest.
+  const input = el("input", "hidden");
+  input.type = "file";
+  input.accept = "application/json,.json";
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+    // Cleared first: picking the same file twice in a row fires no change event
+    // otherwise, which reads as an import that silently did nothing.
+    input.value = "";
+    if (file) void importFrom(file);
+  });
+  const importButton = iconButton(UI_ICONS.import, t("options_backup_import_action"), () =>
+    input.click(),
+  );
+
+  section.append(
+    row(t("options_backup_export"), exportButton, t("options_backup_export_hint")),
+    row(t("options_backup_import"), importButton, t("options_backup_import_hint")),
+    input,
+  );
+  return section;
+}
+
 /* ------------------------------------------------------------------ sites */
 
 function sitesCard(): HTMLElement {
@@ -494,6 +581,7 @@ const SECTIONS: readonly {
   },
   { id: "overlay", titleKey: "options_overlay_title", glyph: UI_ICONS.overlay, card: overlayCard },
   { id: "sites", titleKey: "options_sites_title", glyph: UI_ICONS.sites, card: sitesCard },
+  { id: "backup", titleKey: "options_backup_title", glyph: UI_ICONS.backup, card: backupCard },
 ];
 
 const NAV_LINK =

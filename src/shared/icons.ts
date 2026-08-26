@@ -20,6 +20,9 @@ import doubleRight from "../icons/material/keyboard_double_arrow_right.svg?raw";
 import doubleUp from "../icons/material/keyboard_double_arrow_up.svg?raw";
 import globe from "../icons/material/public.svg?raw";
 import block from "../icons/material/block.svg?raw";
+import backup from "../icons/material/package_2.svg?raw";
+import download from "../icons/material/download.svg?raw";
+import upload from "../icons/material/upload.svg?raw";
 import cached from "../icons/material/cached.svg?raw";
 import checkCircle from "../icons/material/check_circle.svg?raw";
 import close from "../icons/material/close.svg?raw";
@@ -121,6 +124,9 @@ export const UI_ICONS = {
   settings: prepare(settings),
   openInNew: prepare(openInNew),
   blocked: prepare(block),
+  backup: prepare(backup),
+  export: prepare(download),
+  import: prepare(upload),
 } as const;
 
 /** Stands in when a tab has no favicon, or its favicon fails to load. */

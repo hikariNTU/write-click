@@ -103,3 +103,11 @@ test("v5 leaves a stroke the user already spent alone", async () => {
   assert.equal(gestures.DLUR, "tab.close");
   assert.equal(Object.values(gestures).includes("app.options"), false);
 });
+
+test("a stored gesture map is the whole map", async () => {
+  // Merged into the defaults, a map the user has pruned grows every binding
+  // back on the next load, and clearing one is impossible by construction.
+  stub({ gestures: { R: "tab.next" } }, {});
+  const { sync } = await loadSettings();
+  assert.deepEqual(sync.gestures, { R: "tab.next" });
+});

@@ -72,8 +72,14 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * `{ kind: "button", button: 2, modifier: "Alt" }` hands back the modifier the
  * user just removed. Every other settings object is a bag of independent
  * fields, where merging is exactly what makes a newly added field appear.
+ *
+ * `gestures` is a map, not a bag of fields. Merging the defaults into it makes
+ * every binding the user has cleared reappear on the next load, and there is no
+ * way to remove one at all — a stored map is the whole map. A binding added to
+ * the defaults reaches existing profiles through `migrate()`, which is where a
+ * decision about somebody else's gesture map belongs.
  */
-const REPLACED = new Set(["trigger"]);
+const REPLACED = new Set(["trigger", "gestures"]);
 
 /**
  * Reads an area, filling in anything the user has never set. The merge goes one

@@ -100,6 +100,12 @@ tab grid together, for a display where the designed size reads too small or too 
 separate from page zoom, which the overlay cancels out: the grid is the same size on a page zoomed
 to 150% as on one at 100%.
 
+**Backup** writes every setting to a JSON file and reads one back — after a reinstall, or onto a
+second computer. It carries the trigger and the overlay size too, which are otherwise per device: an
+export is asked for by name, and a backup that restores everything except the button you press is
+not a backup. An import replaces what is there, and leaves out any binding this version does not
+recognise rather than storing one that can never fire.
+
 The popup carries the two switches worth reaching in one click — gestures on/off for this device, and
 on/off for the site you are on.
 

@@ -515,7 +515,7 @@ interface SyncSettings {
     cheatsheet: boolean;
     pickOnRelease: boolean; // §6.3
   };
-  trail: { color: string; width: number; showLabel: boolean };
+  trail: { show: boolean; color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
 
@@ -548,12 +548,54 @@ on a platform whose default carries a modifier. That merge happens upstream of o
 way to control it is not to ask for it: `get(Object.keys(defaults))` returns exactly what is stored,
 and missing keys fall back to the defaults here.
 
-**`trigger` replaces its default rather than merging into it.** A `Trigger` is a discriminated union
+**`trigger` and `gestures` replace their defaults rather than merging into them.** A `Trigger` is a discriminated union
 (§3), and merging one variant into another produces neither. The options page writes a bare button
 trigger with no `modifier` key at all, so any merge — Chrome's or ours — hands the modifier back and
 clearing it silently does not stick. On Windows the default has no modifier and the bug is invisible;
-on macOS and Linux it made the bare right button unselectable. Every other settings object is a bag
-of independent fields, where merging is exactly what makes a newly added field appear.
+on macOS and Linux it made the bare right button unselectable. `gestures` is a map rather than a bag
+of fields: merged into the defaults, every binding the user cleared reappears on the next load, and
+removing one is impossible by construction — a stored map is the whole map, and a binding added to
+the defaults reaches existing profiles through `migrate()`. Every other settings object is a bag of
+independent fields, where merging is exactly what makes a newly added field appear.
+
+### 9.1 Export and import
+
+Settings go out as one JSON file — `src/shared/backup.ts` — and come back through `parseBackup()`.
+
+```ts
+interface BackupFile {
+  app: "write-click"; // refuses a file belonging to something else
+  format: 1; // the file shape, not `version` above
+  extension: string; // which build wrote it, for a person reading it
+  exportedAt: string;
+  sync: SyncSettings;
+  local: LocalSettings;
+}
+```
+
+**Both areas travel together**, the per-device ones included. The trigger and `uiScale` are never
+synced (§3, §7.4), but an export is a thing someone asked for by name, and a backup that restores
+everything except the button you press is not a backup. An imported trigger gets the same
+context-menu warning as one chosen by hand.
+
+**The file is untrusted input.** It came off a disk, and every value in it reaches a canvas, a stored
+gesture map or a pointer listener. Each field is checked against what the matching control can
+produce and clamped into its range; anything unreadable falls back to that field's default rather
+than failing the whole import, because one bad colour should not cost someone their gesture map. Only
+a file that is not JSON, or does not carry `app: "write-click"`, is refused outright — those two
+cases are reported separately, since one is the wrong file and the other is a damaged one.
+
+Bindings are filtered rather than clamped: a stroke outside `[UDLR]{1,MAX_SEGMENTS}`, a command this
+build does not have, and a second stroke for a command that already has one are all dropped, and the
+count is reported. A binding that cannot fire looks exactly like a missing one on the options page,
+except that it also occupies a stroke. A gesture map that is present and empty stays empty — someone
+cleared it, and an import restores what was exported.
+
+`version` is this build's, never the file's: an old file goes through the same defaults every field
+does, so there is no second migration path to keep in step with `migrate()`.
+
+The import writes each area **whole**, not as a patch: it restores a state, and a merge would leave
+behind whatever the file does not mention.
 
 Content scripts subscribe to `chrome.storage.onChanged` and re-apply without a reload: gesture and
 overlay changes take effect on the next stroke, and a trigger change tears down its listeners and
@@ -579,7 +621,7 @@ Every handler is exhaustive over the union; adding a member must break the build
 ## 10.1 Options page
 
 `src/options.html` + `src/options.ts`, opened in a tab. Every control writes on change; there is no
-save button. Sections: language, trigger, gestures, overlay, disabled sites, reset.
+save button. Sections: language, trigger, gestures, overlay, disabled sites, backup, reset.
 
 A **side navigation** lists those sections and highlights the one in view. One table in `options.ts`
 drives both it and the cards, so a new section cannot appear in one and be forgotten in the other,
@@ -593,6 +635,13 @@ the page says out loud rather than silently dropping.
 
 The trigger section shows what the current choice does to the native context menu, since that is the
 part that surprises people, and the wording follows §3.1 per platform.
+
+The backup section is two buttons over §9.1. The download goes through an object URL and a
+synthetic click rather than `chrome.downloads`, which would need a permission nothing else here
+wants; the object URL is revoked on a timer, because revoking it in the same task cancels the
+download in Chromium. The file input is hidden behind a styled button and cleared after every pick,
+since choosing the same file twice in a row fires no `change` event and would read as an import that
+did nothing.
 
 The popup carries only what is worth reaching in one click: gestures on/off for the device, and
 on/off for the current origin. It offers no origin toggle on browser-internal pages, where a content

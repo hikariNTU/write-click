@@ -185,6 +185,55 @@
   "options_autosave": {
     "message": "變更會自動儲存。"
   },
+  "options_backup_desc": {
+    "message": "設定可寫入檔案，於重新安裝後或在另一台電腦上讀回。"
+  },
+  "options_backup_done": {
+    "message": "設定已匯入。"
+  },
+  "options_backup_dropped_one": {
+    "message": "設定已匯入，略過 $COUNT$ 項繫結。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_backup_dropped_other": {
+    "message": "設定已匯入，略過 $COUNT$ 項繫結。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_backup_export": {
+    "message": "匯出成檔案"
+  },
+  "options_backup_export_action": {
+    "message": "匯出"
+  },
+  "options_backup_export_hint": {
+    "message": "包含觸發方式與覆蓋層尺寸，這兩項平時各裝置分別儲存。"
+  },
+  "options_backup_failed_json": {
+    "message": "該檔案不是 JSON。"
+  },
+  "options_backup_failed_shape": {
+    "message": "該檔案不是 write-click 的備份。"
+  },
+  "options_backup_import": {
+    "message": "從檔案匯入"
+  },
+  "options_backup_import_action": {
+    "message": "匯入"
+  },
+  "options_backup_import_hint": {
+    "message": "取代這台裝置上的所有設定。此版本無法辨識的繫結將略過。"
+  },
+  "options_backup_title": {
+    "message": "備份"
+  },
   "options_gestures_clear": {
     "message": "清除"
   },
@@ -256,12 +305,6 @@
   "options_overlay_grid_hint": {
     "message": "按住觸發鍵時顯示。點選項目即可切換至該分頁。"
   },
-  "options_overlay_trail": {
-    "message": "顯示軌跡"
-  },
-  "options_overlay_trail_hint": {
-    "message": "關閉後仍會辨識筆勢並執行指令。"
-  },
   "options_overlay_readout": {
     "message": "顯示指令提示"
   },
@@ -288,6 +331,12 @@
   },
   "options_overlay_title": {
     "message": "畫面顯示"
+  },
+  "options_overlay_trail": {
+    "message": "顯示軌跡"
+  },
+  "options_overlay_trail_hint": {
+    "message": "關閉後仍會辨識筆勢並執行指令。"
   },
   "options_overlay_width": {
     "message": "軌跡粗細"
