@@ -111,7 +111,7 @@ itself is [`PRIVACY.md`](PRIVACY.md).
 
 ```bash
 npm install
-npm run dev        # watch build, auto-reloads the unpacked extension
+npm run dev        # src/ -> dist-dev/, auto-reloads the unpacked extension
 npm run build      # src/ -> dist/
 npm run typecheck  # tsc --noEmit
 npm run lint       # oxlint
@@ -119,6 +119,11 @@ npm run format     # oxfmt .
 ```
 
 Load `dist/`, not `src/`, as an unpacked extension at `chrome://extensions`.
+
+The dev server writes its own unpacked extension to `dist-dev/`, so load that one instead while
+running `npm run dev`. The two directories are deliberately separate: dev used to write over `dist`
+and emptied it on startup, which dropped a loaded extension mid-session with "Manifest file is
+missing or unreadable".
 
 ## Stack
 

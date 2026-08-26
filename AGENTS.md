@@ -14,7 +14,7 @@ content scripts and the service worker are listed there as `.ts` paths and crxjs
 
 ```bash
 npm run build      # src/ -> dist/
-npm run dev        # watch mode
+npm run dev        # watch mode, writes dist-dev/ (never dist/)
 npm run typecheck  # tsc --noEmit
 npm run lint       # oxlint
 npm run format     # oxfmt .
@@ -25,7 +25,7 @@ npm run bump patch # or minor / major — versions must agree across all three f
 
 Generated assets are committed, and CI fails if a build changes them.
 
-Load `dist/`, never `src/`, as the unpacked extension. A phase is done when build, typecheck and
+Load `dist/`, never `src/`, as the unpacked extension — or `dist-dev/` when running `npm run dev`. A phase is done when build, typecheck and
 lint are all clean and the behaviour is verified in a loaded unpacked build.
 
 ## Layout
@@ -71,6 +71,9 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   moved there would switch tabs on release (spec §6.3, §6.4).
 - A sub-frame never runs its gesture command before the top frame answers its `end`. Only the top
   frame knows whether the release picked a tab (spec §6.3).
+- The dev server never writes to `dist/`. It has its own `dist-dev/` and does not empty it: emptying
+  a directory Chrome has loaded makes the extension vanish with "Manifest file is missing or
+  unreadable".
 - Generated directories get wiped without warning. `src/icons/material/` and `src/images/` are
   generated; anything authored goes beside them, never inside them.
 - Never import an asset from `node_modules` with `?raw`. Vite's root is `src/`, so it is served
