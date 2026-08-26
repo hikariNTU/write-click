@@ -67,8 +67,10 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   events to the node that took the press, so tiles are hit-tested from a window listener, and the
   highlight is moved by hand (spec §6.1). Listen on `mousedown`: a chorded press fires no
   `pointerdown` at all.
-- The grid panel opens beside the cursor, never under it. A tile under a cursor the user never
-  moved there would switch tabs on release (spec §6.3, §6.4).
+- The overlay is sized by `uiScale / pageZoom` and nothing else (spec §7.4). Anything new the
+  overlay draws goes through that number, or it grows with the page.
+- The tab grid is centred. Anchoring it to the cursor was tried and removed for being clanky
+  (spec §6.4).
 - A sub-frame never runs its gesture command before the top frame answers its `end`. Only the top
   frame knows whether the release picked a tab (spec §6.3).
 - `build.outDir` stays **absolute**. The dev server resolves a relative one two ways — against Vite's

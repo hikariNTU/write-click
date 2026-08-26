@@ -32,6 +32,15 @@ test("every translation has exactly the english key set", () => {
   }
 });
 
+test("every locale name is a tag Intl accepts once underscores become hyphens", () => {
+  // Chrome names these directories with an underscore — zh_TW — and that is the
+  // identifier stored in settings. Intl wants BCP 47 and throws
+  // "invalid language tag" on the underscore, so i18n.ts converts before use.
+  for (const locale of locales) {
+    assert.doesNotThrow(() => new Intl.NumberFormat(locale.replaceAll("_", "-")));
+  }
+});
+
 test("placeholders survive translation", () => {
   for (const locale of locales.filter((name) => name !== "en")) {
     const messages = load(locale);

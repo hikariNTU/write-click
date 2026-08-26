@@ -16,6 +16,8 @@ export class Trail {
   readonly #options: TrailOptions;
   #points: readonly Point[] = [];
   #frame = 0;
+  /** Overlay scale: the user's size preference over the tab's page zoom. */
+  #scale = 1;
 
   constructor(root: ShadowRoot, options: TrailOptions) {
     this.#options = options;
@@ -27,6 +29,15 @@ export class Trail {
     root.append(this.#canvas);
     this.#resize();
     window.addEventListener("resize", () => this.#resize(), { passive: true });
+  }
+
+  /**
+   * The stroke is drawn in the page's own coordinates — it has to follow the
+   * cursor — so only its thickness is scaled. Page zoom would otherwise make
+   * the line fatter as the page grows.
+   */
+  setScale(scale: number): void {
+    this.#scale = scale > 0 ? scale : 1;
   }
 
   #resize(): void {
@@ -68,7 +79,8 @@ export class Trail {
     context.clearRect(0, 0, this.#canvas.width / ratio, this.#canvas.height / ratio);
     if (this.#points.length < 2) return;
 
-    const { color, width } = this.#options;
+    const { color } = this.#options;
+    const width = this.#options.width * this.#scale;
     context.lineCap = "round";
     context.lineJoin = "round";
 
@@ -76,7 +88,7 @@ export class Trail {
     context.globalAlpha = 0.3;
     context.lineWidth = width * 3;
     context.strokeStyle = color;
-    context.shadowBlur = 24;
+    context.shadowBlur = 24 * this.#scale;
     context.shadowColor = color;
     context.stroke();
 

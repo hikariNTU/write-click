@@ -10,9 +10,6 @@ import type { GridSize } from "../shared/settings";
 /** Kept clear of the viewport edge, so the panel's border is never clipped. */
 const MARGIN = 12;
 
-/** How far the panel sits from the cursor, on whichever side it opens. */
-const GAP = 16;
-
 /**
  * Applied by hand rather than by `:hover`. While a mouse button is held, Blink
  * captures events to the node that received the press, and hover stops
@@ -22,10 +19,6 @@ const HOVER = ["border-emerald-300/40", "bg-emerald-400/10"] as const;
 
 /** Must match the panel's `duration-150`, or the teardown cuts the fade short. */
 const FADE_MS = 150;
-
-function clamp(value: number, low: number, high: number): number {
-  return Math.max(low, Math.min(value, high));
-}
 
 /**
  * Tiles are sized, not counted. The track list is auto-fit, so the number per
@@ -63,9 +56,9 @@ export class TabGrid {
   #tiles: Tile[] = [];
   #hovered: Tile | undefined;
   /**
-   * Counter-scale for the tab's page zoom, so the panel keeps one size at every
-   * zoom level. Everything the panel is measured and placed by is in the page's
-   * CSS pixels; multiplying by this converts to what lands on screen.
+   * Overlay scale: the user's size preference over the tab's page zoom. The
+   * panel is laid out in the page's CSS pixels; multiplying by this gives what
+   * lands on screen.
    */
   #scale = 1;
 
@@ -73,18 +66,16 @@ export class TabGrid {
     this.#size = SIZES[size] ?? SIZES.normal;
     // Toggled with `invisible`, not `hidden`: both `hidden` and `grid` set
     // `display`, so which one wins would come down to CSS source order.
-    this.#root.className = "pointer-events-none invisible fixed inset-0 z-10";
+    this.#root.className =
+      "pointer-events-none invisible fixed inset-0 z-10 grid place-items-center";
     // Only opacity and transform transition. `transition-all` would animate
     // left and top too, and the panel would slide across the page from wherever
     // the last gesture left it.
     this.#panel.className =
-      "pointer-events-auto absolute overflow-y-auto rounded-3xl " +
+      "pointer-events-auto overflow-y-auto rounded-3xl " +
       "border border-white/10 bg-slate-950/70 p-4 text-slate-50 backdrop-blur-[6px] " +
       "shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)] transition-[opacity,transform] " +
       "duration-150 ease-out";
-    // Scaled from the corner it is anchored by, so the entrance grows out of
-    // the cursor rather than drifting toward it.
-    this.#panel.style.transformOrigin = "top left";
     this.#reveal(false);
     this.#caption.className =
       "mb-3 flex items-baseline justify-between px-1 text-[11px] font-medium text-slate-400";
@@ -185,6 +176,11 @@ export class TabGrid {
     return this.#tiles.find(({ node }) => containsPoint(node.getBoundingClientRect(), point));
   }
 
+  setScale(scale: number): void {
+    this.#scale = scale > 0 ? scale : 1;
+    if (this.#visible) this.#reveal(true);
+  }
+
   #reveal(shown: boolean): void {
     this.#panel.style.opacity = shown ? "1" : "0";
     // The entrance scale is folded into the zoom counter-scale: one transform
@@ -192,40 +188,10 @@ export class TabGrid {
     this.#panel.style.transform = `scale(${shown ? this.#scale : this.#scale * 0.95})`;
   }
 
-  /**
-   * Anchors the panel beside the cursor.
-   *
-   * It opens down and to the right, and flips to the other side of the cursor
-   * when there is no room. Either way the cursor lands outside the panel: a
-   * panel that opened under it would put a tile beneath a cursor the user never
-   * moved there.
-   */
-  #place(at: Point): void {
-    const width = this.#panel.offsetWidth * this.#scale;
-    const height = this.#panel.offsetHeight * this.#scale;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    let left = at.x + GAP;
-    if (left + width > vw - MARGIN) left = at.x - GAP - width;
-    let top = at.y + GAP;
-    if (top + height > vh - MARGIN) top = at.y - GAP - height;
-
-    // Clamped last, and to the near edge when the panel is larger than the
-    // window: a panel the cursor overlaps beats one whose border is off-screen.
-    this.#panel.style.left = `${clamp(left, MARGIN, vw - width - MARGIN)}px`;
-    this.#panel.style.top = `${clamp(top, MARGIN, vh - height - MARGIN)}px`;
-  }
-
-  /**
-   * @param at   Where the cursor is now, in the top frame's client coordinates.
-   * @param zoom The tab's page zoom, which the panel cancels out.
-   */
-  show(tabs: readonly TabSummary[], at: Point, zoom: number): void {
+  show(tabs: readonly TabSummary[]): void {
     if (tabs.length === 0) return;
     // A fade may still be running from the last gesture.
     clearTimeout(this.#teardown);
-    this.#scale = 1 / (zoom > 0 ? zoom : 1);
     this.#panel.classList.remove("pointer-events-none");
     this.#caption.replaceChildren(
       label(t(tabs.length === 1 ? "grid_tabs_one" : "grid_tabs_other", formatNumber(tabs.length))),
@@ -250,9 +216,6 @@ export class TabGrid {
     this.#panel.style.maxHeight = `${(window.innerHeight - 2 * MARGIN) / this.#scale}px`;
     this.#root.classList.remove("invisible");
     this.#visible = true;
-    // Placed before the reveal, off a layout that is already final: the panel
-    // must not animate in from wherever the last gesture left it.
-    this.#place(at);
     // One frame of layout before the transition, or it snaps in.
     requestAnimationFrame(() => this.#reveal(true));
   }

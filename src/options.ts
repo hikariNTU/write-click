@@ -1,6 +1,6 @@
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
-import { LOCALES, applyStaticMessages, dynamic, setLocale, t } from "./shared/i18n";
+import { LOCALES, applyStaticMessages, dynamic, formatPercent, setLocale, t } from "./shared/i18n";
 import type { LanguageSetting, Localized } from "./shared/i18n";
 import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
@@ -323,6 +323,28 @@ function overlayCard(): HTMLElement {
     void patchSync({ trail: { ...sync.trail, color: color.value } });
   });
 
+  // Per device, so it lives in local settings: it answers a display, not a
+  // preference, and the same account sees both a laptop and a desktop monitor.
+  const scaleValue = el(
+    "span",
+    "w-12 shrink-0 text-right text-[11px] tabular-nums text-slate-400",
+    dynamic(formatPercent(local.uiScale)),
+  );
+  const scale = el("input", "w-40 accent-emerald-400");
+  scale.type = "range";
+  scale.min = "50";
+  scale.max = "200";
+  scale.step = "5";
+  scale.value = String(Math.round(local.uiScale * 100));
+  scale.addEventListener("input", () => {
+    scaleValue.textContent = formatPercent(Number(scale.value) / 100);
+  });
+  scale.addEventListener("change", () => {
+    void patchLocal({ uiScale: Number(scale.value) / 100 });
+  });
+  const scaleControl = el("div", "flex items-center gap-3");
+  scaleControl.append(scale, scaleValue);
+
   const width = el("input", "w-40 accent-emerald-400");
   width.type = "range";
   width.min = "2";
@@ -343,6 +365,7 @@ function overlayCard(): HTMLElement {
   });
 
   section.append(
+    row(t("options_overlay_scale"), scaleControl, t("options_overlay_scale_hint")),
     row(t("options_overlay_color"), color),
     row(t("options_overlay_width"), width),
     row(

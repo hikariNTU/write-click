@@ -259,6 +259,12 @@
   "options_overlay_release_hint": {
     "message": "Release the trigger over a tile to switch to that tab. No click, so no context menu follows."
   },
+  "options_overlay_scale": {
+    "message": "Overlay size"
+  },
+  "options_overlay_scale_hint": {
+    "message": "Size of the trail, the readout and the tab grid. Per device, and unaffected by page zoom."
+  },
   "options_overlay_size": {
     "message": "Tab grid size"
   },

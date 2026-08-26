@@ -213,8 +213,7 @@ Rules:
   what else they could draw, so the reference belongs there rather than buried in settings. It can
   be switched off.
 - **Releasing the trigger over a tile switches to it**, without a click. On by default; §6.3.
-- The panel opens **beside the cursor**, not in the middle of the window, and holds one size at every
-  page zoom level; §6.4.
+- The panel is **centred**, and holds one size at every page zoom level; §6.4.
 - `Escape` closes the grid and cancels the gesture.
 
 ### 6.1 Picking a tile under mouse capture
@@ -286,27 +285,18 @@ and the sub-frame runs its held command only on `resume`. A reply that never arr
 without the content script — falls back to running it after 300ms, which is what used to happen
 unconditionally.
 
-### 6.4 Where the panel opens, and how big
+### 6.4 Size, and page zoom
 
-**Beside the cursor.** Down and to the right by a 16px gap, flipped to the other side when there is no
-room, then clamped to a 12px margin from every viewport edge so the panel's border is never clipped.
-When the panel is larger than the window the clamp wins and the cursor ends up over it; a panel the
-cursor overlaps beats one whose border is off-screen.
+**Centred.** Anchoring the panel to the cursor was tried and removed: it reads as clanky, because the
+panel jumps to a different place on every gesture and the eye has to find it each time. A fixed
+position is somewhere the eye can go before the panel is even there. Do not reintroduce it.
 
-The cursor stays **outside** the panel on every side it can open on. That is not cosmetic: a panel
-that opened under the cursor would put a tile beneath a cursor the user never moved there, and with
-§6.3 on, releasing would switch to it.
+Only `opacity` and `transform` transition. `transition-all` animates `left` and `top` too, and a
+panel that ever moves visibly slides across the page.
 
-Only `opacity` and `transform` transition. `transition-all` animates `left` and `top` too, and the
-panel visibly slides across the page from wherever the previous gesture left it.
-
-**Page zoom is cancelled out.** Chrome's page zoom scales CSS pixels, so an unmodified panel grows
-with the page and a user at 200% gets a picker covering half the screen. The panel reads the tab's
-zoom factor from the background — `chrome.tabs.getZoom`, since `devicePixelRatio` folds page zoom
-together with the display's scale factor and cannot be separated in a content script — and applies
-`transform: scale(1 / zoom)`, with its width and max-height divided back out of the same factor. The
-entrance scale is folded into that one transform rather than a second class, so the two cannot fight
-over the property. The factor is read once per gesture: the user can zoom at any time.
+**Page zoom is cancelled out**, for the whole overlay — see §7.4. The panel's width and max-height
+are computed in the pixels they will occupy on screen and divided back out of the scale, so the tile
+count per row is what the display can hold rather than what the zoom level leaves.
 
 ## 7. Overlay
 
@@ -383,6 +373,32 @@ Tailwind's own fallback sits behind an `@supports` test that Chrome passes, so i
 the sheet — one zero-specificity rule that any utility setting the variable still overrides. Do not
 "fix" this by injecting the stylesheet into the document; §7 and AGENTS.md forbid it.
 
+### 7.4 Overlay scale
+
+Everything the overlay draws is sized by one number:
+
+```
+scale = uiScale / pageZoom
+```
+
+`uiScale` is the user's own setting, per device (§9) and exposed as a slider from 50% to 200%. It
+exists because a size that reads well on a 13-inch laptop is small on a 32-inch 4K monitor, and that
+is a property of the display, not of the person — so it must not sync.
+
+`pageZoom` is the tab's zoom, divided out so the overlay holds its size while the page around it
+grows. It is read from the background with `chrome.tabs.getZoom`, once per gesture since the user can
+zoom at any time. A content script cannot work it out for itself: `devicePixelRatio` folds page zoom
+together with the display's scale factor and the two cannot be separated.
+
+Applied three different ways, because the three layers are different kinds of thing:
+
+- **Tab grid** and **readout**: `transform: scale(…)`, with the entrance animation folded into the
+  same transform. One property, so the two cannot fight over it. The readout's offset from the
+  bottom edge is scaled with it, or a larger card would hang off the screen.
+- **Trail**: line width, glow radius and head radius only. The stroke is drawn in the page's own
+  coordinates because it has to follow the cursor, so scaling the canvas would move the line off the
+  pointer.
+
 ## 8. Frames
 
 The content script runs in all frames at `document_start`. **Every frame runs its own trigger and
@@ -426,15 +442,16 @@ interface SyncSettings {
 
 interface LocalSettings {
   // chrome.storage.local, per device
-  version: 1;
+  version: 2;
   trigger: Trigger;
   enabled: boolean;
+  uiScale: number; // 1 is the designed size; §7.4
 }
 ```
 
 `version` is bumped whenever a shape changes, with a migration in the service worker's
 `onInstalled`, which runs on both install and update. v2 replaced the grid's `columns` with `size`;
-v3 added the language override; v4 added `pickOnRelease`.
+v3 added the language override; v4 added `pickOnRelease`. Local v2 added `uiScale`.
 
 Reads merge defaults **one level deep**. Storage is written per top-level key, so a stored `grid`
 written before a field existed would otherwise replace the whole default object and leave that field

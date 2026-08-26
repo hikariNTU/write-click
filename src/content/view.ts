@@ -6,7 +6,7 @@ import { send } from "../shared/messages";
 import type { TabSummary } from "../shared/messages";
 import { quantize } from "../shared/recognizer";
 import type { Point } from "../shared/recognizer";
-import type { SyncSettings } from "../shared/settings";
+import type { LocalSettings, SyncSettings } from "../shared/settings";
 import { tabsOnSide } from "../shared/tabs";
 import { Hud } from "./hud";
 import type { Match } from "./hud";
@@ -82,7 +82,7 @@ function swallow(event: Event): void {
   event.stopPropagation();
 }
 
-export function createView(sync: SyncSettings, onPick: () => void): View {
+export function createView(sync: SyncSettings, local: LocalSettings, onPick: () => void): View {
   const overlay = createOverlay();
   const trail = new Trail(overlay, sync.trail);
   const hud = new Hud(overlay);
@@ -94,10 +94,19 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   let tabs: readonly TabSummary[] = [];
   let tabsPending: Promise<readonly TabSummary[]> = Promise.resolve([]);
   let gridTimer = 0;
-  /** Where the cursor is now: the panel opens beside it, not in the middle. */
-  let cursor: Point = { x: 0, y: 0 };
-  /** The tab's page zoom, which the panel cancels out so it holds its size. */
+  /** The tab's page zoom, which the overlay cancels out so it holds its size. */
   let zoom = 1;
+
+  /**
+   * The overlay is drawn at the user's chosen size divided by the page zoom, so
+   * it holds that size whatever the page around it is doing.
+   */
+  const applyScale = (): void => {
+    const scale = (local.uiScale > 0 ? local.uiScale : 1) / (zoom > 0 ? zoom : 1);
+    trail.setScale(scale);
+    hud.setScale(scale);
+    grid?.setScale(scale);
+  };
 
   const paint = (): void => {
     if (sync.trail.showLabel && stroke) hud.show(describe(stroke, sync.gestures[stroke], tabs));
@@ -170,9 +179,11 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   const requestTabs = (): void => {
     tabs = [];
     // Read per gesture rather than once: the user can zoom the page at any
-    // point, and a stale factor shows a panel of the wrong size.
+    // point, and a stale factor draws the overlay at the wrong size.
     void send({ type: "tabs.zoom" }).then((response) => {
-      if (response.ok && "zoom" in response) zoom = response.zoom;
+      if (!response.ok || !("zoom" in response)) return;
+      zoom = response.zoom;
+      applyScale();
     });
     tabsPending = send({ type: "tabs.list" }).then((response) => {
       if (response.ok && "tabs" in response) return response.tabs;
@@ -198,7 +209,7 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     gridTimer = window.setTimeout(() => {
       void tabsPending.then((list) => {
         if (holding && list.length > 0) {
-          grid.show(list, cursor, zoom);
+          grid.show(list);
           return;
         }
         console.debug("[write-click] grid skipped", { holding, count: list.length });
@@ -207,6 +218,7 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   };
 
   const refresh = (): void => {
+    applyScale();
     grid?.setGestures(sync.grid.cheatsheet ? sync.gestures : {});
   };
   refresh();
@@ -217,14 +229,12 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
       points = [point];
       stroke = "";
       holding = true;
-      cursor = point;
       trail.render(points);
       requestTabs();
       scheduleGrid();
     },
     move(point) {
       points.push(point);
-      cursor = point;
       trail.render(points);
       // :hover is frozen by the same capture, so the highlight is moved by hand.
       grid?.hoverAt(point);

@@ -60,7 +60,7 @@ async function main(): Promise<void> {
   // executes its own commands, so a page command scrolls the frame the gesture
   // was actually drawn in.
   const view: View | undefined = isTop
-    ? createView(sync, () => {
+    ? createView(sync, local, () => {
         cancelled = true;
         bridge?.cancelRemote();
       })

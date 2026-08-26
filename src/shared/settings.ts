@@ -26,9 +26,15 @@ export interface SyncSettings {
 
 /** Per device. The trigger is deliberately never synced: see docs/SPEC.md §3. */
 export interface LocalSettings {
-  version: 1;
+  version: 2;
   trigger: Trigger;
   enabled: boolean;
+  /**
+   * How large the overlay is drawn, 1 being its designed size. Per device, and
+   * deliberately so: it exists to answer a display, not a preference — the same
+   * account can sit in front of a 13-inch laptop and a 32-inch 4K monitor.
+   */
+  uiScale: number;
 }
 
 export function defaultSyncSettings(): SyncSettings {
@@ -43,7 +49,7 @@ export function defaultSyncSettings(): SyncSettings {
 }
 
 export function defaultLocalSettings(): LocalSettings {
-  return { version: 1, trigger: defaultTrigger(), enabled: true };
+  return { version: 2, trigger: defaultTrigger(), enabled: true, uiScale: 1 };
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -137,7 +143,8 @@ export async function migrate(): Promise<void> {
     await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 4 });
   }
 
-  if (local.version !== 1) {
-    await chrome.storage.local.set({ ...defaultLocalSettings(), ...local, version: 1 });
+  // v2 added the overlay scale.
+  if (local.version !== 2) {
+    await chrome.storage.local.set({ ...defaultLocalSettings(), ...local, version: 2 });
   }
 }

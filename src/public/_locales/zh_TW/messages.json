@@ -259,6 +259,12 @@
   "options_overlay_release_hint": {
     "message": "將游標停在項目上再放開觸發鍵，即可切換至該分頁。不需點擊，也不會跳出右鍵選單。"
   },
+  "options_overlay_scale": {
+    "message": "畫面大小"
+  },
+  "options_overlay_scale_hint": {
+    "message": "軌跡、指令提示與分頁格線的大小。僅套用於本裝置，且不受頁面縮放影響。"
+  },
   "options_overlay_size": {
     "message": "分頁格線大小"
   },

@@ -61,11 +61,30 @@ export function setLocale(language: LanguageSetting): void {
 }
 
 /**
+ * A locale in the form Intl accepts.
+ *
+ * Chrome's `_locales` directories are named with an underscore — `zh_TW` — and
+ * that is the identifier stored in settings. Intl wants BCP 47, where the
+ * separator is a hyphen, and throws `RangeError: invalid language tag` on the
+ * underscore rather than tolerating it.
+ */
+function bcp47(locale: string): string {
+  return locale.replaceAll("_", "-");
+}
+
+/**
  * Numbers shown to the reader go through Intl, never string interpolation:
  * grouping and digits differ by locale.
  */
 export function formatNumber(value: number): string {
-  return new Intl.NumberFormat(override ?? navigator.language).format(value);
+  return new Intl.NumberFormat(bcp47(override ?? navigator.language)).format(value);
+}
+
+/** A fraction as a percentage: 1.2 reads as 120%, wherever the sign belongs. */
+export function formatPercent(fraction: number): string {
+  return new Intl.NumberFormat(bcp47(override ?? navigator.language), {
+    style: "percent",
+  }).format(fraction);
 }
 
 function substitute(entry: Entry, substitutions: string[]): string {
