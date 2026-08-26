@@ -11,18 +11,35 @@ import { Resvg } from "@resvg/resvg-js";
  *
  * Wipes src/images/ — that directory is generated. The source art lives in
  * src/icons/ and is never touched.
+ *
+ * The small sizes come from a separate, simplified drawing. The full mark has a
+ * mouse body, a button split and a blurred glow, none of which survive a 16px
+ * box — they average out into one muddy blob.
  */
-const SIZES = [16, 32, 48, 128];
+const SOURCES = {
+  full: new URL("../src/icons/write-click.svg", import.meta.url),
+  small: new URL("../src/icons/write-click-small.svg", import.meta.url),
+};
 
-const source = new URL("../src/icons/write-click.svg", import.meta.url);
+/** Below 48px the detail costs legibility rather than adding to it. */
+const SIZES = [
+  { size: 16, art: "small" },
+  { size: 32, art: "small" },
+  { size: 48, art: "full" },
+  { size: 128, art: "full" },
+];
+
 const out = new URL("../src/images/", import.meta.url);
-const svg = readFileSync(source);
+const svg = {
+  full: readFileSync(SOURCES.full),
+  small: readFileSync(SOURCES.small),
+};
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
-for (const size of SIZES) {
-  const png = new Resvg(svg, { fitTo: { mode: "width", value: size } }).render().asPng();
+for (const { size, art } of SIZES) {
+  const png = new Resvg(svg[art], { fitTo: { mode: "width", value: size } }).render().asPng();
   writeFileSync(new URL(`icon-${size}.png`, out), png);
 }
 

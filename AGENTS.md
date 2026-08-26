@@ -37,7 +37,8 @@ lint are all clean and the behaviour is verified in a loaded unpacked build.
 - `src/shared/trigger.ts` — trigger types, per-platform defaults, context-menu timing
 - `src/icons/material/` — vendored Material Symbols glyphs, **generated**; `scripts/sync-icons.mjs`
   wipes this directory on every build. Never put hand-authored artwork in it.
-- `src/icons/` — hand-authored artwork (`write-click.svg`, the extension's own icon)
+- `src/icons/` — hand-authored artwork: `write-click.svg`, plus `write-click-small.svg` for 16/32px
+  (detail below 48px reads as mud, so the small variant is the W alone)
 - `src/images/` — **generated** PNGs rendered from that SVG by `scripts/render-icons.mjs`
 - `src/shared/icons.ts`, `src/shared/recognizer.ts` — shared by the content script and the options
   page; the options draw pad must keep using the same `quantize`

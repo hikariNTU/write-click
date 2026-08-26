@@ -214,11 +214,17 @@ Rules:
 
 ### 7.1 Extension icon
 
-`src/icons/write-click.svg` is the source art. `scripts/render-icons.mjs` rasterizes it to
+`src/icons/write-click.svg` is the source art, and `src/icons/write-click-small.svg` a simplified
+variant for the toolbar sizes. `scripts/render-icons.mjs` rasterizes them to
 `src/images/icon-{16,32,48,128}.png`, which is what the manifest points at — Chrome accepts no SVG
 for `icons` or `action.default_icon`. Rendering uses `@resvg/resvg-js` rather than a headless
 browser, so the build needs no Chrome, and the PNGs are committed with CI failing if a build changes
 them.
+
+16px and 32px come from the simplified drawing. The full mark's mouse body, button split and blurred
+glow all land on similar values at toolbar size and average into one muddy blob, so the small variant
+keeps only the W — no silhouette, no filter, no cursor node — scaled up and thickened to a 16px
+stroke width against the 128 viewBox. 48px and up use the full art, where the detail is legible.
 
 ### 7.2 Command icons
 
