@@ -1,3 +1,4 @@
+import { withPropertyFallback } from "./css-fallback";
 import styles from "./styles.css?inline";
 
 let sheet: CSSStyleSheet | undefined;
@@ -5,7 +6,7 @@ let sheet: CSSStyleSheet | undefined;
 function sharedSheet(): CSSStyleSheet {
   if (!sheet) {
     sheet = new CSSStyleSheet();
-    sheet.replaceSync(styles);
+    sheet.replaceSync(withPropertyFallback(styles));
   }
   return sheet;
 }

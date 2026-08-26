@@ -107,7 +107,11 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   grid?.onSelect((tabId) => {
     onPick();
     clear();
-    void send({ type: "tabs.activate", tabId });
+    // Not fire-and-forget: a pick that fails silently looks identical to a tile
+    // that never received the click, and the two have nothing in common to fix.
+    void send({ type: "tabs.activate", tabId }).then((response) => {
+      if (!response.ok) console.warn("[write-click] tabs.activate", tabId, response.error);
+    });
   });
 
   /**

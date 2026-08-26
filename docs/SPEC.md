@@ -272,6 +272,22 @@ family (`GRAD` also stops at 200), so 700 is the ceiling.
 Each SVG is rewritten on import to carry `fill="currentColor"` and to drop its fixed `width`/
 `height`, so size and colour come from Tailwind classes.
 
+### 7.3 Tailwind inside the shadow root
+
+Tailwind v4 declares its internal variables with `@property` and utilities read them: `.border`
+emits `border-style: var(--tw-border-style)` and depends on that registration's
+`initial-value: solid`.
+
+Registrations are document-global and are **ignored inside a shadow tree**. The overlay stylesheet
+is only ever adopted into the closed shadow root, so in a packed build none of them take effect,
+every `var()` resolves to nothing, and borders, transforms and shadows disappear. A dev build hides
+this: Vite also puts the stylesheet in the document, which registers them.
+
+Tailwind's own fallback sits behind an `@supports` test that Chrome passes, so it never applies.
+`withPropertyFallback()` in `src/content/css-fallback.ts` rebuilds it from the registrations found in
+the sheet — one zero-specificity rule that any utility setting the variable still overrides. Do not
+"fix" this by injecting the stylesheet into the document; §7 and AGENTS.md forbid it.
+
 ## 8. Frames
 
 The content script runs in all frames at `document_start`. **Every frame runs its own trigger and
