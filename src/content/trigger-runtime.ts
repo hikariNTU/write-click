@@ -56,6 +56,28 @@ function isEditable(target: EventTarget | null): boolean {
  * §3.2), the click that would follow a button gesture, and the keyup that
  * would open Chrome's menu bar after a bare Alt.
  */
+/**
+ * How long a pick's suppression stays armed. Long enough to cover the release
+ * that follows switching tabs, short enough that a deliberate right-click a
+ * moment later still opens the menu.
+ */
+const MENU_SUPPRESSION_MS = 1000;
+
+/** Module scope, so it survives the re-attach a settings change causes. */
+let suppressMenuUntil = 0;
+
+/**
+ * Swallows the next context menu in this frame.
+ *
+ * Picking a tab from the grid switches tabs while the trigger button is still
+ * held, so the release lands on a tab that never saw the press. On Windows the
+ * menu opens on that release, and the tab has no drift of its own to justify
+ * suppressing it — it has to be told.
+ */
+export function armMenuSuppression(): void {
+  suppressMenuUntil = Date.now() + MENU_SUPPRESSION_MS;
+}
+
 export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () => void {
   const options = { capture: true } as const;
   let active = false;
@@ -106,6 +128,8 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   }
 
   function onPointerDown(event: PointerEvent): void {
+    // A fresh press means the release a pick was waiting for is never coming.
+    suppressMenuUntil = 0;
     if (trigger.kind !== "button" || event.pointerType !== "mouse") return;
     if (event.button !== trigger.button) return;
     if (!modifiersMatch(event, trigger.modifier)) return;
@@ -129,6 +153,12 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   }
 
   function onContextMenu(event: MouseEvent): void {
+    // One shot: the release that ends a pick, and nothing after it.
+    if (suppressMenuUntil > Date.now()) {
+      suppressMenuUntil = 0;
+      event.preventDefault();
+      return;
+    }
     if (trigger.kind !== "button" || trigger.button !== 2) return;
     if (menuFiresOnMouseDown()) {
       // macOS, Linux: the menu would open before any drift exists, so the

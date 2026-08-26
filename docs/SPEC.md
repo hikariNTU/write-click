@@ -231,6 +231,25 @@ over a link must not also follow it.
 
 `:hover` is frozen by the same capture, so the highlight is moved by hand in `hoverAt()`.
 
+### 6.2 The menu after a pick
+
+A pick switches tabs while the trigger button is still held, so the release lands in a tab that never
+saw the press. On Windows the context menu opens on that release, and the destination tab has no
+drift of its own to justify suppressing it: as far as it knows, someone right-clicked it.
+
+So the service worker follows `tabs.activate` with a `menu.suppress` message to that tab, and
+`armMenuSuppression()` swallows the next `contextmenu` there. It is deliberately narrow:
+
+- One shot, and disarmed as soon as it fires.
+- Expires after `MENU_SUPPRESSION_MS` (1000 ms), so a deliberate right-click a moment later still
+  opens the menu.
+- Disarmed by any fresh `pointerdown`, which means the release it was waiting for never came.
+- Ignored unless the trigger is the right button. With a keyboard trigger no button is held during a
+  pick, no menu follows, and arming would only swallow a right-click the user meant.
+
+A drawn gesture that switches tabs does not need this: the command runs on release, in the tab that
+has the drift, so that tab suppresses its own menu before the switch happens.
+
 ## 7. Overlay
 
 - One closed shadow root per frame, appended to `document.documentElement`.
