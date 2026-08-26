@@ -21,10 +21,11 @@ export class TabGrid {
     this.#columns = columns;
     // Toggled with `invisible`, not `hidden`: both `hidden` and `grid` set
     // `display`, so which one wins would come down to CSS source order.
-    this.#root.className = "pointer-events-none invisible fixed inset-0 grid place-items-center";
+    this.#root.className =
+      "pointer-events-none invisible fixed inset-0 z-10 grid place-items-center";
     this.#panel.className =
       "pointer-events-auto max-h-[70vh] w-[min(880px,86vw)] overflow-y-auto rounded-3xl " +
-      "border border-white/10 bg-slate-950/70 p-4 text-slate-50 backdrop-blur-2xl " +
+      "border border-white/10 bg-slate-950/70 p-4 text-slate-50 backdrop-blur-[6px] " +
       "shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)] transition-all duration-150 ease-out " +
       PANEL_HIDDEN.join(" ");
     this.#caption.className =

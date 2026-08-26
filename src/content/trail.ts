@@ -19,7 +19,10 @@ export class Trail {
 
   constructor(root: ShadowRoot, options: TrailOptions) {
     this.#options = options;
-    this.#canvas.className = "pointer-events-none fixed inset-0 h-full w-full";
+    // z-20: above the tab grid. The grid stays open while a stroke is being
+    // drawn, and feedback about what you are drawing must never be the thing
+    // that gets covered up.
+    this.#canvas.className = "pointer-events-none fixed inset-0 z-20 h-full w-full";
     this.#context = this.#canvas.getContext("2d");
     root.append(this.#canvas);
     this.#resize();

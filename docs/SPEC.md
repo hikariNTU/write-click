@@ -183,6 +183,11 @@ Rules:
 - The trail is a `<canvas>` sized to the viewport times `devicePixelRatio`, redrawn on
   `requestAnimationFrame`: a wide blurred underlay for the glow, a crisp core on top, joined through
   midpoints with `quadraticCurveTo` so it reads as a stroke rather than a polyline.
+- Glass surfaces blur the backdrop by **6px**. Heavier blurs turn the page behind into an unreadable
+  smear, which matters here because the overlay covers content the user is still reading.
+- Layering inside the shadow root is explicit, not append order: tab grid `z-10`, trail `z-20`,
+  readout `z-30`. The trail sits **above** the grid because the grid stays open while a stroke is
+  being drawn, so putting the trail underneath would hide the feedback exactly when it is needed.
 - The readout is a glass card at the bottom of the viewport: icon tile, command name, and the stroke
   rendered as rotated arrows rather than letters. Emerald tint when the stroke matches, amber when
   it is unassigned.

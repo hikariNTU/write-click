@@ -372,7 +372,7 @@ function notice(text: string): void {
   const node = el(
     "div",
     "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-xl border border-white/10 bg-slate-900/95 " +
-      "px-4 py-2.5 text-xs text-slate-200 shadow-2xl backdrop-blur",
+      "px-4 py-2.5 text-xs text-slate-200 shadow-2xl backdrop-blur-[6px]",
     text,
   );
   document.body.append(node);

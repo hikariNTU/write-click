@@ -29,10 +29,10 @@ export class Hud {
 
   constructor(root: ShadowRoot) {
     this.#anchor.className =
-      "pointer-events-none fixed inset-x-0 bottom-10 grid place-items-center";
+      "pointer-events-none fixed inset-x-0 bottom-10 z-30 grid place-items-center";
     this.#card.className =
       "flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 " +
-      "text-slate-50 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl " +
+      "text-slate-50 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-[6px] " +
       "transition-all duration-150 ease-out opacity-0 translate-y-2 scale-95";
     this.#tile.className =
       `grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ${TILE_TONE.matched} ` +
