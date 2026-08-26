@@ -223,6 +223,9 @@
   "options_language_title": {
     "message": "Language"
   },
+  "options_nav_label": {
+    "message": "Settings sections"
+  },
   "options_overlay_cheatsheet": {
     "message": "Cheatsheet"
   },

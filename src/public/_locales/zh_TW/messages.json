@@ -223,6 +223,9 @@
   "options_language_title": {
     "message": "語言"
   },
+  "options_nav_label": {
+    "message": "設定章節"
+  },
   "options_overlay_cheatsheet": {
     "message": "手勢清單"
   },

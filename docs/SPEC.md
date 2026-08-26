@@ -483,7 +483,12 @@ Every handler is exhaustive over the union; adding a member must break the build
 ## 10.1 Options page
 
 `src/options.html` + `src/options.ts`, opened in a tab. Every control writes on change; there is no
-save button. Sections: trigger, gestures, overlay, disabled sites, reset.
+save button. Sections: language, trigger, gestures, overlay, disabled sites, reset.
+
+A **side navigation** lists those sections and highlights the one in view. One table in `options.ts`
+drives both it and the cards, so a new section cannot appear in one and be forgotten in the other,
+and a link is guaranteed to carry the same name as the card it scrolls to. It is hidden below `lg`,
+where there is no room beside the cards and the page is short enough to scroll.
 
 Rebinding is done by **drawing**, in a pad that calls the same `quantize` the content script does —
 what you draw in the pad is by construction what will match on a page. A stroke means exactly one

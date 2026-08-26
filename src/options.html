@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth motion-reduce:scroll-auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,46 +7,53 @@
     <link rel="stylesheet" href="./options.css" />
   </head>
   <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
-    <main class="mx-auto w-full max-w-3xl px-6 py-12">
-      <header class="mb-10 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <span id="brand" class="block h-14 w-14 shrink-0 [&>svg]:h-full [&>svg]:w-full"></span>
-          <div>
-            <h1 class="text-2xl font-semibold tracking-tight">Write Click</h1>
-            <p class="mt-1 text-sm text-slate-400" data-i18n="options_subtitle">
-              Mouse gestures for tabs and pages.
-            </p>
+    <div class="mx-auto flex w-full max-w-6xl items-start gap-10 px-6 py-12">
+      <!-- Filled in by options.ts, so its labels come from the same message
+           keys as the cards they point at. Hidden below lg: there is no room
+           beside the cards, and the page is short enough to scroll. -->
+      <aside id="nav" class="sticky top-12 hidden w-52 shrink-0 lg:block"></aside>
+
+      <main class="w-full min-w-0 max-w-3xl">
+        <header class="mb-10 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <span id="brand" class="block h-14 w-14 shrink-0 [&>svg]:h-full [&>svg]:w-full"></span>
+            <div>
+              <h1 class="text-2xl font-semibold tracking-tight">Write Click</h1>
+              <p class="mt-1 text-sm text-slate-400" data-i18n="options_subtitle">
+                Mouse gestures for tabs and pages.
+              </p>
+            </div>
           </div>
-        </div>
-        <p
-          id="saved"
-          class="flex items-center gap-1.5 text-xs font-medium text-emerald-300 opacity-0 transition-opacity [&>span>svg]:h-full [&>span>svg]:w-full"
-          data-i18n="options_saved"
-        >
-          Saved
-        </p>
-      </header>
+          <p
+            id="saved"
+            class="flex items-center gap-1.5 text-xs font-medium text-emerald-300 opacity-0 transition-opacity [&>span>svg]:h-full [&>span>svg]:w-full"
+            data-i18n="options_saved"
+          >
+            Saved
+          </p>
+        </header>
 
-      <section id="language" class="mb-6"></section>
-      <section id="trigger" class="mb-6"></section>
-      <section id="gestures" class="mb-6"></section>
-      <section id="overlay" class="mb-6"></section>
-      <section id="sites" class="mb-6"></section>
+        <section id="language" class="mb-6 scroll-mt-12"></section>
+        <section id="trigger" class="mb-6 scroll-mt-12"></section>
+        <section id="gestures" class="mb-6 scroll-mt-12"></section>
+        <section id="overlay" class="mb-6 scroll-mt-12"></section>
+        <section id="sites" class="mb-6 scroll-mt-12"></section>
 
-      <footer class="flex items-center justify-between gap-4 pt-2">
-        <p class="text-xs text-slate-500" data-i18n="options_autosave">
-          Changes are saved automatically.
-        </p>
-        <button
-          id="reset"
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-rose-400/40 hover:text-rose-300"
-          data-i18n="options_reset"
-        >
-          Reset all settings to defaults
-        </button>
-      </footer>
-    </main>
+        <footer class="flex items-center justify-between gap-4 pt-2">
+          <p class="text-xs text-slate-500" data-i18n="options_autosave">
+            Changes are saved automatically.
+          </p>
+          <button
+            id="reset"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-rose-400/40 hover:text-rose-300"
+            data-i18n="options_reset"
+          >
+            Reset all settings to defaults
+          </button>
+        </footer>
+      </main>
+    </div>
     <script type="module" src="./options.ts"></script>
   </body>
 </html>

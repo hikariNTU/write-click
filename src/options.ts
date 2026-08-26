@@ -1,7 +1,7 @@
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
 import { LOCALES, applyStaticMessages, dynamic, formatPercent, setLocale, t } from "./shared/i18n";
-import type { LanguageSetting, Localized } from "./shared/i18n";
+import type { LanguageSetting, Localized, MessageKey } from "./shared/i18n";
 import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
 import type { Point } from "./shared/recognizer";
@@ -460,6 +460,98 @@ function notice(text: Localized): void {
   setTimeout(() => node.remove(), 3200);
 }
 
+/* -------------------------------------------------------------------- nav */
+
+/**
+ * The page, in order. One table drives both the cards and the side navigation,
+ * so a new section cannot appear in one and be forgotten in the other, and the
+ * link is guaranteed to carry the same name as the card it scrolls to.
+ */
+const SECTIONS: readonly {
+  id: string;
+  titleKey: MessageKey;
+  glyph: string;
+  card: () => HTMLElement;
+}[] = [
+  {
+    id: "language",
+    titleKey: "options_language_title",
+    glyph: UI_ICONS.language,
+    card: languageCard,
+  },
+  { id: "trigger", titleKey: "options_trigger_title", glyph: UI_ICONS.trigger, card: triggerCard },
+  {
+    id: "gestures",
+    titleKey: "options_gestures_title",
+    glyph: UI_ICONS.gestures,
+    card: gesturesCard,
+  },
+  { id: "overlay", titleKey: "options_overlay_title", glyph: UI_ICONS.overlay, card: overlayCard },
+  { id: "sites", titleKey: "options_sites_title", glyph: UI_ICONS.sites, card: sitesCard },
+];
+
+const NAV_LINK =
+  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors";
+const NAV_IDLE = "text-slate-400 hover:bg-white/5 hover:text-slate-200";
+const NAV_CURRENT = "bg-emerald-400/10 text-emerald-200";
+
+/** How far down the viewport a section has to reach to count as the one in view. */
+const NAV_THRESHOLD = 140;
+
+function navList(): HTMLElement {
+  const nav = el("nav", "flex flex-col gap-1");
+  nav.setAttribute("aria-label", t("options_nav_label"));
+  for (const section of SECTIONS) {
+    const link = el("a", `${NAV_LINK} ${NAV_IDLE}`);
+    link.href = `#${section.id}`;
+    link.dataset.section = section.id;
+    link.append(icon(section.glyph, "h-4 w-4"), el("span", "truncate", t(section.titleKey)));
+    nav.append(link);
+  }
+  return nav;
+}
+
+/**
+ * The section in view: the last one whose top has passed the threshold. The
+ * final card can be shorter than the viewport, so scrolling to the bottom never
+ * brings its top far enough up — hitting the end of the page selects it
+ * outright, or the last link would be unreachable.
+ */
+function currentSection(): string {
+  let current = SECTIONS[0]?.id ?? "";
+  for (const { id } of SECTIONS) {
+    const node = document.querySelector<HTMLElement>(`#${id}`);
+    if (node && node.getBoundingClientRect().top <= NAV_THRESHOLD) current = id;
+  }
+  if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+    current = SECTIONS.at(-1)?.id ?? current;
+  }
+  return current;
+}
+
+function paintNav(): void {
+  const active = currentSection();
+  for (const link of document.querySelectorAll<HTMLElement>("[data-section]")) {
+    const on = link.dataset.section === active;
+    link.className = `${NAV_LINK} ${on ? NAV_CURRENT : NAV_IDLE}`;
+    if (on) link.setAttribute("aria-current", "true");
+    else link.removeAttribute("aria-current");
+  }
+}
+
+let navFrame = 0;
+window.addEventListener(
+  "scroll",
+  () => {
+    if (navFrame) return;
+    navFrame = requestAnimationFrame(() => {
+      navFrame = 0;
+      paintNav();
+    });
+  },
+  { passive: true },
+);
+
 /* ----------------------------------------------------------------- render */
 
 function mount(id: string, content: HTMLElement): void {
@@ -467,11 +559,9 @@ function mount(id: string, content: HTMLElement): void {
 }
 
 function render(): void {
-  mount("language", languageCard());
-  mount("trigger", triggerCard());
-  mount("gestures", gesturesCard());
-  mount("overlay", overlayCard());
-  mount("sites", sitesCard());
+  for (const section of SECTIONS) mount(section.id, section.card());
+  mount("nav", navList());
+  paintNav();
 }
 
 document.querySelector<HTMLButtonElement>("#reset")?.addEventListener("click", () => {
