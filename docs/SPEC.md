@@ -78,6 +78,10 @@ on contextmenu(e):
 - Ignore when `document.activeElement` is an input, textarea, or `contenteditable`.
 - `preventDefault` the `keyup` if a gesture ran, so releasing a bare `Alt` does not open Chrome's
   menu bar on Windows.
+- The stroke starts where the pointer was **last seen**, and if it has never been seen the start
+  waits for the first `pointermove` and takes its position as the origin. There is no API for asking
+  where the cursor is, and a position that is not known is not 0,0: seeding the corner drew every
+  such gesture as a line from the top-left of the window to wherever the cursor actually was.
 
 ### 3.4 Suppressed side effects
 

@@ -61,7 +61,18 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   let active = false;
   let drifted = false;
   let origin: Point | undefined;
-  let pointer: Point = { x: 0, y: 0 };
+  /**
+   * Where the pointer was last seen, or undefined until it has moved once.
+   *
+   * Not seeded with the top-left corner: a key trigger held before the page has
+   * ever seen a `pointermove` would start the stroke at 0,0 and the trail's
+   * first leg would be a line from the corner to wherever the cursor really is.
+   * There is no way to ask for the cursor's position, so an unknown position is
+   * carried as unknown.
+   */
+  let pointer: Point | undefined;
+  /** A key trigger held down while `pointer` was still unknown. See `track`. */
+  let waiting = false;
 
   function start(point: Point): void {
     active = true;
@@ -71,12 +82,14 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   }
 
   function finish(): void {
+    waiting = false;
     if (!active) return;
     active = false;
     handlers.onEnd(drifted);
   }
 
   function cancel(): void {
+    waiting = false;
     if (!active) return;
     active = false;
     drifted = false;
@@ -84,7 +97,15 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   }
 
   function track(event: PointerEvent): void {
-    pointer = { x: event.clientX, y: event.clientY };
+    const at = { x: event.clientX, y: event.clientY };
+    pointer = at;
+    // The trigger went down before the cursor's position was known, so this
+    // sample is the stroke's origin rather than a move within it.
+    if (waiting) {
+      waiting = false;
+      start(at);
+      return;
+    }
     if (!active) return;
 
     // The pointer stays live outside the window while a button is held, and a
@@ -100,7 +121,7 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     const events = event.getCoalescedEvents?.() ?? [event];
     for (const sample of events) handlers.onMove({ x: sample.clientX, y: sample.clientY });
 
-    if (!drifted && origin && distanceSquared(origin, pointer) > DRIFT_THRESHOLD ** 2) {
+    if (!drifted && origin && distanceSquared(origin, at) > DRIFT_THRESHOLD ** 2) {
       drifted = true;
     }
   }
@@ -152,8 +173,9 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     }
     if (trigger.kind !== "key" || event.repeat) return;
     if (event.code !== trigger.code || isEditable(event.target)) return;
-    if (active) return;
-    start(pointer);
+    if (active || waiting) return;
+    if (pointer) start(pointer);
+    else waiting = true;
   }
 
   function onKeyUp(event: KeyboardEvent): void {
