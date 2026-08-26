@@ -5,6 +5,7 @@ import help from "@material-symbols/svg-700/rounded/help.svg?raw";
 import doubleDown from "@material-symbols/svg-700/rounded/keyboard_double_arrow_down.svg?raw";
 import doubleUp from "@material-symbols/svg-700/rounded/keyboard_double_arrow_up.svg?raw";
 import lastPage from "@material-symbols/svg-700/rounded/last_page.svg?raw";
+import globe from "@material-symbols/svg-700/rounded/public.svg?raw";
 import restore from "@material-symbols/svg-700/rounded/restore_from_trash.svg?raw";
 import tabClose from "@material-symbols/svg-700/rounded/tab_close.svg?raw";
 import alignBottom from "@material-symbols/svg-700/rounded/vertical_align_bottom.svg?raw";
@@ -40,6 +41,9 @@ export const COMMAND_ICONS: Record<CommandId, string> = {
 };
 
 export const UNKNOWN_ICON = prepare(help);
+
+/** Stands in when a tab has no favicon, or its favicon fails to load. */
+export const FALLBACK_FAVICON = prepare(globe);
 
 /** One glyph, rotated, so a stroke renders as the arrows it was drawn as. */
 export const DIRECTION_ICON = prepare(arrowForward);

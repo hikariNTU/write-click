@@ -40,3 +40,7 @@ lint are all clean and the behaviour is verified in a loaded unpacked build.
 - The trigger lives in `chrome.storage.local` — per device. Gesture maps live in `sync`.
 - Page commands run in the frame that started the gesture, not the top frame.
 - No custom context menu. That was considered and rejected (spec §3.1).
+- Never toggle overlay visibility with `hidden` on an element that also carries a `display`
+  utility such as `grid` or `flex`. Use `invisible`.
+- Tailwind only sees complete class strings in the source. Never build a class name by
+  concatenating fragments at runtime.

@@ -9,9 +9,10 @@ and scripts cannot see it, restyle it, or reach into it.
 
 ## Status
 
-**Phase 3 of 6 — commands run.** Gestures are captured, quantized and drawn as a glowing trail, the
-matched command is named in a glass readout, and releasing the trigger runs it. Next up: the tab
-grid, then the options page.
+**Phase 4 of 6 — tab grid.** Gestures are captured, quantized and drawn as a glowing trail, the
+matched command is named in a glass readout, and releasing the trigger runs it. Holding the trigger
+still for a moment opens a grid of the window's tabs: click one, with the trigger still held, to
+jump straight to it and discard the stroke. Next up: the options page.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
 
@@ -49,6 +50,12 @@ at all. `Control` is never a default modifier: on macOS that is right-click emul
 Strokes are read as four cardinal directions with hysteresis, so a wobbly hand cannot turn one
 corner into four letters. `DR` and `RD` are different strokes — order matters. `DR`/`UR` act on the tab itself; `RD`/`LD`
 point at the side being closed. All remappable in options once phase 5 lands.
+
+## Tab grid
+
+Hold the trigger without moving and a panel of the current window's tabs fades in. Click a tile —
+left button, trigger still held — to switch to that tab; whatever stroke was underway is thrown
+away. Flick straight into a gesture and the panel never appears.
 
 ## Develop
 

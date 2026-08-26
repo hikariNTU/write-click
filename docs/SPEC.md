@@ -135,12 +135,19 @@ Rules:
 
 ## 6. Tab grid
 
-- Shown while the trigger is held, after `GRID_HOLD_MS = 180`. The delay keeps quick flick gestures
-  from flashing it.
+- Shown while the trigger is held, after `GRID_HOLD_MS = 180`, and only if the pointer has not yet
+  passed `DRIFT_THRESHOLD`. So holding still opens it; flicking straight into a stroke never does.
+- The tab list is requested the instant the trigger goes down, in parallel with that timer, so the
+  panel has no fetch latency when it appears.
 - Data comes from the background: `{ id, title, favIconUrl, active, index }` for the current window.
 - Layout is a **grid** of tiles — favicon plus truncated title, active tab highlighted. A radial or
   pie layout was considered and dropped: it stops scaling past roughly eight tabs.
-- Tiles get `pointer-events: auto`; the overlay host stays `none`.
+- Tiles get `pointer-events: auto`; the overlay host stays `none`. Visibility is toggled with
+  `invisible`, never `hidden`: `hidden` and `grid` are both `display` utilities, so which one won
+  would come down to CSS source order.
+- Selection listens on `pointerdown`, not `click` — the right button is still held, and the pick has
+  to land before the trigger's own `pointerup` ends the gesture.
+- A tab with no usable favicon, or one whose favicon fails to load, falls back to a bundled glyph.
 - Hovering a tile highlights it. **Left-click while the trigger is still held** activates that tab
   and sets `cancelled`, so the pending stroke is discarded when the trigger is released.
 - Moving off every tile and releasing the trigger falls through to normal stroke matching.
@@ -224,7 +231,7 @@ Every handler is exhaustive over the union; adding a member must break the build
    quantization, canvas trail. Commands logged, not run.
 3. **Commands** — done. Background tab commands over a typed message union, content-local scroll
    commands, default map from §5.
-4. **Tab grid** — §6 in full, including click-to-switch and gesture cancellation.
+4. **Tab grid** — done. §6 in full, including click-to-switch and gesture cancellation.
 5. **Options** — trigger picker with key capture, gesture remap, per-origin disable, storage
    migrations.
 6. **Frames and release** — sub-frame bridge, release workflow, icons, store listing.
