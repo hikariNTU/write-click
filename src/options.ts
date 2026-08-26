@@ -152,10 +152,9 @@ function triggerCard(): HTMLElement {
 /* --------------------------------------------------------------- gestures */
 
 function chips(stroke: string): HTMLElement {
-  const holder = el("div", "flex items-center gap-1 text-slate-300 [&>svg]:h-3.5 [&>svg]:w-3.5");
+  const holder = el("div", "flex items-center gap-1 text-mist-300 [&>svg]:h-3.5 [&>svg]:w-3.5");
   if (stroke) holder.innerHTML = strokeChipsHtml(stroke);
-  else
-    holder.append(el("span", "text-[11px] italic text-slate-500", t("options_gestures_unbound")));
+  else holder.append(el("span", "text-[11px] italic text-mist-500", t("options_gestures_unbound")));
   return holder;
 }
 
@@ -238,14 +237,14 @@ function gestureRow(command: CommandId): HTMLElement {
 
   const tile = el(
     "div",
-    "grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 text-slate-300 [&>svg]:h-5 [&>svg]:w-5",
+    "grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 text-mist-300 [&>svg]:h-5 [&>svg]:w-5",
   );
   tile.innerHTML = COMMAND_ICONS[command];
 
   const label = el("div", "min-w-0 flex-1");
   label.append(
-    el("div", "text-[13px] font-medium text-slate-200", t(COMMANDS[command].labelKey)),
-    el("div", "mt-0.5 font-mono text-[10px] text-slate-500", dynamic(command)),
+    el("div", "text-[13px] font-medium text-mist-200", t(COMMANDS[command].labelKey)),
+    el("div", "mt-0.5 font-mono text-[10px] text-mist-500", dynamic(command)),
   );
 
   const edit = el("button", BUTTON, t("options_gestures_draw"));
@@ -327,7 +326,7 @@ function overlayCard(): HTMLElement {
   // preference, and the same account sees both a laptop and a desktop monitor.
   const scaleValue = el(
     "span",
-    "w-12 shrink-0 text-right text-[11px] tabular-nums text-slate-400",
+    "w-12 shrink-0 text-right text-[11px] tabular-nums text-mist-400",
     dynamic(formatPercent(local.uiScale)),
   );
   const scale = el("input", "w-40 accent-emerald-400");
@@ -427,7 +426,7 @@ function sitesCard(): HTMLElement {
   );
 
   if (sync.disabledOrigins.length === 0) {
-    const empty = el("div", "flex items-center gap-2 pt-2 text-[11px] italic text-slate-500");
+    const empty = el("div", "flex items-center gap-2 pt-2 text-[11px] italic text-mist-500");
     empty.append(
       icon(UI_ICONS.blocked, "h-3.5 w-3.5"),
       document.createTextNode(t("options_sites_none")),
@@ -452,8 +451,8 @@ function sitesCard(): HTMLElement {
 function notice(text: Localized): void {
   const node = el(
     "div",
-    "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-xl border border-white/10 bg-slate-900/95 " +
-      "px-4 py-2.5 text-xs text-slate-200 shadow-2xl backdrop-blur-[6px]",
+    "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-xl border border-white/10 bg-mist-900/95 " +
+      "px-4 py-2.5 text-xs text-mist-200 shadow-2xl backdrop-blur-[6px]",
     text,
   );
   document.body.append(node);
@@ -492,7 +491,7 @@ const SECTIONS: readonly {
 
 const NAV_LINK =
   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors";
-const NAV_IDLE = "text-slate-400 hover:bg-white/5 hover:text-slate-200";
+const NAV_IDLE = "text-mist-400 hover:bg-white/5 hover:text-mist-200";
 const NAV_CURRENT = "bg-emerald-400/10 text-emerald-200";
 
 /** How far down the viewport a section has to reach to count as the one in view. */

@@ -67,7 +67,7 @@ void (async () => {
       ),
     );
   } else {
-    controls?.append(el("p", "py-2 text-[11px] italic text-slate-500", t("popup_notHere")));
+    controls?.append(el("p", "py-2 text-[11px] italic text-mist-500", t("popup_notHere")));
   }
 
   const options = document.querySelector<HTMLButtonElement>("#options");

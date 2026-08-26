@@ -22,7 +22,7 @@ const TILES_SHARE = 0.5;
 const CHEATSHEET_SHARE = 0.28;
 
 const PANEL_CHROME =
-  "overflow-y-auto rounded-3xl border border-white/10 bg-slate-950/70 text-slate-50 " +
+  "overflow-y-auto rounded-3xl border border-white/10 bg-mist-950/70 text-mist-50 " +
   "backdrop-blur-[6px] shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)] " +
   // Only opacity and transform transition. `transition-all` would animate the
   // box metrics too, and the panel would visibly reflow as tabs are counted.
@@ -111,7 +111,7 @@ export class TabGrid {
     this.#cheatPanel.style.transformOrigin = "bottom center";
     this.#reveal(false);
     this.#caption.className =
-      "mb-3 flex items-baseline justify-between px-1 text-[11px] font-medium text-slate-400";
+      "mb-3 flex items-baseline justify-between px-1 text-[11px] font-medium text-mist-400";
     this.#grid.className = "grid gap-2";
     this.#grid.style.gridTemplateColumns = `repeat(auto-fit, minmax(${this.#size.tile}px, 1fr))`;
     this.#panel.append(this.#caption, this.#grid);
@@ -149,11 +149,11 @@ export class TabGrid {
       line.className = "flex min-w-0 items-center gap-2";
 
       const chips = document.createElement("div");
-      chips.className = "flex shrink-0 items-center gap-0.5 text-slate-300 [&>svg]:h-3 [&>svg]:w-3";
+      chips.className = "flex shrink-0 items-center gap-0.5 text-mist-300 [&>svg]:h-3 [&>svg]:w-3";
       chips.innerHTML = strokeChipsHtml(stroke);
 
       const name = document.createElement("span");
-      name.className = "truncate text-[11px] text-slate-400";
+      name.className = "truncate text-[11px] text-mist-400";
       name.textContent = t(COMMANDS[command].labelKey);
 
       line.append(chips, name);
@@ -161,7 +161,7 @@ export class TabGrid {
     }
 
     const heading = document.createElement("div");
-    heading.className = "mb-2 px-1 text-[10px] font-medium uppercase tracking-wider text-slate-500";
+    heading.className = "mb-2 px-1 text-[10px] font-medium uppercase tracking-wider text-mist-500";
     heading.textContent = t("grid_cheatsheet");
 
     this.#cheatsheet.replaceChildren(heading, wrap);
@@ -310,7 +310,7 @@ export class TabGrid {
 
     const icon = document.createElement("div");
     icon.className =
-      "grid h-5 w-5 shrink-0 place-items-center text-slate-400 [&>svg]:h-4 [&>svg]:w-4";
+      "grid h-5 w-5 shrink-0 place-items-center text-mist-400 [&>svg]:h-4 [&>svg]:w-4";
     icon.innerHTML = FALLBACK_FAVICON;
     if (tab.favIconUrl && /^https?:/.test(tab.favIconUrl)) {
       const image = document.createElement("img");
@@ -324,10 +324,10 @@ export class TabGrid {
     const text = document.createElement("div");
     text.className = "flex min-w-0 flex-col";
     const title = document.createElement("div");
-    title.className = "truncate text-[12px] font-medium leading-tight text-slate-100";
+    title.className = "truncate text-[12px] font-medium leading-tight text-mist-100";
     title.textContent = tab.title || tab.url;
     const host = document.createElement("div");
-    host.className = "truncate text-[10px] leading-tight text-slate-400";
+    host.className = "truncate text-[10px] leading-tight text-mist-400";
     host.textContent = hostOf(tab.url);
     text.append(title, host);
     tile.append(icon, text);

@@ -16,11 +16,11 @@ export const CARD =
   "rounded-2xl border border-white/10 bg-white/[0.02] p-6 shadow-[0_16px_48px_-24px_rgba(0,0,0,0.8)]";
 
 export const FIELD =
-  "rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm text-slate-100 " +
+  "rounded-lg border border-white/10 bg-mist-900 px-3 py-2 text-sm text-mist-100 " +
   "outline-none transition-colors focus:border-emerald-300/50";
 
 export const BUTTON =
-  "rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 " +
+  "rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-mist-300 " +
   "transition-colors hover:border-emerald-300/40 hover:text-emerald-200";
 
 /** A sized box holding raw SVG markup, coloured by the surrounding text. */
@@ -49,8 +49,8 @@ export function card(title: Localized, description: Localized, glyph?: string): 
 
   const text = el("div", "min-w-0");
   text.append(
-    el("h2", "text-sm font-semibold tracking-tight text-slate-100", title),
-    el("p", "mt-1 text-xs leading-relaxed text-slate-400", description),
+    el("h2", "text-sm font-semibold tracking-tight text-mist-100", title),
+    el("p", "mt-1 text-xs leading-relaxed text-mist-400", description),
   );
   head.append(text);
   section.append(head);
@@ -73,8 +73,8 @@ export function iconButton(
 export function row(label: Localized, control: HTMLElement, hint?: Localized): HTMLElement {
   const wrapper = el("div", "flex items-center justify-between gap-6 py-2.5");
   const text = el("div", "min-w-0");
-  text.append(el("div", "text-[13px] font-medium text-slate-200", label));
-  if (hint) text.append(el("div", "mt-0.5 text-[11px] text-slate-500", hint));
+  text.append(el("div", "text-[13px] font-medium text-mist-200", label));
+  if (hint) text.append(el("div", "mt-0.5 text-[11px] text-mist-500", hint));
   wrapper.append(text, control);
   return wrapper;
 }

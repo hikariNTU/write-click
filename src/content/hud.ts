@@ -43,15 +43,15 @@ export class Hud {
     // entrance and the overlay scale share one property instead of fighting
     // over it. Only opacity and transform transition, never the offset.
     this.#card.className =
-      "flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 " +
-      "text-slate-50 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-[6px] " +
+      "flex items-center gap-3 rounded-2xl border border-white/10 bg-mist-950/60 px-4 py-3 " +
+      "text-mist-50 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-[6px] " +
       "transition-[opacity,transform] duration-150 ease-out";
 
     this.#reveal();
     this.#tile.className =
       `grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ${TILE_TONE.matched} ` +
       "[&>svg]:h-6 [&>svg]:w-6";
-    this.#chips.className = "flex items-center gap-1 text-slate-400 [&>svg]:h-3.5 [&>svg]:w-3.5";
+    this.#chips.className = "flex items-center gap-1 text-mist-400 [&>svg]:h-3.5 [&>svg]:w-3.5";
 
     const text = document.createElement("div");
     text.className = "flex min-w-0 flex-col gap-1";
