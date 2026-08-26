@@ -6,18 +6,39 @@ export interface Point {
 /** Movement below this is "the pointer never really moved". docs/SPEC.md §4. */
 export const DRIFT_THRESHOLD = 8;
 /** A segment shorter than this emits no direction. */
-export const SEGMENT_MIN = 20;
+export const SEGMENT_MIN = 32;
+/**
+ * Extra angle, on top of the 45° sector edge, that the pointer must swing
+ * through before the stroke is allowed to change direction. Without it a
+ * wobbly hand alternates letters and a single corner reads as `RURU`.
+ */
+export const HYSTERESIS_DEG = 28;
 /** Longer strokes are truncated and will simply not match anything. */
 export const MAX_SEGMENTS = 6;
 
-/** Index 0 is due right, stepping clockwise in screen space (y grows down). */
-const DIRECTIONS = ["R", "DR", "D", "DL", "L", "UL", "U", "UR"] as const;
+/**
+ * Four cardinal directions only. Eight would make a single diagonal drag emit
+ * `DR`, which is indistinguishable from the two-segment `DR` in the gesture
+ * map — the same string would mean two different gestures.
+ */
+const DIRECTIONS = ["R", "D", "L", "U"] as const;
 
 export type Direction = (typeof DIRECTIONS)[number];
 
-function direction(dx: number, dy: number): Direction {
-  const step = Math.round(Math.atan2(dy, dx) / (Math.PI / 4));
-  return DIRECTIONS[((step % 8) + 8) % 8] as Direction;
+/** Screen space: y grows down, so index 1 (`D`) sits at +90°. */
+function canonicalDegrees(direction: Direction): number {
+  return DIRECTIONS.indexOf(direction) * 90;
+}
+
+/** Shortest signed distance between two angles, in degrees, always 0..180. */
+function angularDistance(a: number, b: number): number {
+  const diff = Math.abs(((a - b + 540) % 360) - 180);
+  return 180 - diff;
+}
+
+function nearest(degrees: number): Direction {
+  const step = Math.round(degrees / 90);
+  return DIRECTIONS[((step % 4) + 4) % 4] as Direction;
 }
 
 export function distanceSquared(a: Point, b: Point): number {
@@ -28,18 +49,29 @@ export function distanceSquared(a: Point, b: Point): number {
 
 /**
  * Walks the sampled points, emitting a direction every time the pointer gets
- * `SEGMENT_MIN` away from the last anchor, and collapsing consecutive repeats
- * so a long straight drag stays one letter.
+ * `SEGMENT_MIN` away from the last anchor. The current direction is sticky:
+ * it only gives way once the movement is more than `45 + HYSTERESIS_DEG` off
+ * it, which a real corner clears easily and hand tremor never does.
  */
 export function quantize(points: readonly Point[]): string {
   const out: Direction[] = [];
   let anchor = points[0];
   if (!anchor) return "";
+  let current: Direction | undefined;
 
   for (const point of points) {
     if (distanceSquared(anchor, point) < SEGMENT_MIN * SEGMENT_MIN) continue;
-    const dir = direction(point.x - anchor.x, point.y - anchor.y);
-    if (dir !== out.at(-1)) out.push(dir);
+
+    const degrees = (Math.atan2(point.y - anchor.y, point.x - anchor.x) * 180) / Math.PI;
+    const sticky =
+      current !== undefined &&
+      angularDistance(degrees, canonicalDegrees(current)) <= 45 + HYSTERESIS_DEG;
+    const dir = sticky && current ? current : nearest(degrees);
+
+    if (dir !== current) {
+      out.push(dir);
+      current = dir;
+    }
     anchor = point;
     if (out.length >= MAX_SEGMENTS) break;
   }

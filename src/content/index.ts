@@ -1,10 +1,32 @@
 import { COMMANDS } from "../shared/commands";
+import type { CommandId } from "../shared/commands";
+import { isBackgroundCommand, send } from "../shared/messages";
 import { loadSettings } from "../shared/settings";
+import { Hud } from "./hud";
+import type { Match } from "./hud";
+import { COMMAND_ICONS, UNKNOWN_ICON } from "./icons";
 import { createOverlay } from "./overlay";
+import { runPageCommand } from "./page-commands";
 import { quantize } from "./recognizer";
 import type { Point } from "./recognizer";
 import { Trail } from "./trail";
 import { attachTrigger } from "./trigger-runtime";
+
+function describe(stroke: string, command: CommandId | undefined): Match {
+  if (!command) {
+    return { stroke, label: "Unassigned", icon: UNKNOWN_ICON, state: "unassigned" };
+  }
+  return { stroke, label: COMMANDS[command].label, icon: COMMAND_ICONS[command], state: "matched" };
+}
+
+async function run(command: CommandId, at: Point): Promise<void> {
+  if (!isBackgroundCommand(command)) {
+    runPageCommand(command, at);
+    return;
+  }
+  const response = await send({ type: "command", id: command });
+  if (!response.ok) console.warn("[write-click]", command, response.error);
+}
 
 async function main(): Promise<void> {
   // Sub-frames get their own bridge in a later phase; for now the top frame
@@ -14,40 +36,43 @@ async function main(): Promise<void> {
   const { sync, local } = await loadSettings();
   if (!local.enabled || sync.disabledOrigins.includes(location.origin)) return;
 
-  const trail = new Trail(createOverlay(), sync.trail);
+  const overlay = createOverlay();
+  const trail = new Trail(overlay, sync.trail);
+  const hud = new Hud(overlay);
   let points: Point[] = [];
+  let stroke = "";
 
-  const describe = (stroke: string): string => {
-    if (!stroke) return "";
-    const command = sync.gestures[stroke];
-    return command ? `${stroke} · ${COMMANDS[command].label}` : `${stroke} · unassigned`;
+  const reset = (): void => {
+    points = [];
+    stroke = "";
+    trail.clear();
+    hud.hide();
   };
 
   attachTrigger(local.trigger, {
     onStart(point) {
       points = [point];
+      stroke = "";
       trail.render(points);
     },
     onMove(point) {
       points.push(point);
       trail.render(points);
-      trail.setLabel(describe(quantize(points)));
+      const next = quantize(points);
+      if (next === stroke) return;
+      stroke = next;
+      if (sync.trail.showLabel && stroke) hud.show(describe(stroke, sync.gestures[stroke]));
     },
     onEnd(drifted) {
-      const stroke = drifted ? quantize(points) : "";
-      const command = stroke ? sync.gestures[stroke] : undefined;
-      // Phase 3 runs these. For now, prove recognition end to end.
-      console.info("[write-click] gesture", { stroke, command, samples: points.length });
-      points = [];
-      trail.clear();
+      const command = drifted && stroke ? sync.gestures[stroke] : undefined;
+      // Scrolling targets where the gesture began, not where it ended: a long
+      // stroke can finish well outside the panel the user meant to scroll.
+      const at = points[0] ?? { x: 0, y: 0 };
+      reset();
+      if (command) void run(command, at);
     },
-    onCancel() {
-      points = [];
-      trail.clear();
-    },
+    onCancel: reset,
   });
-
-  console.info("[write-click] armed", local.trigger);
 }
 
 void main();

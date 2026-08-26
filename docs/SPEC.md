@@ -91,8 +91,16 @@ itself, no code needed); a per-origin disable toggle; a global off switch.
 - Sample `pointermove` into a point list, expanding `getCoalescedEvents()` where available.
   Pointer events are used throughout for movement; `contextmenu` stays a `MouseEvent`.
 - `DRIFT_THRESHOLD = 8` px, compared squared. Below it, the gesture is "not drawn".
-- `SEGMENT_MIN = 20` px. Movement shorter than this does not emit a direction.
-- Quantize each segment to 8 directions: `U D L R UL UR DL DR`. Collapse consecutive repeats.
+- `SEGMENT_MIN = 32` px. Movement shorter than this does not emit a direction.
+- Quantize to **four** cardinal directions: `U D L R`. Collapse consecutive repeats.
+- `HYSTERESIS_DEG = 28`. The current direction is sticky: movement must be more than
+  `45 + HYSTERESIS_DEG` degrees off it before the stroke changes letter. A real corner clears that
+  easily; hand tremor does not. Without it a single corner reads as `RURU`.
+
+Eight directions were tried and dropped. A single diagonal drag emitted `DR`, which is the same
+string as the two-segment down-then-right stroke — one string, two gestures, no way to tell them
+apart. Four directions removes the ambiguity and is what makes the hysteresis rule simple.
+
 - Stroke = concatenation, e.g. `"RD"`. Max 6 segments; longer strokes are truncated and treated as
   unmatched.
 - Unmatched stroke: show a brief "no gesture" label, run nothing.
@@ -121,6 +129,8 @@ Rules:
 - Tab commands never touch pinned tabs in the bulk closers.
 - Page commands run in the frame that started the gesture, not the top frame, so gestures inside a
   scrollable iframe scroll that iframe.
+- Within that frame they target the nearest scrollable ancestor of the point where the gesture
+  **began**, so a stroke that ends outside a panel still scrolls the panel it started in.
 - Scrolling uses `behavior: "smooth"` unless `prefers-reduced-motion` is set.
 
 ## 6. Tab grid
@@ -143,7 +153,23 @@ Rules:
 - Tailwind is imported `?inline` and adopted via `adoptedStyleSheets`. Never inject a `<style>` tag
   into the page: preflight must not touch host styles.
 - The trail is a `<canvas>` sized to the viewport times `devicePixelRatio`, redrawn on
-  `requestAnimationFrame`.
+  `requestAnimationFrame`: a wide blurred underlay for the glow, a crisp core on top, joined through
+  midpoints with `quadraticCurveTo` so it reads as a stroke rather than a polyline.
+- The readout is a glass card at the bottom of the viewport: icon tile, command name, and the stroke
+  rendered as rotated arrows rather than letters. Emerald tint when the stroke matches, amber when
+  it is unassigned.
+
+### 7.1 Icons
+
+Material Symbols **Rounded**, inlined at build time from `@material-symbols/svg-700` and imported
+with `?raw`. An extension cannot fetch a webfont at runtime under its own CSP, and the dozen glyphs
+actually used cost a few kB against the ~4 MB variable font.
+
+Weight is **700** — the heaviest the Material Symbols `wght` axis defines. There is no 900 in this
+family (`GRAD` also stops at 200), so 700 is the ceiling.
+
+Each SVG is rewritten on import to carry `fill="currentColor"` and to drop its fixed `width`/
+`height`, so size and colour come from Tailwind classes.
 
 ## 8. Frames
 
@@ -196,7 +222,8 @@ Every handler is exhaustive over the union; adding a member must break the build
 1. **Scaffold** — done. Vite + crxjs + Tailwind + oxc, shadow-root overlay, trigger defaults.
 2. **Trigger + recognizer** — done. All three trigger kinds, `contextmenu` rules from §3.2, stroke
    quantization, canvas trail. Commands logged, not run.
-3. **Commands** — background tab commands, content-local scroll commands, default map from §5.
+3. **Commands** — done. Background tab commands over a typed message union, content-local scroll
+   commands, default map from §5.
 4. **Tab grid** — §6 in full, including click-to-switch and gesture cancellation.
 5. **Options** — trigger picker with key capture, gesture remap, per-origin disable, storage
    migrations.

@@ -9,9 +9,9 @@ and scripts cannot see it, restyle it, or reach into it.
 
 ## Status
 
-**Phase 2 of 6 — trigger and recognizer.** Gestures are captured, quantized into strokes and drawn
-as a trail, and the matched command is named in an on-screen label. Commands are logged to the
-console rather than executed; phase 3 runs them.
+**Phase 3 of 6 — commands run.** Gestures are captured, quantized and drawn as a glowing trail, the
+matched command is named in a glass readout, and releasing the trigger runs it. Next up: the tab
+grid, then the options page.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
 
@@ -46,7 +46,8 @@ at all. `Control` is never a default modifier: on macOS that is right-click emul
 | `RD`   | close tabs to the right |     |        |                  |
 | `LD`   | close tabs to the left  |     |        |                  |
 
-`DR` and `RD` are different strokes — order matters. `DR`/`UR` act on the tab itself; `RD`/`LD`
+Strokes are read as four cardinal directions with hysteresis, so a wobbly hand cannot turn one
+corner into four letters. `DR` and `RD` are different strokes — order matters. `DR`/`UR` act on the tab itself; `RD`/`LD`
 point at the side being closed. All remappable in options once phase 5 lands.
 
 ## Develop
@@ -65,3 +66,7 @@ Load `dist/`, not `src/`, as an unpacked extension at `chrome://extensions`.
 ## Stack
 
 Vite, `@crxjs/vite-plugin` (MV3), TypeScript strict, Tailwind v4, oxlint + oxfmt.
+
+Icons are Material Symbols Rounded at weight 700 — the heaviest the family's `wght` axis defines —
+inlined as SVG at build time, since an extension cannot fetch a webfont at runtime under its own
+CSP.

@@ -1,0 +1,82 @@
+import { DIRECTION_ICON, DIRECTION_ROTATION } from "./icons";
+import type { Direction } from "./recognizer";
+
+export type MatchState = "matched" | "unassigned";
+
+export interface Match {
+  stroke: string;
+  label: string;
+  icon: string;
+  state: MatchState;
+}
+
+const TILE_TONE: Record<MatchState, string> = {
+  matched: "bg-emerald-400/15 text-emerald-300 ring-emerald-300/25",
+  unassigned: "bg-amber-400/15 text-amber-300 ring-amber-300/25",
+};
+
+/**
+ * The floating readout naming whatever the stroke currently matches. It sits
+ * in the overlay's shadow root, so none of these classes can leak into the
+ * page and nothing the page ships can restyle it.
+ */
+export class Hud {
+  readonly #anchor = document.createElement("div");
+  readonly #card = document.createElement("div");
+  readonly #tile = document.createElement("div");
+  readonly #label = document.createElement("div");
+  readonly #chips = document.createElement("div");
+  #state: MatchState = "matched";
+
+  constructor(root: ShadowRoot) {
+    this.#anchor.className =
+      "pointer-events-none fixed inset-x-0 bottom-10 grid place-items-center";
+    this.#card.className =
+      "flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 " +
+      "text-slate-50 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-2xl " +
+      "transition-all duration-150 ease-out opacity-0 translate-y-2 scale-95";
+    this.#tile.className =
+      `grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ${TILE_TONE.matched} ` +
+      "[&>svg]:h-6 [&>svg]:w-6";
+    this.#chips.className = "flex items-center gap-1 text-slate-400 [&>svg]:h-3.5 [&>svg]:w-3.5";
+
+    const text = document.createElement("div");
+    text.className = "flex min-w-0 flex-col gap-1";
+    this.#label.className = "truncate text-[13px] font-semibold leading-none tracking-tight";
+    text.append(this.#label, this.#chips);
+
+    this.#card.append(this.#tile, text);
+    this.#anchor.append(this.#card);
+    root.append(this.#anchor);
+  }
+
+  show(match: Match): void {
+    if (match.state !== this.#state) {
+      this.#tile.className = this.#tile.className.replace(
+        TILE_TONE[this.#state],
+        TILE_TONE[match.state],
+      );
+      this.#state = match.state;
+    }
+    this.#tile.innerHTML = match.icon;
+    this.#label.textContent = match.label;
+    this.#chips.replaceChildren(...chips(match.stroke));
+    this.#card.classList.remove("opacity-0", "translate-y-2", "scale-95");
+  }
+
+  hide(): void {
+    this.#card.classList.add("opacity-0", "translate-y-2", "scale-95");
+  }
+}
+
+/** Renders the stroke as the arrows it was drawn as, not as letters. */
+function chips(stroke: string): Element[] {
+  const holder = document.createElement("div");
+  holder.innerHTML = [...stroke]
+    .map((letter) => {
+      const rotation = DIRECTION_ROTATION[letter as Direction] ?? "rotate-0";
+      return DIRECTION_ICON.replace("<svg ", `<svg class="${rotation}" `);
+    })
+    .join("");
+  return [...holder.children];
+}
