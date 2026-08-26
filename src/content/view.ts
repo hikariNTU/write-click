@@ -120,20 +120,29 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   };
 
   /**
-   * The press that picks a tile is seen here rather than on the tile.
+   * The press that picks a tile is seen here, on `mousedown`, rather than on
+   * the tile.
    *
-   * The grid opens while the trigger button is already down, and Blink captures
-   * mouse and pointer events to the node that received that press — a page
-   * element, because the grid did not exist yet. Events still travel through
-   * the tree to this listener, but their target is that page element, so a
-   * listener on a tile never runs. Hit testing the tiles ourselves is what makes
-   * the pick work at all with a button trigger; with a keyboard trigger nothing
-   * is captured and it worked either way.
+   * Two separate things rule out the obvious approaches. Blink captures mouse
+   * events to the node that received the press for as long as a button is held,
+   * and the grid opens after the trigger button is already down, so that node is
+   * a page element and a listener on a tile never runs. And a *second* button
+   * pressed while one is already held does not fire `pointerdown` at all: the
+   * Pointer Events spec has chorded presses fire `pointermove`, since the
+   * pointer is already in the active buttons state. `mousedown` is fired in
+   * both cases, and still travels to this listener even though its target is
+   * the captured node.
+   *
+   * With a keyboard trigger no button is held, nothing is captured and no press
+   * is chorded, which is why picking worked there and nowhere else.
    */
-  const onPress = (event: PointerEvent): void => {
-    if (!grid?.visible || event.button !== 0 || event.pointerType !== "mouse") return;
+  const onPress = (event: MouseEvent): void => {
+    if (!grid?.visible || event.button !== 0) return;
     const tabId = grid.pickAt({ x: event.clientX, y: event.clientY });
-    if (tabId === undefined) return;
+    if (tabId === undefined) {
+      console.debug("[write-click] press missed every tile", event.clientX, event.clientY);
+      return;
+    }
     // The capture node underneath is a page element, and it must not also be
     // clicked: picking a tab that happens to sit over a link would follow it.
     event.preventDefault();
@@ -147,7 +156,7 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     pick(tabId);
   };
 
-  window.addEventListener("pointerdown", onPress, { capture: true });
+  window.addEventListener("mousedown", onPress, { capture: true });
 
   /**
    * The tab list is fetched the moment the trigger goes down. Both the grid and
