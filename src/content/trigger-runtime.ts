@@ -36,6 +36,9 @@ function modifiersMatch(event: ModifierState, required: Modifier | undefined): b
   return true;
 }
 
+/** The `buttons` bitmask for a `button` index: 0 -> 1, 1 -> 4, 2 -> 2. */
+const BUTTON_MASK: Record<0 | 1 | 2, number> = { 0: 1, 1: 4, 2: 2 };
+
 function swallow(event: Event): void {
   event.preventDefault();
   event.stopPropagation();
@@ -84,6 +87,16 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     pointer = { x: event.clientX, y: event.clientY };
     if (!active) return;
 
+    // The pointer stays live outside the window while a button is held, and a
+    // stroke that overshoots the viewport edge is perfectly normal, so leaving
+    // is not a reason to stop. A button that is no longer down is: the release
+    // happened somewhere we never saw it — another app took focus, or a native
+    // menu grabbed the pointer — and every point since then is noise.
+    if (trigger.kind === "button" && (event.buttons & BUTTON_MASK[trigger.button]) === 0) {
+      cancel();
+      return;
+    }
+
     const events = event.getCoalescedEvents?.() ?? [event];
     for (const sample of events) handlers.onMove({ x: sample.clientX, y: sample.clientY });
 
@@ -128,6 +141,10 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     }
   }
 
+  function onVisibility(): void {
+    if (document.hidden) cancel();
+  }
+
   function onKeyDown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
       cancel();
@@ -155,6 +172,8 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   window.addEventListener("keydown", onKeyDown, options);
   window.addEventListener("keyup", onKeyUp, options);
   window.addEventListener("blur", cancel);
+  // Cmd-Tab, Mission Control, a lock screen: the release will never arrive.
+  document.addEventListener("visibilitychange", onVisibility);
 
   return () => {
     window.removeEventListener("pointerdown", onPointerDown, options);
@@ -165,5 +184,6 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     window.removeEventListener("keydown", onKeyDown, options);
     window.removeEventListener("keyup", onKeyUp, options);
     window.removeEventListener("blur", cancel);
+    document.removeEventListener("visibilitychange", onVisibility);
   };
 }

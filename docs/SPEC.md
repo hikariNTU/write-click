@@ -108,7 +108,19 @@ apart. Four directions removes the ambiguity and is what makes the hysteresis ru
 - Stroke = concatenation, e.g. `"RD"`. Max 6 segments; longer strokes are truncated and treated as
   unmatched.
 - Unmatched stroke: show a brief "no gesture" label, run nothing.
-- Cancel: `Escape`, losing the window, or a tab-grid selection (§6).
+- Cancel: `Escape`, losing the window, the tab being hidden, a `pointercancel`, a release the
+  extension never saw, or a tab-grid selection (§6).
+
+**Leaving the viewport does not cancel.** Chrome keeps delivering pointer events outside the window
+while a button is held, so recognition stays correct and the canvas simply clips the drawing.
+Overshooting an edge is normal — on a maximized window a downward or rightward stroke crosses the
+boundary constantly — and cancelling there would break gestures precisely where the pointer already
+is when right-clicking near a screen edge.
+
+A button that is **no longer down** does cancel. If `pointermove` arrives without the trigger's bit
+set in `event.buttons`, the release happened somewhere the page never saw it — another app took
+focus, a native menu grabbed the pointer — and every point after that is noise. Without this the
+gesture stays armed and the trail sticks on screen until the next click.
 
 ## 5. Commands
 
