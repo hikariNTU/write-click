@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 const ICONS = [
   "arrow_back",
   "arrow_forward",
+  "cached",
   "help",
   "keyboard_double_arrow_down",
   "keyboard_double_arrow_left",
@@ -22,6 +23,7 @@ const ICONS = [
   "keyboard_double_arrow_up",
   "minimize",
   "public",
+  "refresh",
   "restore_from_trash",
   "tab_close",
   "tab_close_right",

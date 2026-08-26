@@ -34,6 +34,11 @@ test("doubling back reverses the letter", () => {
   assert.equal(stroke([200, 0], [-200, 0], [200, 0]), "RLR");
 });
 
+test("vertical reversals read as separate letters", () => {
+  assert.equal(stroke([0, -200], [0, 200]), "UD");
+  assert.equal(stroke([0, -200], [0, 200], [0, -200]), "UDU");
+});
+
 test("corners read as two letters", () => {
   assert.equal(stroke([200, 0], [0, 200]), "RD");
   assert.equal(stroke([0, -200], [200, 0], [0, 200]), "URD");

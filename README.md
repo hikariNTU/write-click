@@ -47,9 +47,14 @@ at all. `Control` is never a default modifier: on macOS that is right-click emul
 | `RLR`  | rightmost tab |     | `ULD`  | close tabs to the left  |
 | `U`    | page down     |     | `LD`   | minimize window         |
 | `D`    | page up       |     | `RU`   | scroll to top           |
+| `UD`   | reload        |     | `UDU`  | reload without cache    |
 
 A single flick steps sideways through tabs; doubling back runs to that end of the strip; a leading
 `R`/`L` with a `D` tail closes something.
+
+The close-to-the-side strokes name their blast radius before you commit: the readout reads "Close 3
+tabs to the right", counted with the same filter that does the closing, and pinned tabs are never
+included.
 
 Vertical strokes are inverted on purpose — `U` pushes the page up, which scrolls down, the way a
 touch surface behaves.

@@ -11,6 +11,7 @@ function summarize(tab: chrome.tabs.Tab): TabSummary | undefined {
     url: tab.url ?? "",
     favIconUrl: tab.favIconUrl,
     active: tab.active === true,
+    pinned: tab.pinned === true,
   };
 }
 

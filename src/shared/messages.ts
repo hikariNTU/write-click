@@ -14,6 +14,7 @@ export interface TabSummary {
   url: string;
   favIconUrl?: string;
   active: boolean;
+  pinned: boolean;
 }
 
 export type Request =

@@ -6,7 +6,9 @@ import doubleLeft from "../icons/keyboard_double_arrow_left.svg?raw";
 import doubleRight from "../icons/keyboard_double_arrow_right.svg?raw";
 import doubleUp from "../icons/keyboard_double_arrow_up.svg?raw";
 import globe from "../icons/public.svg?raw";
+import cached from "../icons/cached.svg?raw";
 import minimize from "../icons/minimize.svg?raw";
+import refresh from "../icons/refresh.svg?raw";
 import restore from "../icons/restore_from_trash.svg?raw";
 import tabCloseRight from "../icons/tab_close_right.svg?raw";
 import tabClose from "../icons/tab_close.svg?raw";
@@ -41,6 +43,8 @@ export const COMMAND_ICONS: Record<CommandId, string> = {
   "tab.first": prepare(doubleLeft),
   "tab.last": prepare(doubleRight),
   "window.minimize": prepare(minimize),
+  "tab.reload": prepare(refresh),
+  "tab.reloadHard": prepare(cached),
   "page.up": prepare(doubleUp),
   "page.down": prepare(doubleDown),
   "page.top": prepare(alignTop),

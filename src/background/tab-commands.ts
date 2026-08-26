@@ -1,4 +1,5 @@
 import type { BackgroundCommandId } from "../shared/messages";
+import { tabsOnSide } from "../shared/tabs";
 
 /** Tabs of the sender's window, in strip order. */
 async function siblings(windowId: number): Promise<chrome.tabs.Tab[]> {
@@ -18,11 +19,7 @@ async function closeSide(
   side: "left" | "right",
 ): Promise<void> {
   const tabs = await siblings(windowId);
-  const doomed = tabs
-    .filter(
-      (tab) =>
-        !tab.pinned && (side === "right" ? tab.index > activeIndex : tab.index < activeIndex),
-    )
+  const doomed = tabsOnSide(tabs, activeIndex, side)
     .map((tab) => tab.id)
     .filter((id): id is number => id !== undefined);
   if (doomed.length > 0) await chrome.tabs.remove(doomed);
@@ -52,6 +49,12 @@ export async function runTabCommand(
     }
     case "window.minimize": {
       await chrome.windows.update(windowId, { state: "minimized" });
+      return;
+    }
+    case "tab.reload":
+    case "tab.reloadHard": {
+      if (sender.id === undefined) return;
+      await chrome.tabs.reload(sender.id, { bypassCache: id === "tab.reloadHard" });
       return;
     }
     case "tab.close": {

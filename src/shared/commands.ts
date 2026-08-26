@@ -9,6 +9,8 @@ export const COMMANDS = {
   "tab.first": { label: "Leftmost tab", where: "background" },
   "tab.last": { label: "Rightmost tab", where: "background" },
   "window.minimize": { label: "Minimize window", where: "background" },
+  "tab.reload": { label: "Reload", where: "background" },
+  "tab.reloadHard": { label: "Reload without cache", where: "background" },
   "page.up": { label: "Page up", where: "content" },
   "page.down": { label: "Page down", where: "content" },
   "page.top": { label: "Scroll to top", where: "content" },
@@ -40,4 +42,6 @@ export const DEFAULT_GESTURES: Record<string, CommandId> = {
   LD: "window.minimize",
   U: "page.down",
   D: "page.up",
+  UD: "tab.reload",
+  UDU: "tab.reloadHard",
 };

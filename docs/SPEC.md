@@ -142,6 +142,10 @@ Rules:
 
 - Tab commands never touch pinned tabs in the bulk closers.
 - `window.minimize` uses `chrome.windows.update`, which needs no extra permission.
+- `tab.reloadHard` is `chrome.tabs.reload` with `bypassCache: true`.
+- The tabs a bulk closer removes come from `tabsOnSide()` in `src/shared/tabs.ts`, which the readout
+  also counts with. Both sides must keep using it: a count that disagrees with what actually closes
+  is worse than no count.
 - Page commands run in the frame that started the gesture, not the top frame, so gestures inside a
   scrollable iframe scroll that iframe.
 - Within that frame they target the nearest scrollable ancestor of the point where the gesture
@@ -188,6 +192,11 @@ Rules:
 - Layering inside the shadow root is explicit, not append order: tab grid `z-10`, trail `z-20`,
   readout `z-30`. The trail sits **above** the grid because the grid stays open while a stroke is
   being drawn, so putting the trail underneath would hide the feedback exactly when it is needed.
+- For `tab.closeRight` / `tab.closeLeft` the readout names the number of tabs that will actually
+  close — "Close 3 tabs to the right" — because the stroke is destructive and undo is per-tab, so
+  one gesture can cost several. When nothing would close, it says so and takes the unassigned tone
+  rather than promising a close that cannot happen. The tab list is fetched on trigger-down for
+  this, whether or not the grid is switched on.
 - The readout is a glass card at the bottom of the viewport: icon tile, command name, and the stroke
   rendered as rotated arrows rather than letters. Emerald tint when the stroke matches, amber when
   it is unassigned.
