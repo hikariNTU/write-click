@@ -1,6 +1,5 @@
 import type { CommandId } from "../shared/commands";
 import { isBackgroundCommand, send } from "../shared/messages";
-import type { TabMessage } from "../shared/messages";
 import { quantize } from "../shared/recognizer";
 import type { Point } from "../shared/recognizer";
 import { setLocale } from "../shared/i18n";
@@ -8,7 +7,7 @@ import { loadSettings } from "../shared/settings";
 import { createBridge } from "./frame-bridge";
 import type { Bridge } from "./frame-bridge";
 import { runPageCommand } from "./page-commands";
-import { armMenuSuppression, attachTrigger } from "./trigger-runtime";
+import { attachTrigger } from "./trigger-runtime";
 import { createView } from "./view";
 import type { View } from "./view";
 
@@ -105,18 +104,6 @@ async function main(): Promise<void> {
   };
 
   apply();
-
-  // Sent when a pick switched to this tab. The trigger button is still held
-  // somewhere, and the release lands here rather than in the tab it was pressed
-  // in, so this frame is the one that has to swallow the menu that follows.
-  // Only a right-button trigger can produce that menu; with any other trigger
-  // arming it would swallow a right-click the user meant.
-  chrome.runtime.onMessage.addListener((message: TabMessage) => {
-    if (message?.type !== "menu.suppress") return;
-    if (local.trigger.kind !== "button" || local.trigger.button !== 2) return;
-    armMenuSuppression();
-    console.debug("[write-click] menu suppression armed");
-  });
 
   // Settings changed in the options page or the popup take effect here without
   // a reload, on every open tab.

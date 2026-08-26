@@ -22,12 +22,6 @@ export type Request =
   | { type: "tabs.list" }
   | { type: "tabs.activate"; tabId: number };
 
-/**
- * Sent by the service worker to the tab a pick just switched to. Content
- * scripts receive it; the service worker never does.
- */
-export type TabMessage = { type: "menu.suppress" };
-
 export type Response =
   | { ok: true }
   | { ok: true; tabs: TabSummary[] }

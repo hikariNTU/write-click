@@ -231,24 +231,30 @@ over a link must not also follow it.
 
 `:hover` is frozen by the same capture, so the highlight is moved by hand in `hoverAt()`.
 
-### 6.2 The menu after a pick
+### 6.2 The menu after a pick — not solvable from here
 
-A pick switches tabs while the trigger button is still held, so the release lands in a tab that never
-saw the press. On Windows the context menu opens on that release, and the destination tab has no
-drift of its own to justify suppressing it: as far as it knows, someone right-clicked it.
+On Windows, picking a tile switches tabs while the trigger button is still held, so the release lands
+in a tab that never saw the press and the context menu opens there. **This was attempted and
+reverted. Do not try it again without new information.**
 
-So the service worker follows `tabs.activate` with a `menu.suppress` message to that tab, and
-`armMenuSuppression()` swallows the next `contextmenu` there. It is deliberately narrow:
+What was built: the service worker sent the destination tab a `menu.suppress` message and that tab
+swallowed its next `contextmenu`. It was armed before the switch rather than after, to rule out a
+race with a fast release, and instrumented at both ends.
 
-- One shot, and disarmed as soon as it fires.
-- Expires after `MENU_SUPPRESSION_MS` (1000 ms), so a deliberate right-click a moment later still
-  opens the menu.
-- Disarmed by any fresh `pointerdown`, which means the release it was waiting for never came.
-- Ignored unless the trigger is the right button. With a keyboard trigger no button is held during a
-  pick, no menu follows, and arming would only swallow a right-click the user meant.
+It never suppressed anything. The press happened in the previous tab's renderer, and the menu that
+follows the release is not produced by dispatching a `contextmenu` event through the new tab's page —
+so there is no default action for a content script to prevent. `preventDefault()` cannot cancel a
+menu the page is never told about.
 
-A drawn gesture that switches tabs does not need this: the command runs on release, in the tab that
-has the drift, so that tab suppresses its own menu before the switch happens.
+Approaches that will not help, for the same reason:
+
+- Arming earlier, or for longer.
+- Suppressing in the source tab: it is hidden by then, and its `visibilitychange` has already
+  cancelled the gesture.
+- `chrome.contextMenus`: it customises the menu's contents, and cannot stop it from opening.
+
+The remaining workaround belongs to the user, not the code: release the button before clicking, or
+use a keyboard trigger, where no button is held during a pick and no menu follows.
 
 ## 7. Overlay
 
