@@ -129,6 +129,7 @@ npm run build      # src/ -> dist/
 npm run typecheck  # tsc --noEmit
 npm run lint       # oxlint
 npm run format     # oxfmt .
+npm run shots      # store screenshots -> shots/out/
 ```
 
 Load `dist/`, not `src/`, as an unpacked extension at `chrome://extensions`.

@@ -9,5 +9,13 @@
   "rules": {
     "eqeqeq": "error",
     "no-console": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**"],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    }
+  ]
 }

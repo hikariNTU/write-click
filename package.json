@@ -16,19 +16,23 @@
     "format:check": "oxfmt --check .",
     "pack:linux": "zip -r ./dist.zip ./dist",
     "pack:windows": "powershell Compress-Archive -Path ./dist/* -DestinationPath dist.zip -Force",
-    "test": "node --test 'src/**/*.test.ts'",
+    "test": "node --import @oxc-node/core/register --test 'src/**/*.test.ts'",
     "assets": "node ./scripts/sync-icons.mjs && node ./scripts/render-icons.mjs",
-    "bump": "node ./scripts/bump.mjs"
+    "bump": "node ./scripts/bump.mjs",
+    "shots": "node --import @oxc-node/core/register ./scripts/shots.ts"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.7.1",
     "@material-symbols/svg-700": "^0.47.0",
+    "@oxc-node/core": "^0.1.0",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.3.3",
     "@types/chrome": "^0.2.7",
     "@types/node": "^26.3.0",
     "oxfmt": "^0.65.0",
     "oxlint": "^1.80.0",
+    "playwright": "^1.62.1",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"

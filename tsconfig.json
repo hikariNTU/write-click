@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*.ts", "vite.config.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "vite.config.ts"],
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
@@ -11,7 +11,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noEmit": true,
-    // Node's type stripping does not rewrite specifiers, so tests import "./x.ts".
+    // Tests run through @oxc-node/core and import "./x.ts" directly.
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "isolatedModules": true,

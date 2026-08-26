@@ -18,7 +18,8 @@ npm run dev        # watch mode, writes dist-dev/ (never dist/)
 npm run typecheck  # tsc --noEmit
 npm run lint       # oxlint
 npm run format     # oxfmt .
-npm test           # node --test, runs *.test.ts directly via type stripping
+npm test           # node --test through @oxc-node/core, runs *.test.ts directly
+npm run shots      # store screenshots -> shots/out/ (docs/store-assets.md)
 npm run assets     # re-sync glyphs and re-render icon PNGs (prebuild/predev do this)
 npm run bump patch # or minor / major — versions must agree across all three files
 ```
@@ -48,7 +49,9 @@ lint are all clean and the behaviour is verified in a loaded unpacked build.
 
 ## Tests
 
-`src/content/recognizer.test.ts` runs on Node's built-in runner, no framework. Pure functions with
+Tests run on Node's built-in runner, no framework, loaded through `@oxc-node/core` — Node's own type
+stripping does not resolve extensionless specifiers, so anything importing `./commands` is
+untestable without it. Pure functions with
 tricky geometry get tests; anything touching the DOM or chrome APIs does not. The angle maths in the
 recognizer was wrong for months of edits and only a test caught it — keep the cases there honest.
 
@@ -100,6 +103,13 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
 - Restart `npm run dev` after using a utility class the overlay has not used before. The dev server
   writes the content script's `?inline` stylesheet once at startup and never re-emits it, so the new
   class is missing and the overlay renders as unstyled boxes in the top-left corner (spec §7.3).
+- Never hand `chrome.storage.get` an object of defaults. Chrome merges an object-valued default
+  _into_ the stored value before returning it, upstream of anything we can control, so a field the
+  user cleared comes straight back. Read by key name (spec §9).
+- `trigger` replaces its default outright; every other settings object merges. It is a discriminated
+  union, and merging one variant into another produces neither (spec §9).
+- `npm run shots` cancels every stroke with Escape before releasing the button. A capture that
+  releases normally runs the gesture it just drew, and the next shot photographs the aftermath.
 
 ## Release
 
