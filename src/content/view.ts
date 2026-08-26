@@ -84,9 +84,11 @@ function swallow(event: Event): void {
 
 export function createView(sync: SyncSettings, local: LocalSettings, onPick: () => void): View {
   const overlay = createOverlay();
-  const trail = new Trail(overlay, sync.trail);
   const hud = new Hud(overlay);
   const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
+  // Built last, and handed the grid: the stroke draws above the panels, and
+  // thins out where it crosses one so the tile underneath stays readable.
+  const trail = new Trail(overlay, sync.trail, () => grid?.panelRects() ?? []);
 
   let points: Point[] = [];
   let stroke = "";
@@ -210,6 +212,10 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       void tabsPending.then((list) => {
         if (holding && list.length > 0) {
           grid.show(list);
+          // The panels just appeared under a stroke that is already drawn, and
+          // the trail only repaints on movement. Hold still and it would stay
+          // at full strength across them until the pointer moved again.
+          trail.render(points);
           return;
         }
         console.debug("[write-click] grid skipped", { holding, count: list.length });

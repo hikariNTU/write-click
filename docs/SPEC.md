@@ -331,6 +331,10 @@ panel visibly reflows as the tab count lands.
 - Layering inside the shadow root is explicit, not append order: tab grid `z-10`, trail `z-20`,
   readout `z-30`. The trail sits **above** the grid because the grid stays open while a stroke is
   being drawn, so putting the trail underneath would hide the feedback exactly when it is needed.
+  Where it crosses a panel it drops to **30% strength**, which is the other half of that trade: at
+  full strength it hides the tile title the tile exists to show. Drawn as two complementary clipped
+  passes — full outside the panels, faint inside — rather than one translucent pass over the whole
+  path, which would darken every corner where the stroke overlaps itself into a knot.
 - For `tab.closeRight` / `tab.closeLeft` the readout names the number of tabs that will actually
   close — "Close 3 tabs to the right" — because the stroke is destructive and undo is per-tab, so
   one gesture can cost several. When nothing would close, it says so and takes the unassigned tone

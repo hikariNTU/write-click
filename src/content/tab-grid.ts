@@ -172,6 +172,15 @@ export class TabGrid {
   }
 
   /**
+   * Where the panels are, in viewport pixels, for anything drawing over them.
+   * Empty while the grid is hidden, so a stroke on its own is never clipped.
+   */
+  panelRects(): readonly DOMRect[] {
+    if (!this.#visible) return [];
+    return [this.#panel.getBoundingClientRect(), this.#cheatPanel.getBoundingClientRect()];
+  }
+
+  /**
    * The tab whose tile is under a point, if any.
    *
    * The grid opens while a mouse button is already held, and Blink captures
