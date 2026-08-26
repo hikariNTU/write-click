@@ -1,22 +1,23 @@
-import arrowBack from "@material-symbols/svg-700/rounded/arrow_back.svg?raw";
-import arrowForward from "@material-symbols/svg-700/rounded/arrow_forward.svg?raw";
-import help from "@material-symbols/svg-700/rounded/help.svg?raw";
-import doubleDown from "@material-symbols/svg-700/rounded/keyboard_double_arrow_down.svg?raw";
-import doubleLeft from "@material-symbols/svg-700/rounded/keyboard_double_arrow_left.svg?raw";
-import doubleRight from "@material-symbols/svg-700/rounded/keyboard_double_arrow_right.svg?raw";
-import doubleUp from "@material-symbols/svg-700/rounded/keyboard_double_arrow_up.svg?raw";
-import globe from "@material-symbols/svg-700/rounded/public.svg?raw";
-import minimize from "@material-symbols/svg-700/rounded/minimize.svg?raw";
-import restore from "@material-symbols/svg-700/rounded/restore_from_trash.svg?raw";
-import tabCloseRight from "@material-symbols/svg-700/rounded/tab_close_right.svg?raw";
-import tabClose from "@material-symbols/svg-700/rounded/tab_close.svg?raw";
-import alignBottom from "@material-symbols/svg-700/rounded/vertical_align_bottom.svg?raw";
-import alignTop from "@material-symbols/svg-700/rounded/vertical_align_top.svg?raw";
+import arrowBack from "../icons/arrow_back.svg?raw";
+import arrowForward from "../icons/arrow_forward.svg?raw";
+import help from "../icons/help.svg?raw";
+import doubleDown from "../icons/keyboard_double_arrow_down.svg?raw";
+import doubleLeft from "../icons/keyboard_double_arrow_left.svg?raw";
+import doubleRight from "../icons/keyboard_double_arrow_right.svg?raw";
+import doubleUp from "../icons/keyboard_double_arrow_up.svg?raw";
+import globe from "../icons/public.svg?raw";
+import minimize from "../icons/minimize.svg?raw";
+import restore from "../icons/restore_from_trash.svg?raw";
+import tabCloseRight from "../icons/tab_close_right.svg?raw";
+import tabClose from "../icons/tab_close.svg?raw";
+import alignBottom from "../icons/vertical_align_bottom.svg?raw";
+import alignTop from "../icons/vertical_align_top.svg?raw";
 import type { CommandId } from "../shared/commands";
 import type { Direction } from "./recognizer";
 
 /**
- * Material Symbols Rounded, bundled at build time — an extension cannot pull
+ * Material Symbols Rounded, vendored into src/icons by scripts/sync-icons.mjs
+ * and bundled at build time — an extension cannot pull
  * a webfont at runtime under its own CSP, and inlining the dozen glyphs we
  * actually use costs a few kB against the ~4 MB variable font.
  *

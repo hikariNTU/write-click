@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "node ./scripts/sync-icons.mjs",
     "build": "vite build",
+    "prebuild": "node ./scripts/sync-icons.mjs",
+    "sync:icons": "node ./scripts/sync-icons.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",

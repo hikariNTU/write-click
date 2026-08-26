@@ -179,9 +179,17 @@ Rules:
 
 ### 7.1 Icons
 
-Material Symbols **Rounded**, inlined at build time from `@material-symbols/svg-700` and imported
+Material Symbols **Rounded**, vendored into `src/icons/` by `scripts/sync-icons.mjs` and imported
 with `?raw`. An extension cannot fetch a webfont at runtime under its own CSP, and the dozen glyphs
 actually used cost a few kB against the ~4 MB variable font.
+
+They are copied under the root rather than imported from `node_modules` directly. Vite's root is
+`src/`, so a `?raw` import from outside it is served over a `/@fs/` URL, which the dev server then
+resolves against the root and turns into `src/@fs/...` — an ENOENT on every content-script load in
+`npm run dev`. The build resolves those on disk and never sees it, so this only ever breaks dev.
+
+The copies are committed, and `prebuild`/`predev` re-sync them. Adding a glyph means adding its name
+to the `ICONS` list in that script, not a new import path into `node_modules`.
 
 Weight is **700** — the heaviest the Material Symbols `wght` axis defines. There is no 900 in this
 family (`GRAD` also stops at 200), so 700 is the ceiling.
