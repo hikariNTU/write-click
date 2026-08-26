@@ -208,12 +208,13 @@ Rules:
 - Hovering a tile highlights it. **Left-click while the trigger is still held** activates that tab
   and sets `cancelled`, so the pending stroke is discarded when the trigger is released.
 - Moving off every tile and releasing the trigger falls through to normal stroke matching.
-- Under the tiles sits the **cheatsheet**: every bound gesture, as arrow chips beside its command
-  name. The panel is already open while the trigger is held, which is exactly when someone wonders
-  what else they could draw, so the reference belongs there rather than buried in settings. It can
-  be switched off.
+- Along the bottom edge sits the **cheatsheet**, in its own panel: every bound gesture, as arrow
+  chips beside its command name. It is on screen while the trigger is held, which is exactly when
+  someone wonders what else they could draw, so the reference belongs there rather than buried in
+  settings. It can be switched off, and the panel goes with it — an empty one would dim the bottom
+  of the window for nothing. It never takes pointer events.
 - **Releasing the trigger over a tile switches to it**, without a click. On by default; §6.3.
-- The panel is **centred**, and holds one size at every page zoom level; §6.4.
+- The panel is **docked to the top edge**, and holds one size at every page zoom level; §6.4.
 - `Escape` closes the grid and cancels the gesture.
 
 ### 6.1 Picking a tile under mouse capture
@@ -285,18 +286,32 @@ and the sub-frame runs its held command only on `resume`. A reply that never arr
 without the content script — falls back to running it after 300ms, which is what used to happen
 unconditionally.
 
-### 6.4 Size, and page zoom
+### 6.4 Where the overlay sits
 
-**Centred.** Anchoring the panel to the cursor was tried and removed: it reads as clanky, because the
-panel jumps to a different place on every gesture and the eye has to find it each time. A fixed
-position is somewhere the eye can go before the panel is even there. Do not reintroduce it.
+Three bands, and the middle one is deliberately empty:
 
-Only `opacity` and `transform` transition. `transition-all` animates `left` and `top` too, and a
-panel that ever moves visibly slides across the page.
+| Band   | What                        |
+| ------ | --------------------------- |
+| Top    | the tab tiles               |
+| Middle | the stroke, and the readout |
+| Bottom | the gesture cheatsheet      |
 
-**Page zoom is cancelled out**, for the whole overlay — see §7.4. The panel's width and max-height
-are computed in the pixels they will occupy on screen and divided back out of the scale, so the tile
-count per row is what the display can hold rather than what the zoom level leaves.
+**The middle belongs to the gesture.** It is where the stroke is drawn, and it is the part of the
+window the cursor crosses on the way to anywhere. A panel there sits under the stroke and takes the
+clicks meant for the page. So the two panels are docked to the edges, each capped at a share of the
+window's height, and the readout — which takes no pointer events at all — has the centre to itself.
+
+Each panel grows away from the edge it is pinned to (`transform-origin: top center` and
+`bottom center`), or scaling it up would push its own border off the screen. Both keep a gap from
+their edge, and that gap is scaled by hand: the strips holding them are not themselves scaled, so a
+larger overlay would otherwise sit the same distance from the edge as a small one.
+
+Anchoring the tab panel to the cursor was tried and removed: it reads as clanky, because the panel
+lands somewhere new on every gesture and the eye has to find it each time. A fixed position is
+somewhere the eye can go before the panel is even there. Do not reintroduce it.
+
+Only `opacity` and `transform` transition. `transition-all` animates the box metrics too, and the
+panel visibly reflows as the tab count lands.
 
 ## 7. Overlay
 
@@ -390,11 +405,18 @@ grows. It is read from the background with `chrome.tabs.getZoom`, once per gestu
 zoom at any time. A content script cannot work it out for itself: `devicePixelRatio` folds page zoom
 together with the display's scale factor and the two cannot be separated.
 
+**Every design size in the overlay is a screen size.** A panel's layout box is multiplied by the
+scale before it lands on screen, so a layout width of 900 is 900 screen pixels whatever the zoom —
+the constant is written as-is and the transform does the work. Dividing it by the scale as well
+double-counts the zoom and was a bug. The conversion runs the other way for anything measured _from_
+the page: `window.innerWidth` and `window.innerHeight` are in the page's own pixels, so they are
+divided by the scale before being compared with a design size. `TabGrid.#room()` is that conversion,
+and every fit decision goes through it.
+
 Applied three different ways, because the three layers are different kinds of thing:
 
 - **Tab grid** and **readout**: `transform: scale(…)`, with the entrance animation folded into the
-  same transform. One property, so the two cannot fight over it. The readout's offset from the
-  bottom edge is scaled with it, or a larger card would hang off the screen.
+  same transform. One property, so the two cannot fight over it.
 - **Trail**: line width, glow radius and head radius only. The stroke is drawn in the page's own
   coordinates because it has to follow the cursor, so scaling the canvas would move the line off the
   pointer.

@@ -69,8 +69,12 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   `pointerdown` at all.
 - The overlay is sized by `uiScale / pageZoom` and nothing else (spec §7.4). Anything new the
   overlay draws goes through that number, or it grows with the page.
-- The tab grid is centred. Anchoring it to the cursor was tried and removed for being clanky
-  (spec §6.4).
+- The middle of the window stays free of anything that takes pointer events. The tab tiles dock to
+  the top edge and the gesture list to the bottom; the centre belongs to the stroke and the readout
+  (spec §6.4). Anchoring the tab panel to the cursor was tried and removed for being clanky.
+- Overlay design sizes are screen sizes and are written as-is; anything measured from the page is
+  divided by the overlay scale first (spec §7.4). Dividing a design size by the scale as well
+  double-counts the zoom.
 - A sub-frame never runs its gesture command before the top frame answers its `end`. Only the top
   frame knows whether the release picked a tab (spec §6.3).
 - `build.outDir` stays **absolute**. The dev server resolves a relative one two ways — against Vite's

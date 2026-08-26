@@ -7,8 +7,38 @@ import { containsPoint } from "../shared/geometry";
 import type { Point } from "../shared/recognizer";
 import type { GridSize } from "../shared/settings";
 
-/** Kept clear of the viewport edge, so the panel's border is never clipped. */
+/** Kept clear of the left and right edges, so a panel's border is never clipped. */
 const MARGIN = 12;
+
+/** How far the docked panels sit from the top and bottom edges. */
+const EDGE_GAP = 24;
+
+/**
+ * How much of the window's height each docked panel may take. The middle is
+ * left free on purpose: it is where the gesture is drawn, and a panel there
+ * would sit under the stroke and take the clicks meant for the page.
+ */
+const TILES_SHARE = 0.5;
+const CHEATSHEET_SHARE = 0.28;
+
+const PANEL_CHROME =
+  "overflow-y-auto rounded-3xl border border-white/10 bg-slate-950/70 text-slate-50 " +
+  "backdrop-blur-[6px] shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)] " +
+  // Only opacity and transform transition. `transition-all` would animate the
+  // box metrics too, and the panel would visibly reflow as tabs are counted.
+  "transition-[opacity,transform] duration-150 ease-out";
+
+/** A fixed strip pinned to one edge, holding a panel centred across the window. */
+function bar(edge: "top" | "bottom"): HTMLDivElement {
+  const node = document.createElement("div");
+  // Spelled out rather than interpolated: Tailwind only sees complete class
+  // strings in the source, and `${edge}-0` is not one.
+  node.className =
+    edge === "top"
+      ? "pointer-events-none fixed inset-x-0 top-0 grid justify-items-center"
+      : "pointer-events-none fixed inset-x-0 bottom-0 grid justify-items-center";
+  return node;
+}
 
 /**
  * Applied by hand rather than by `:hover`. While a mouse button is held, Blink
@@ -45,10 +75,13 @@ interface Tile {
  */
 export class TabGrid {
   readonly #root = document.createElement("div");
+  readonly #topBar = bar("top");
+  readonly #bottomBar = bar("bottom");
   readonly #panel = document.createElement("div");
   readonly #grid = document.createElement("div");
   readonly #caption = document.createElement("div");
   readonly #size: { tile: number; panel: number };
+  readonly #cheatPanel = document.createElement("div");
   readonly #cheatsheet = document.createElement("div");
   #visible = false;
   #teardown = 0;
@@ -66,36 +99,42 @@ export class TabGrid {
     this.#size = SIZES[size] ?? SIZES.normal;
     // Toggled with `invisible`, not `hidden`: both `hidden` and `grid` set
     // `display`, so which one wins would come down to CSS source order.
-    this.#root.className =
-      "pointer-events-none invisible fixed inset-0 z-10 grid place-items-center";
-    // Only opacity and transform transition. `transition-all` would animate
-    // left and top too, and the panel would slide across the page from wherever
-    // the last gesture left it.
-    this.#panel.className =
-      "pointer-events-auto overflow-y-auto rounded-3xl " +
-      "border border-white/10 bg-slate-950/70 p-4 text-slate-50 backdrop-blur-[6px] " +
-      "shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)] transition-[opacity,transform] " +
-      "duration-150 ease-out";
+    this.#root.className = "pointer-events-none invisible fixed inset-0 z-10";
+    // Docked to the edges rather than centred, and each grows away from the
+    // edge it is pinned to — otherwise a scaled-up panel would push its own
+    // border off the screen.
+    this.#panel.className = `pointer-events-auto p-4 ${PANEL_CHROME}`;
+    this.#panel.style.transformOrigin = "top center";
+    // Reference text, never a target: it must not take a click meant for the
+    // page underneath.
+    this.#cheatPanel.className = `pointer-events-none px-4 py-3 ${PANEL_CHROME}`;
+    this.#cheatPanel.style.transformOrigin = "bottom center";
     this.#reveal(false);
     this.#caption.className =
       "mb-3 flex items-baseline justify-between px-1 text-[11px] font-medium text-slate-400";
     this.#grid.className = "grid gap-2";
     this.#grid.style.gridTemplateColumns = `repeat(auto-fit, minmax(${this.#size.tile}px, 1fr))`;
-    this.#panel.append(this.#caption, this.#grid, this.#cheatsheet);
-    this.#root.append(this.#panel);
+    this.#panel.append(this.#caption, this.#grid);
+    this.#cheatPanel.append(this.#cheatsheet);
+    this.#topBar.append(this.#panel);
+    this.#bottomBar.append(this.#cheatPanel);
+    this.#root.append(this.#topBar, this.#bottomBar);
     root.append(this.#root);
   }
 
   /**
-   * The gesture list, under the tiles. The panel is already on screen while the
-   * trigger is held, which is exactly the moment someone is wondering what else
-   * they could draw — so the reference belongs here rather than buried in
-   * settings.
+   * The gesture list, in its own panel along the bottom edge. It is on screen
+   * while the trigger is held, which is exactly the moment someone is wondering
+   * what else they could draw — so the reference belongs here rather than
+   * buried in settings.
    */
   setGestures(gestures: Record<string, CommandId>): void {
     const entries = Object.entries(gestures).toSorted(([, a], [, b]) =>
       t(COMMANDS[a].labelKey).localeCompare(t(COMMANDS[b].labelKey)),
     );
+    // An empty panel is worse than no panel: it would still dim the bottom of
+    // the window for nothing.
+    this.#bottomBar.style.display = entries.length === 0 ? "none" : "";
     if (entries.length === 0) {
       this.#cheatsheet.replaceChildren();
       return;
@@ -122,8 +161,7 @@ export class TabGrid {
     }
 
     const heading = document.createElement("div");
-    heading.className =
-      "mb-2 mt-4 border-t border-white/5 px-1 pt-3 text-[10px] font-medium uppercase tracking-wider text-slate-500";
+    heading.className = "mb-2 px-1 text-[10px] font-medium uppercase tracking-wider text-slate-500";
     heading.textContent = t("grid_cheatsheet");
 
     this.#cheatsheet.replaceChildren(heading, wrap);
@@ -178,14 +216,36 @@ export class TabGrid {
 
   setScale(scale: number): void {
     this.#scale = scale > 0 ? scale : 1;
+    // The strips are not scaled themselves, so their gap has to be scaled by
+    // hand or a larger overlay would sit the same distance from the edge.
+    this.#topBar.style.paddingTop = `${EDGE_GAP * this.#scale}px`;
+    this.#bottomBar.style.paddingBottom = `${EDGE_GAP * this.#scale}px`;
     if (this.#visible) this.#reveal(true);
   }
 
   #reveal(shown: boolean): void {
-    this.#panel.style.opacity = shown ? "1" : "0";
-    // The entrance scale is folded into the zoom counter-scale: one transform
+    // The entrance scale is folded into the overlay scale: one transform
     // property, so the two cannot fight over it.
-    this.#panel.style.transform = `scale(${shown ? this.#scale : this.#scale * 0.95})`;
+    const transform = `scale(${shown ? this.#scale : this.#scale * 0.95})`;
+    for (const panel of [this.#panel, this.#cheatPanel]) {
+      panel.style.opacity = shown ? "1" : "0";
+      panel.style.transform = transform;
+    }
+  }
+
+  /**
+   * The window, measured in the units the panels are laid out in.
+   *
+   * A panel's layout box is multiplied by the overlay scale before it lands on
+   * screen, so every design size here is a screen size and every viewport
+   * measurement has to be divided into the same unit before the two can be
+   * compared.
+   */
+  #room(): { width: number; height: number } {
+    return {
+      width: window.innerWidth / this.#scale - 2 * MARGIN,
+      height: window.innerHeight / this.#scale - 2 * EDGE_GAP,
+    };
   }
 
   show(tabs: readonly TabSummary[]): void {
@@ -204,16 +264,17 @@ export class TabGrid {
     }));
     this.#hovered = undefined;
     this.#grid.replaceChildren(...this.#tiles.map(({ node }) => node));
-    // Sized in the pixels it will occupy on screen, then divided back out of
-    // the counter-scale. Never stretch a handful of tabs across the full panel:
-    // cap it at the width the tiles there actually are would occupy.
-    const width = Math.min(
+    const room = this.#room();
+    // Never stretch a handful of tabs across the full panel: cap it at the
+    // width the tiles actually present would occupy.
+    this.#panel.style.width = `${Math.min(
       this.#size.panel,
       tabs.length * (this.#size.tile + 8) + 32,
-      window.innerWidth - 2 * MARGIN,
-    );
-    this.#panel.style.width = `${width / this.#scale}px`;
-    this.#panel.style.maxHeight = `${(window.innerHeight - 2 * MARGIN) / this.#scale}px`;
+      room.width,
+    )}px`;
+    this.#panel.style.maxHeight = `${room.height * TILES_SHARE}px`;
+    this.#cheatPanel.style.width = `${Math.min(this.#size.panel, room.width)}px`;
+    this.#cheatPanel.style.maxHeight = `${room.height * CHEATSHEET_SHARE}px`;
     this.#root.classList.remove("invisible");
     this.#visible = true;
     // One frame of layout before the transition, or it snaps in.

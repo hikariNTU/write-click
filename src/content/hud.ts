@@ -9,9 +9,6 @@ export interface Match {
   state: MatchState;
 }
 
-/** How far above the bottom edge the readout sits, at scale 1. */
-const BOTTOM_GAP = 40;
-
 /** How far it slides up on the way in, at scale 1. */
 const RISE = 8;
 
@@ -37,8 +34,11 @@ export class Hud {
   #scale = 1;
 
   constructor(root: ShadowRoot) {
-    this.#anchor.className =
-      "pointer-events-none fixed inset-x-0 bottom-10 z-30 grid place-items-center";
+    // Centred. The tab grid and the gesture list are docked to the top and
+    // bottom edges (docs/SPEC.md §6.4), which leaves the middle of the window
+    // to the stroke being drawn and to the readout naming it. Nothing here
+    // takes pointer events, so sitting under the cursor costs nothing.
+    this.#anchor.className = "pointer-events-none fixed inset-0 z-30 grid place-items-center";
     // Hidden and shown by inline transform rather than utilities, so the
     // entrance and the overlay scale share one property instead of fighting
     // over it. Only opacity and transform transition, never the offset.
@@ -46,7 +46,7 @@ export class Hud {
       "flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 " +
       "text-slate-50 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-[6px] " +
       "transition-[opacity,transform] duration-150 ease-out";
-    this.#card.style.transformOrigin = "bottom center";
+
     this.#reveal();
     this.#tile.className =
       `grid h-10 w-10 shrink-0 place-items-center rounded-xl ring-1 ${TILE_TONE.matched} ` +
@@ -63,14 +63,8 @@ export class Hud {
     root.append(this.#anchor);
   }
 
-  /**
-   * Resizes the readout without moving it off the bottom edge: the card is
-   * scaled and the gap it sits above is scaled with it, so the whole thing
-   * grows as one piece.
-   */
   setScale(scale: number): void {
     this.#scale = scale > 0 ? scale : 1;
-    this.#anchor.style.bottom = `${BOTTOM_GAP * this.#scale}px`;
     this.#reveal();
   }
 
