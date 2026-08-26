@@ -42,6 +42,14 @@ export function setLocale(language: LanguageSetting): void {
   override = language === "auto" ? undefined : language;
 }
 
+/**
+ * Numbers shown to the reader go through Intl, never string interpolation:
+ * grouping and digits differ by locale.
+ */
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat(override ?? navigator.language).format(value);
+}
+
 function substitute(entry: Entry, substitutions: string[]): string {
   let out = entry.message;
   for (const [name, { content }] of Object.entries(entry.placeholders ?? {})) {

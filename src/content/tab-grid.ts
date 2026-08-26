@@ -1,6 +1,6 @@
 import { COMMANDS } from "../shared/commands";
 import type { CommandId } from "../shared/commands";
-import { t } from "../shared/i18n";
+import { formatNumber, t } from "../shared/i18n";
 import { FALLBACK_FAVICON, strokeChipsHtml } from "../shared/icons";
 import type { TabSummary } from "../shared/messages";
 import type { GridSize } from "../shared/settings";
@@ -116,7 +116,7 @@ export class TabGrid {
     clearTimeout(this.#teardown);
     this.#panel.classList.remove("pointer-events-none");
     this.#caption.replaceChildren(
-      label(t(tabs.length === 1 ? "grid_tabs_one" : "grid_tabs_other", String(tabs.length))),
+      label(t(tabs.length === 1 ? "grid_tabs_one" : "grid_tabs_other", formatNumber(tabs.length))),
       label(t("grid_hint")),
     );
     this.#grid.replaceChildren(...tabs.map((tab) => this.#tile(tab)));

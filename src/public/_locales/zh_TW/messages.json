@@ -1,58 +1,4 @@
 {
-  "extName": {
-    "message": "Write Click 手勢"
-  },
-  "extDescription": {
-    "message": "用滑鼠手勢切換、關閉與復原分頁，並在頁面中移動。"
-  },
-  "cmd_tab_prev": {
-    "message": "上一個分頁"
-  },
-  "cmd_tab_next": {
-    "message": "下一個分頁"
-  },
-  "cmd_tab_first": {
-    "message": "最左邊的分頁"
-  },
-  "cmd_tab_last": {
-    "message": "最右邊的分頁"
-  },
-  "cmd_tab_close": {
-    "message": "關閉分頁"
-  },
-  "cmd_tab_reopen": {
-    "message": "復原關閉的分頁"
-  },
-  "cmd_tab_closeRight": {
-    "message": "關閉右側分頁"
-  },
-  "cmd_tab_closeLeft": {
-    "message": "關閉左側分頁"
-  },
-  "cmd_tab_closeOthers": {
-    "message": "關閉其他分頁"
-  },
-  "cmd_tab_new": {
-    "message": "開新分頁"
-  },
-  "cmd_tab_duplicate": {
-    "message": "複製分頁"
-  },
-  "cmd_tab_togglePin": {
-    "message": "釘選或取消釘選分頁"
-  },
-  "cmd_tab_toggleMute": {
-    "message": "靜音或取消靜音"
-  },
-  "cmd_tab_detach": {
-    "message": "移至新視窗"
-  },
-  "cmd_tab_reload": {
-    "message": "重新載入"
-  },
-  "cmd_tab_reloadHard": {
-    "message": "重新載入並略過快取"
-  },
   "cmd_nav_back": {
     "message": "上一頁"
   },
@@ -62,14 +8,74 @@
   "cmd_nav_stop": {
     "message": "停止載入"
   },
-  "cmd_window_minimize": {
-    "message": "縮到最小"
+  "cmd_page_down": {
+    "message": "向下捲動一頁"
   },
-  "cmd_window_new": {
-    "message": "開新視窗"
+  "cmd_page_end": {
+    "message": "捲動至底部"
+  },
+  "cmd_page_top": {
+    "message": "捲動至頂端"
+  },
+  "cmd_page_up": {
+    "message": "向上捲動一頁"
+  },
+  "cmd_tab_close": {
+    "message": "關閉分頁"
+  },
+  "cmd_tab_closeLeft": {
+    "message": "關閉左側所有分頁"
+  },
+  "cmd_tab_closeOthers": {
+    "message": "關閉其他分頁"
+  },
+  "cmd_tab_closeRight": {
+    "message": "關閉右側所有分頁"
+  },
+  "cmd_tab_detach": {
+    "message": "將分頁移至新視窗"
+  },
+  "cmd_tab_duplicate": {
+    "message": "複製分頁"
+  },
+  "cmd_tab_first": {
+    "message": "最左側分頁"
+  },
+  "cmd_tab_last": {
+    "message": "最右側分頁"
+  },
+  "cmd_tab_new": {
+    "message": "開啟新分頁"
+  },
+  "cmd_tab_next": {
+    "message": "下一個分頁"
+  },
+  "cmd_tab_prev": {
+    "message": "上一個分頁"
+  },
+  "cmd_tab_reload": {
+    "message": "重新載入"
+  },
+  "cmd_tab_reloadHard": {
+    "message": "重新載入並略過快取"
+  },
+  "cmd_tab_reopen": {
+    "message": "復原已關閉的分頁"
+  },
+  "cmd_tab_toggleMute": {
+    "message": "靜音或取消靜音分頁"
+  },
+  "cmd_tab_togglePin": {
+    "message": "釘選或取消釘選分頁"
   },
   "cmd_window_fullscreen": {
     "message": "切換全螢幕"
+  },
+  "cmd_window_minimize": {
+    "message": "視窗最小化"
+  },
+  "cmd_window_new": {
+    "message": "開啟新視窗"
   },
   "cmd_zoom_in": {
     "message": "放大"
@@ -78,38 +84,38 @@
     "message": "縮小"
   },
   "cmd_zoom_reset": {
-    "message": "重設縮放"
+    "message": "重設縮放比例"
   },
-  "cmd_page_up": {
-    "message": "上一頁畫面"
+  "extDescription": {
+    "message": "以滑鼠手勢切換、關閉與復原分頁，並在頁面中捲動。"
   },
-  "cmd_page_down": {
-    "message": "下一頁畫面"
+  "extName": {
+    "message": "Write Click 手勢"
   },
-  "cmd_page_top": {
-    "message": "捲到頂端"
+  "grid_cheatsheet": {
+    "message": "手勢清單"
   },
-  "cmd_page_end": {
-    "message": "捲到底部"
+  "grid_hint": {
+    "message": "點選項目即可切換分頁"
   },
-  "hud_unassigned": {
-    "message": "未指定"
-  },
-  "hud_closeRight_one": {
-    "message": "關閉右側 $COUNT$ 個分頁",
+  "grid_tabs_one": {
+    "message": "$COUNT$ 個分頁",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
   },
-  "hud_closeRight_other": {
-    "message": "關閉右側 $COUNT$ 個分頁",
+  "grid_tabs_other": {
+    "message": "$COUNT$ 個分頁",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
+  },
+  "hud_closeLeft_none": {
+    "message": "左側沒有可關閉的分頁"
   },
   "hud_closeLeft_one": {
     "message": "關閉左側 $COUNT$ 個分頁",
@@ -130,54 +136,253 @@
   "hud_closeRight_none": {
     "message": "右側沒有可關閉的分頁"
   },
-  "hud_closeLeft_none": {
-    "message": "左側沒有可關閉的分頁"
-  },
-  "grid_tabs_one": {
-    "message": "$COUNT$ 個分頁",
+  "hud_closeRight_one": {
+    "message": "關閉右側 $COUNT$ 個分頁",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
   },
-  "grid_tabs_other": {
-    "message": "$COUNT$ 個分頁",
+  "hud_closeRight_other": {
+    "message": "關閉右側 $COUNT$ 個分頁",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
   },
-  "grid_hint": {
-    "message": "點一下即可切換"
+  "hud_unassigned": {
+    "message": "未指派"
   },
-  "grid_cheatsheet": {
-    "message": "手勢一覽"
+  "modifier_alt": {
+    "message": "Alt"
+  },
+  "modifier_command": {
+    "message": "Command"
+  },
+  "modifier_control": {
+    "message": "Control"
+  },
+  "modifier_meta": {
+    "message": "Meta"
+  },
+  "modifier_none": {
+    "message": "不使用輔助鍵"
+  },
+  "modifier_option": {
+    "message": "Option"
+  },
+  "modifier_shift": {
+    "message": "Shift"
+  },
+  "options_autosave": {
+    "message": "變更會自動儲存。"
+  },
+  "options_gestures_clear": {
+    "message": "清除"
+  },
+  "options_gestures_desc": {
+    "message": "每個指令對應一組筆畫。指派已被使用的筆畫時，該筆畫會轉移，原指令將變為未指派。"
+  },
+  "options_gestures_draw": {
+    "message": "繪製"
+  },
+  "options_gestures_pad": {
+    "message": "於此區域繪製：按住任一滑鼠鍵並移動。按 Esc 取消。"
+  },
+  "options_gestures_pad_void": {
+    "message": "指標已離開此區域，該筆畫已捨棄，請重新繪製。"
+  },
+  "options_gestures_taken": {
+    "message": "$STROKE$ 已自「$LABEL$」轉移，該指令現為未指派。",
+    "placeholders": {
+      "stroke": {
+        "content": "$1"
+      },
+      "label": {
+        "content": "$2"
+      }
+    }
+  },
+  "options_gestures_title": {
+    "message": "手勢"
+  },
+  "options_gestures_unbound": {
+    "message": "未指派"
+  },
+  "options_language_auto": {
+    "message": "跟隨瀏覽器"
+  },
+  "options_language_desc": {
+    "message": "僅套用於本擴充功能。Chrome 選單中顯示的名稱依瀏覽器語言而定。"
+  },
+  "options_language_label": {
+    "message": "語言"
+  },
+  "options_language_title": {
+    "message": "語言"
+  },
+  "options_overlay_cheatsheet": {
+    "message": "手勢清單"
+  },
+  "options_overlay_cheatsheet_hint": {
+    "message": "於分頁格線下方列出所有已指派的手勢。"
+  },
+  "options_overlay_color": {
+    "message": "軌跡顏色"
+  },
+  "options_overlay_delay": {
+    "message": "分頁格線延遲"
+  },
+  "options_overlay_delay_hint": {
+    "message": "分頁格線顯示前的延遲毫秒數。"
+  },
+  "options_overlay_desc": {
+    "message": "軌跡、指令提示與分頁格線的外觀。"
+  },
+  "options_overlay_grid": {
+    "message": "顯示分頁格線"
+  },
+  "options_overlay_grid_hint": {
+    "message": "按住觸發鍵時顯示。點選項目即可切換至該分頁。"
+  },
+  "options_overlay_readout": {
+    "message": "顯示指令提示"
+  },
+  "options_overlay_readout_hint": {
+    "message": "顯示目前筆畫所對應的指令。"
+  },
+  "options_overlay_size": {
+    "message": "分頁格線大小"
+  },
+  "options_overlay_size_hint": {
+    "message": "單一項目的寬度。每列可容納的數量依視窗寬度而定。"
+  },
+  "options_overlay_title": {
+    "message": "畫面顯示"
+  },
+  "options_overlay_width": {
+    "message": "軌跡粗細"
+  },
+  "options_reset": {
+    "message": "將所有設定重設為預設值"
+  },
+  "options_resetDone": {
+    "message": "所有設定已重設為預設值。"
+  },
+  "options_saved": {
+    "message": "已儲存"
+  },
+  "options_sites_desc": {
+    "message": "以下來源不啟用手勢。可由工具列彈出視窗加入目前的網站。"
+  },
+  "options_sites_device": {
+    "message": "於本裝置啟用手勢"
+  },
+  "options_sites_none": {
+    "message": "尚未停用任何網站。"
+  },
+  "options_sites_remove": {
+    "message": "移除"
+  },
+  "options_sites_title": {
+    "message": "已停用的網站"
+  },
+  "options_size_compact": {
+    "message": "小"
+  },
+  "options_size_large": {
+    "message": "大"
+  },
+  "options_size_normal": {
+    "message": "中"
+  },
+  "options_subtitle": {
+    "message": "分頁與頁面的滑鼠手勢。"
+  },
+  "options_trigger_button": {
+    "message": "按鍵"
+  },
+  "options_trigger_button_left": {
+    "message": "滑鼠左鍵"
+  },
+  "options_trigger_button_middle": {
+    "message": "滑鼠中鍵"
+  },
+  "options_trigger_button_right": {
+    "message": "滑鼠右鍵"
+  },
+  "options_trigger_desc": {
+    "message": "繪製手勢時按住的按鍵。各平台的右鍵選單觸發時機不同，因此僅儲存於本裝置。"
+  },
+  "options_trigger_hold": {
+    "message": "按住"
+  },
+  "options_trigger_key": {
+    "message": "按鍵"
+  },
+  "options_trigger_key_change": {
+    "message": "$KEY$。點選可變更。",
+    "placeholders": {
+      "key": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_key_hint": {
+    "message": "按住此鍵並移動滑鼠，不影響右鍵選單。"
+  },
+  "options_trigger_key_press": {
+    "message": "請按任一鍵"
+  },
+  "options_trigger_kind_button": {
+    "message": "滑鼠按鍵"
+  },
+  "options_trigger_kind_key": {
+    "message": "鍵盤按鍵"
+  },
+  "options_trigger_modifier": {
+    "message": "輔助鍵"
+  },
+  "options_trigger_modifier_hint": {
+    "message": "與滑鼠按鍵同時按住。"
+  },
+  "options_trigger_title": {
+    "message": "觸發鍵"
+  },
+  "options_warn_menu_modified": {
+    "message": "單獨按下右鍵仍會開啟系統右鍵選單，僅有搭配輔助鍵的組合會被接管。"
+  },
+  "options_warn_menu_mouseup": {
+    "message": "單獨按下右鍵仍會開啟系統右鍵選單，僅在完成筆畫後才會被攔截。"
+  },
+  "options_warn_menu_suppressed": {
+    "message": "本平台的右鍵選單於按下按鍵時即開啟，因此未搭配輔助鍵的右鍵會完全攔截該選單。Shift 加右鍵仍可開啟選單。若需保留選單，請選擇一個輔助鍵。"
+  },
+  "popup_enabledHere": {
+    "message": "於本網站啟用"
   },
   "popup_gestures": {
     "message": "手勢"
   },
-  "popup_thisDevice": {
-    "message": "僅此裝置。"
-  },
-  "popup_enabledHere": {
-    "message": "在此網站啟用"
-  },
   "popup_notHere": {
-    "message": "此頁面無法使用手勢。"
+    "message": "本頁面不支援手勢。"
   },
   "popup_settings": {
     "message": "設定"
   },
+  "popup_thisDevice": {
+    "message": "僅套用於本裝置。"
+  },
   "trigger_button_left": {
-    "message": "左鍵"
+    "message": "滑鼠左鍵"
   },
   "trigger_button_middle": {
-    "message": "中鍵"
+    "message": "滑鼠中鍵"
   },
   "trigger_button_right": {
-    "message": "右鍵"
+    "message": "滑鼠右鍵"
   },
   "trigger_hold_key": {
     "message": "按住 $KEY$",
@@ -197,210 +402,5 @@
         "content": "$2"
       }
     }
-  },
-  "modifier_none": {
-    "message": "不使用輔助鍵"
-  },
-  "modifier_alt": {
-    "message": "Alt"
-  },
-  "modifier_option": {
-    "message": "Option"
-  },
-  "modifier_shift": {
-    "message": "Shift"
-  },
-  "modifier_control": {
-    "message": "Control"
-  },
-  "modifier_meta": {
-    "message": "Meta"
-  },
-  "modifier_command": {
-    "message": "Command"
-  },
-  "options_subtitle": {
-    "message": "分頁與頁面的滑鼠手勢。"
-  },
-  "options_saved": {
-    "message": "已儲存"
-  },
-  "options_autosave": {
-    "message": "變更會立即儲存。"
-  },
-  "options_reset": {
-    "message": "全部重設為預設值"
-  },
-  "options_resetDone": {
-    "message": "已全部回到預設值。"
-  },
-  "options_language_title": {
-    "message": "語言"
-  },
-  "options_language_desc": {
-    "message": "只影響這個擴充功能。Chrome 選單中顯示的名稱一律跟隨瀏覽器語言。"
-  },
-  "options_language_label": {
-    "message": "語言"
-  },
-  "options_language_auto": {
-    "message": "跟隨瀏覽器"
-  },
-  "options_trigger_title": {
-    "message": "觸發方式"
-  },
-  "options_trigger_desc": {
-    "message": "畫手勢時要按住什麼。只儲存在這台裝置，因為各平台的右鍵選單行為不同。"
-  },
-  "options_trigger_hold": {
-    "message": "按住"
-  },
-  "options_trigger_kind_button": {
-    "message": "滑鼠按鍵"
-  },
-  "options_trigger_kind_key": {
-    "message": "鍵盤按鍵"
-  },
-  "options_trigger_button": {
-    "message": "按鍵"
-  },
-  "options_trigger_button_left": {
-    "message": "滑鼠左鍵"
-  },
-  "options_trigger_button_middle": {
-    "message": "滑鼠中鍵"
-  },
-  "options_trigger_button_right": {
-    "message": "滑鼠右鍵"
-  },
-  "options_trigger_modifier": {
-    "message": "輔助鍵"
-  },
-  "options_trigger_modifier_hint": {
-    "message": "與滑鼠鍵一起按住。"
-  },
-  "options_trigger_key": {
-    "message": "按鍵"
-  },
-  "options_trigger_key_hint": {
-    "message": "按住這個鍵並移動滑鼠，完全不會影響右鍵選單。"
-  },
-  "options_trigger_key_change": {
-    "message": "$KEY$ — 點一下可更換",
-    "placeholders": {
-      "key": {
-        "content": "$1"
-      }
-    }
-  },
-  "options_trigger_key_press": {
-    "message": "請按任一鍵…"
-  },
-  "options_warn_menu_mouseup": {
-    "message": "單純按右鍵仍會出現系統選單；只有真的畫出手勢時才會被攔下。"
-  },
-  "options_warn_menu_modified": {
-    "message": "單純按右鍵仍保留系統選單，只有加上輔助鍵時才會被接管。"
-  },
-  "options_warn_menu_suppressed": {
-    "message": "在這個平台上，右鍵選單是在按下的瞬間就出現，所以不加輔助鍵會讓它完全消失。Shift+右鍵仍可強制叫出選單；若要保留選單，請選一個輔助鍵。"
-  },
-  "options_gestures_title": {
-    "message": "手勢"
-  },
-  "options_gestures_desc": {
-    "message": "每個指令一組筆畫。畫出已被占用的筆畫會將它移過來，原本的指令則變成未指定。"
-  },
-  "options_gestures_draw": {
-    "message": "繪製"
-  },
-  "options_gestures_clear": {
-    "message": "清除"
-  },
-  "options_gestures_unbound": {
-    "message": "未指定"
-  },
-  "options_gestures_pad": {
-    "message": "在這裡畫 — 按住任一滑鼠鍵並移動。按 Esc 取消。"
-  },
-  "options_gestures_pad_void": {
-    "message": "已離開繪製區，該筆畫已捨棄，請重新繪製。"
-  },
-  "options_gestures_taken": {
-    "message": "$STROKE$ 已從「$LABEL$」移過來，該指令現在未指定。",
-    "placeholders": {
-      "stroke": {
-        "content": "$1"
-      },
-      "label": {
-        "content": "$2"
-      }
-    }
-  },
-  "options_overlay_title": {
-    "message": "畫面顯示"
-  },
-  "options_overlay_desc": {
-    "message": "軌跡、提示與分頁格線的外觀。"
-  },
-  "options_overlay_color": {
-    "message": "軌跡顏色"
-  },
-  "options_overlay_width": {
-    "message": "軌跡粗細"
-  },
-  "options_overlay_readout": {
-    "message": "顯示指令提示"
-  },
-  "options_overlay_readout_hint": {
-    "message": "顯示目前筆畫對應的指令。"
-  },
-  "options_overlay_grid": {
-    "message": "顯示分頁格線"
-  },
-  "options_overlay_grid_hint": {
-    "message": "按住觸發鍵時出現，點一下即可切換分頁。"
-  },
-  "options_overlay_cheatsheet": {
-    "message": "手勢一覽表"
-  },
-  "options_overlay_cheatsheet_hint": {
-    "message": "在分頁下方列出所有已設定的手勢。"
-  },
-  "options_overlay_size": {
-    "message": "格線大小"
-  },
-  "options_overlay_size_hint": {
-    "message": "單格寬度。每列能放幾個由視窗寬度決定。"
-  },
-  "options_size_compact": {
-    "message": "精簡"
-  },
-  "options_size_normal": {
-    "message": "標準"
-  },
-  "options_size_large": {
-    "message": "寬鬆"
-  },
-  "options_overlay_delay": {
-    "message": "格線延遲"
-  },
-  "options_overlay_delay_hint": {
-    "message": "格線出現前的毫秒數，避免快速手勢時一閃而過。"
-  },
-  "options_sites_title": {
-    "message": "停用的網站"
-  },
-  "options_sites_desc": {
-    "message": "這些來源不會啟用手勢。可從工具列彈出視窗加入目前網站。"
-  },
-  "options_sites_device": {
-    "message": "在這台裝置啟用手勢"
-  },
-  "options_sites_none": {
-    "message": "沒有停用任何網站。"
-  },
-  "options_sites_remove": {
-    "message": "移除"
   }
 }

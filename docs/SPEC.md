@@ -378,9 +378,17 @@ the English left in the HTML as documentation, filled in by `applyStaticMessages
 messages — `hud_closeRight_one` / `hud_closeRight_other`. A language that pluralizes differently needs
 both strings anyway.
 
-`src/shared/i18n.test.ts` enforces that every translation has exactly the English key set, that
-placeholders survive translation and are actually referenced in the translated string, and that every
-command's `labelKey` exists.
+Copy follows [`wording.md`](wording.md), adapted from the CanWas repo's `CONTEXT.md` and
+`docs/ui-guidelines.md`: plain statements, no filler or chatty asides, fixed terminology in both
+languages, and third-person objective register in zh-Hant.
+
+`src/shared/i18n.test.ts` enforces what can be checked mechanically — that every translation has
+exactly the English key set, that placeholders survive translation and are still referenced in the
+translated string, that every command's `labelKey` exists, that English copy carries no filler or
+banned asides, that zh-Hant copy stays third-person, and that "unbound" never reappears alongside
+"unassigned".
+
+Counts go through `formatNumber()`, which is `Intl.NumberFormat` on the active locale.
 
 Shipping: `en` (default) and `zh_TW`.
 

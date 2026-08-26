@@ -1,6 +1,6 @@
 import { COMMANDS } from "../shared/commands";
 import type { CommandId } from "../shared/commands";
-import { t } from "../shared/i18n";
+import { formatNumber, t } from "../shared/i18n";
 import { COMMAND_ICONS, UNKNOWN_ICON } from "../shared/icons";
 import { send } from "../shared/messages";
 import type { TabSummary } from "../shared/messages";
@@ -60,7 +60,7 @@ function describe(
     : one
       ? "hud_closeLeft_one"
       : "hud_closeLeft_other";
-  return { stroke, label: t(key, String(count)), icon, state: "matched" };
+  return { stroke, label: t(key, formatNumber(count)), icon, state: "matched" };
 }
 
 export interface View {

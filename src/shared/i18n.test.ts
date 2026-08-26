@@ -50,6 +50,46 @@ test("placeholders survive translation", () => {
   }
 });
 
+/** docs/wording.md: plain statements, no filler, no chatty asides. */
+const BANNED_EN = [
+  "actually",
+  "simply",
+  "really",
+  "thrown away",
+  "pops up",
+  "flash",
+  "puzzle",
+  "!",
+];
+
+/** docs/wording.md: third-person and objective, no colloquial word choices. */
+const BANNED_ZH = ["你", "妳", "拿不到", "跑掉", "一閃", "!", "！"];
+
+test("english copy avoids filler and asides", () => {
+  for (const [key, entry] of Object.entries(en)) {
+    const message = entry.message.toLowerCase();
+    for (const word of BANNED_EN) {
+      assert.ok(!message.includes(word), `${key} uses “${word}”: ${entry.message}`);
+    }
+  }
+});
+
+test("chinese copy stays third-person and formal", () => {
+  const messages = load("zh_TW");
+  for (const [key, entry] of Object.entries(messages)) {
+    for (const word of BANNED_ZH) {
+      assert.ok(!entry.message.includes(word), `${key} uses “${word}”: ${entry.message}`);
+    }
+  }
+});
+
+/** One concept, one word. A stroke with no command is always "unassigned". */
+test("english copy does not say unbound", () => {
+  for (const [key, entry] of Object.entries(en)) {
+    assert.ok(!entry.message.toLowerCase().includes("unbound"), `${key} says “unbound”`);
+  }
+});
+
 test("every command label has a message", () => {
   for (const command of Object.values(COMMANDS)) {
     assert.ok(command.labelKey in en, `${command.labelKey} is missing from english`);
