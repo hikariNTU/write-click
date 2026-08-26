@@ -4,11 +4,11 @@ import { isBackgroundCommand, send } from "../shared/messages";
 import { loadSettings } from "../shared/settings";
 import { Hud } from "./hud";
 import type { Match } from "./hud";
-import { COMMAND_ICONS, UNKNOWN_ICON } from "./icons";
+import { COMMAND_ICONS, UNKNOWN_ICON } from "../shared/icons";
 import { createOverlay } from "./overlay";
 import { runPageCommand } from "./page-commands";
-import { quantize } from "./recognizer";
-import type { Point } from "./recognizer";
+import { quantize } from "../shared/recognizer";
+import type { Point } from "../shared/recognizer";
 import { TabGrid } from "./tab-grid";
 import { Trail } from "./trail";
 import { attachTrigger } from "./trigger-runtime";
@@ -35,8 +35,6 @@ async function main(): Promise<void> {
   if (window.top !== window) return;
 
   const { sync, local } = await loadSettings();
-  if (!local.enabled || sync.disabledOrigins.includes(location.origin)) return;
-
   const overlay = createOverlay();
   const trail = new Trail(overlay, sync.trail);
   const hud = new Hud(overlay);
@@ -85,8 +83,8 @@ async function main(): Promise<void> {
     }, sync.grid.holdMs);
   };
 
-  attachTrigger(local.trigger, {
-    onStart(point) {
+  const handlers = {
+    onStart(point: Point) {
       points = [point];
       stroke = "";
       holding = true;
@@ -94,7 +92,7 @@ async function main(): Promise<void> {
       trail.render(points);
       scheduleGrid();
     },
-    onMove(point) {
+    onMove(point: Point) {
       points.push(point);
       trail.render(points);
       const next = quantize(points);
@@ -102,7 +100,7 @@ async function main(): Promise<void> {
       stroke = next;
       if (sync.trail.showLabel && stroke) hud.show(describe(stroke, sync.gestures[stroke]));
     },
-    onEnd(drifted) {
+    onEnd(drifted: boolean) {
       // A tile click wins outright: the stroke drawn underneath is ignored.
       const command = picked || !drifted || !stroke ? undefined : sync.gestures[stroke];
       // Scrolling targets where the gesture began, not where it ended: a long
@@ -112,6 +110,33 @@ async function main(): Promise<void> {
       if (command) void run(command, at);
     },
     onCancel: reset,
+  };
+
+  let detach: (() => void) | undefined;
+
+  /**
+   * Attached only while gestures are on for this device and this origin, and
+   * re-attached from scratch when the trigger changes — the trigger owns its
+   * own listeners, so swapping it means tearing them down.
+   */
+  const apply = (): void => {
+    const on = local.enabled && !sync.disabledOrigins.includes(location.origin);
+    detach?.();
+    detach = undefined;
+    reset();
+    if (on) detach = attachTrigger(local.trigger, handlers);
+  };
+
+  apply();
+
+  // Settings changed in the options page or the popup take effect here without
+  // a reload, on every open tab.
+  chrome.storage.onChanged.addListener(() => {
+    void loadSettings().then((next) => {
+      Object.assign(sync, next.sync);
+      Object.assign(local, next.local);
+      apply();
+    });
   });
 }
 

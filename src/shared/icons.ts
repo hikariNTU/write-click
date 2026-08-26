@@ -61,3 +61,13 @@ export const DIRECTION_ROTATION: Record<Direction, string> = {
   L: "rotate-180",
   U: "-rotate-90",
 };
+
+/** Renders a stroke as the arrows it was drawn as, not as letters. */
+export function strokeChipsHtml(stroke: string): string {
+  return [...stroke]
+    .map((letter) => {
+      const rotation = DIRECTION_ROTATION[letter as Direction] ?? "rotate-0";
+      return DIRECTION_ICON.replace("<svg ", `<svg class="${rotation}" `);
+    })
+    .join("");
+}

@@ -1,5 +1,5 @@
 import type { TabSummary } from "../shared/messages";
-import { FALLBACK_FAVICON } from "./icons";
+import { FALLBACK_FAVICON } from "../shared/icons";
 
 const PANEL_HIDDEN = ["opacity-0", "scale-95"] as const;
 

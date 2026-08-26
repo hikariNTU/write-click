@@ -1,7 +1,7 @@
 import { menuFiresOnMouseDown } from "../shared/trigger";
 import type { Modifier, Trigger } from "../shared/trigger";
-import { DRIFT_THRESHOLD, distanceSquared } from "./recognizer";
-import type { Point } from "./recognizer";
+import { DRIFT_THRESHOLD, distanceSquared } from "../shared/recognizer";
+import type { Point } from "../shared/recognizer";
 
 export interface TriggerHandlers {
   onStart(point: Point): void;

@@ -238,7 +238,12 @@ interface LocalSettings {
 ```
 
 `version` is bumped whenever a shape changes, with a migration in the service worker's
-`onInstalled`.
+`onInstalled`, which runs on both install and update. `migrate()` fills in fields the stored object
+never had rather than letting a reader find `undefined`.
+
+Content scripts subscribe to `chrome.storage.onChanged` and re-apply without a reload: gesture and
+overlay changes take effect on the next stroke, and a trigger change tears down its listeners and
+re-attaches. Turning gestures off, globally or for the origin, detaches them entirely.
 
 ## 10. Messaging
 
@@ -257,6 +262,23 @@ type Request =
 
 Every handler is exhaustive over the union; adding a member must break the build.
 
+## 10.1 Options page
+
+`src/options.html` + `src/options.ts`, opened in a tab. Every control writes on change; there is no
+save button. Sections: trigger, gestures, overlay, disabled sites, reset.
+
+Rebinding is done by **drawing**, in a pad that calls the same `quantize` the content script does —
+what you draw in the pad is by construction what will match on a page. A stroke means exactly one
+command, so drawing one that is already taken moves it and leaves the previous owner unbound, which
+the page says out loud rather than silently dropping.
+
+The trigger section shows what the current choice does to the native context menu, since that is the
+part that surprises people, and the wording follows §3.1 per platform.
+
+The popup carries only what is worth reaching in one click: gestures on/off for the device, and
+on/off for the current origin. It offers no origin toggle on browser-internal pages, where a content
+script cannot run and the toggle would be a lie.
+
 ## 11. Phases
 
 1. **Scaffold** — done. Vite + crxjs + Tailwind + oxc, shadow-root overlay, trigger defaults.
@@ -265,8 +287,9 @@ Every handler is exhaustive over the union; adding a member must break the build
 3. **Commands** — done. Background tab commands over a typed message union, content-local scroll
    commands, default map from §5.
 4. **Tab grid** — done. §6 in full, including click-to-switch and gesture cancellation.
-5. **Options** — trigger picker with key capture, gesture remap, per-origin disable, storage
-   migrations.
+5. **Options** — done. Trigger picker with key capture, gesture remap by drawing, overlay
+   appearance, per-origin disable, reset, and storage migrations. The toolbar popup carries the two
+   switches worth reaching quickly.
 6. **Frames and release** — sub-frame bridge, release workflow, icons, store listing.
 
 Done criteria per phase: `npm run build`, `npm run typecheck`, and `npm run lint` all clean, and the

@@ -1,5 +1,5 @@
 import type { ContentCommandId } from "../shared/messages";
-import type { Point } from "./recognizer";
+import type { Point } from "../shared/recognizer";
 
 function smooth(): ScrollBehavior {
   return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";

@@ -46,3 +46,62 @@ export async function loadSettings(): Promise<{ sync: SyncSettings; local: Local
   ]);
   return { sync, local };
 }
+
+export async function saveSync(patch: Partial<SyncSettings>): Promise<void> {
+  await chrome.storage.sync.set(patch);
+}
+
+export async function saveLocal(patch: Partial<LocalSettings>): Promise<void> {
+  await chrome.storage.local.set(patch);
+}
+
+/** The stroke currently bound to a command, if any. */
+export function strokeFor(
+  gestures: Record<string, CommandId>,
+  command: CommandId,
+): string | undefined {
+  return Object.keys(gestures).find((stroke) => gestures[stroke] === command);
+}
+
+/**
+ * Binds a stroke to a command, dropping whatever that command was bound to
+ * before. A stroke can only mean one thing, so an existing owner loses it —
+ * the caller is expected to say so.
+ */
+export function bind(
+  gestures: Record<string, CommandId>,
+  command: CommandId,
+  stroke: string,
+): Record<string, CommandId> {
+  const next = { ...gestures };
+  const previous = strokeFor(next, command);
+  if (previous) delete next[previous];
+  if (stroke) next[stroke] = command;
+  return next;
+}
+
+export function unbind(
+  gestures: Record<string, CommandId>,
+  command: CommandId,
+): Record<string, CommandId> {
+  const next = { ...gestures };
+  const previous = strokeFor(next, command);
+  if (previous) delete next[previous];
+  return next;
+}
+
+/**
+ * Brings stored settings up to the current shape. Runs on install and on
+ * update; every future version bump adds a step here rather than silently
+ * reading a field that is not there.
+ */
+export async function migrate(): Promise<void> {
+  const sync = (await chrome.storage.sync.get(null)) as Partial<SyncSettings>;
+  const local = (await chrome.storage.local.get(null)) as Partial<LocalSettings>;
+
+  if (sync.version !== 1)
+    await chrome.storage.sync.set({ ...defaultSyncSettings(), ...sync, version: 1 });
+  if (local.version !== 1) {
+    await chrome.storage.local.set({ ...defaultLocalSettings(), ...local, version: 1 });
+  }
+}

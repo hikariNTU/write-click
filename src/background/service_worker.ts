@@ -1,4 +1,5 @@
 import type { Request, Response, TabSummary } from "../shared/messages";
+import { migrate } from "../shared/settings";
 import { runTabCommand } from "./tab-commands";
 
 function summarize(tab: chrome.tabs.Tab): TabSummary | undefined {
@@ -51,4 +52,5 @@ chrome.runtime.onMessage.addListener((request: Request, sender, respond) => {
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.info("[write-click] installed", details.reason);
+  void migrate();
 });

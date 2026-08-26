@@ -1,4 +1,4 @@
-import type { Point } from "./recognizer";
+import type { Point } from "../shared/recognizer";
 
 export interface TrailOptions {
   color: string;

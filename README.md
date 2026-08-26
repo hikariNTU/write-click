@@ -9,10 +9,11 @@ and scripts cannot see it, restyle it, or reach into it.
 
 ## Status
 
-**Phase 4 of 6 — tab grid.** Gestures are captured, quantized and drawn as a glowing trail, the
+**Phase 5 of 6 — options.** Gestures are captured, quantized and drawn as a glowing trail, the
 matched command is named in a glass readout, and releasing the trigger runs it. Holding the trigger
-still for a moment opens a grid of the window's tabs: click one, with the trigger still held, to
-jump straight to it and discard the stroke. Next up: the options page.
+opens a grid of the window's tabs: click one, with the trigger still held, to jump straight to it and
+discard the stroke. Everything is configurable from the settings page. Next up: sub-frames and
+release packaging.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
 
@@ -62,6 +63,18 @@ the options page lands, and `page.end` ships unbound waiting for a stroke you li
 Hold the trigger without moving and a panel of the current window's tabs fades in. Click a tile —
 left button, trigger still held — to switch to that tab; whatever stroke was underway is thrown
 away. Flick straight into a gesture and the panel never appears.
+
+## Settings
+
+Right-click the toolbar icon → Settings, or open it from the popup. Rebinding is done by drawing the
+stroke in a pad that runs the same recognizer the content script does, so what you draw is what will
+match. A stroke means one command: drawing one that is already taken moves it, and the page tells you
+which command lost it.
+
+The popup carries the two switches worth reaching in one click — gestures on/off for this device, and
+on/off for the site you are on.
+
+Changes apply to open tabs immediately, with no reload.
 
 ## Develop
 

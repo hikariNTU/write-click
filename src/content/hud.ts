@@ -1,5 +1,4 @@
-import { DIRECTION_ICON, DIRECTION_ROTATION } from "./icons";
-import type { Direction } from "./recognizer";
+import { strokeChipsHtml } from "../shared/icons";
 
 export type MatchState = "matched" | "unassigned";
 
@@ -69,14 +68,8 @@ export class Hud {
   }
 }
 
-/** Renders the stroke as the arrows it was drawn as, not as letters. */
 function chips(stroke: string): Element[] {
   const holder = document.createElement("div");
-  holder.innerHTML = [...stroke]
-    .map((letter) => {
-      const rotation = DIRECTION_ROTATION[letter as Direction] ?? "rotate-0";
-      return DIRECTION_ICON.replace("<svg ", `<svg class="${rotation}" `);
-    })
-    .join("");
+  holder.innerHTML = strokeChipsHtml(stroke);
   return [...holder.children];
 }
