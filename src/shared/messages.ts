@@ -20,11 +20,13 @@ export interface TabSummary {
 export type Request =
   | { type: "command"; id: BackgroundCommandId }
   | { type: "tabs.list" }
-  | { type: "tabs.activate"; tabId: number };
+  | { type: "tabs.activate"; tabId: number }
+  | { type: "tabs.zoom" };
 
 export type Response =
   | { ok: true }
   | { ok: true; tabs: TabSummary[] }
+  | { ok: true; zoom: number }
   | { ok: false; error: string };
 
 export function isBackgroundCommand(id: CommandId): id is BackgroundCommandId {

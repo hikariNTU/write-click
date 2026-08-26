@@ -360,6 +360,13 @@ function overlayCard(): HTMLElement {
       t("options_overlay_grid_hint"),
     ),
     row(
+      t("options_overlay_release"),
+      toggle(sync.grid.pickOnRelease, (value) => {
+        void patchSync({ grid: { ...sync.grid, pickOnRelease: value } });
+      }),
+      t("options_overlay_release_hint"),
+    ),
+    row(
       t("options_overlay_cheatsheet"),
       toggle(sync.grid.cheatsheet, (value) => {
         void patchSync({ grid: { ...sync.grid, cheatsheet: value } });

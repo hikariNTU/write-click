@@ -20,6 +20,13 @@ async function run(command: CommandId, at: Point): Promise<void> {
   if (!response.ok) console.warn("[write-click]", command, response.error);
 }
 
+/**
+ * How long a sub-frame waits for the top frame's answer before running its
+ * command anyway. Long enough for a postMessage round trip through nested
+ * frames, short enough to pass for instant.
+ */
+const ANSWER_TIMEOUT_MS = 300;
+
 async function main(): Promise<void> {
   const { sync, local } = await loadSettings();
   setLocale(sync.language);
@@ -30,6 +37,24 @@ async function main(): Promise<void> {
   /** A tab was picked from the grid, so the stroke drawn underneath is void. */
   let cancelled = false;
   let bridge: Bridge | undefined;
+  /**
+   * Sub-frames only: the command this frame's gesture matched, held until the
+   * top frame says whether the release picked a tab instead.
+   */
+  let pending: { command: CommandId; at: Point } | undefined;
+  let pendingTimer = 0;
+
+  const flush = (): void => {
+    clearTimeout(pendingTimer);
+    const held = pending;
+    pending = undefined;
+    if (held) void run(held.command, held.at);
+  };
+
+  const drop = (): void => {
+    clearTimeout(pendingTimer);
+    pending = undefined;
+  };
 
   // Drawing lives in the top frame; every frame runs its own recognizer and
   // executes its own commands, so a page command scrolls the frame the gesture
@@ -46,12 +71,20 @@ async function main(): Promise<void> {
     onRemote: {
       onStart: (point) => view?.start(point),
       onMove: (point) => view?.move(point),
-      onEnd: () => view?.end(),
+      onEnd: () => {
+        view?.end();
+        // Answers the frame that drew, either way: it is holding its command
+        // until it hears back. `end` may have picked a tab, in which case
+        // `onPick` already sent the cancel and this is a no-op.
+        bridge?.resumeRemote();
+      },
       onCancel: () => view?.cancel(),
     },
     onCancelled: () => {
       cancelled = true;
+      drop();
     },
+    onResumed: flush,
   });
 
   const handlers = {
@@ -75,13 +108,28 @@ async function main(): Promise<void> {
       const at = points[0] ?? { x: 0, y: 0 };
       points = [];
       stroke = "";
-      if (view) view.end();
-      else bridge?.forwardEnd();
-      if (command) void run(command, at);
+
+      if (view) {
+        // Releasing over a tile in the grid switches tabs, and voids the stroke
+        // drawn underneath — `view.end` picks, which sets `cancelled` through
+        // `onPick`. So the command is only decided after it has run.
+        view.end();
+        if (command && !cancelled) void run(command, at);
+        return;
+      }
+
+      // A sub-frame cannot decide yet: the grid lives in the top frame and only
+      // that frame knows where the release landed. The command waits for its
+      // answer. The timer is the fallback for a top frame that never replies —
+      // one without the content script — where the gesture used to run anyway.
+      pending = command ? { command, at } : undefined;
+      if (pending) pendingTimer = window.setTimeout(flush, ANSWER_TIMEOUT_MS);
+      bridge?.forwardEnd();
     },
     onCancel() {
       points = [];
       stroke = "";
+      drop();
       if (view) view.cancel();
       else bridge?.forwardCancel();
     },

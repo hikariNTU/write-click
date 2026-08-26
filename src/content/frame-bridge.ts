@@ -6,7 +6,13 @@ type Up =
   | { channel: typeof CHANNEL; dir: "up"; type: "start" | "move"; x: number; y: number }
   | { channel: typeof CHANNEL; dir: "up"; type: "end" | "cancel" };
 
-type Down = { channel: typeof CHANNEL; dir: "down"; type: "cancel" };
+/**
+ * The top frame's answer to an `end`. A sub-frame cannot know whether its
+ * gesture still stands: the tab grid lives in the top frame, and only that
+ * frame knows whether the release landed on a tile. So it holds its command
+ * until one of these arrives.
+ */
+type Down = { channel: typeof CHANNEL; dir: "down"; type: "cancel" | "resume" };
 
 function isUp(data: unknown): data is Up {
   if (typeof data !== "object" || data === null) return false;
@@ -54,6 +60,8 @@ export interface Bridge {
   forwardCancel(): void;
   /** Top frame: tell whichever frame is drawing to drop its pending command. */
   cancelRemote(): void;
+  /** Top frame: no tab was picked, so the drawing frame may run its command. */
+  resumeRemote(): void;
 }
 
 /**
@@ -70,6 +78,8 @@ export function createBridge(options: {
   onRemote: RemoteHandlers;
   /** Sub-frame: the top frame picked a tab, so this gesture is void. */
   onCancelled: () => void;
+  /** Sub-frame: the top frame is done and picked nothing. */
+  onResumed: () => void;
 }): Bridge {
   let lastChild: MessageEventSource | null = null;
 
@@ -110,20 +120,28 @@ export function createBridge(options: {
     }
 
     if (isDown(event.data) && event.source === window.parent) {
-      if (lastChild) (lastChild as Window).postMessage(event.data, "*");
-      else options.onCancelled();
+      if (lastChild) {
+        (lastChild as Window).postMessage(event.data, "*");
+        lastChild = null;
+      } else if (event.data.type === "cancel") {
+        options.onCancelled();
+      } else {
+        options.onResumed();
+      }
     }
   });
+
+  const down = (type: Down["type"]): void => {
+    if (lastChild) (lastChild as Window).postMessage({ channel: CHANNEL, dir: "down", type }, "*");
+    lastChild = null;
+  };
 
   return {
     forwardStart: (point) => post({ channel: CHANNEL, dir: "up", type: "start", ...point }),
     forwardMove: (point) => post({ channel: CHANNEL, dir: "up", type: "move", ...point }),
     forwardEnd: () => post({ channel: CHANNEL, dir: "up", type: "end" }),
     forwardCancel: () => post({ channel: CHANNEL, dir: "up", type: "cancel" }),
-    cancelRemote: () => {
-      if (lastChild)
-        (lastChild as Window).postMessage({ channel: CHANNEL, dir: "down", type: "cancel" }, "*");
-      lastChild = null;
-    },
+    cancelRemote: () => down("cancel"),
+    resumeRemote: () => down("resume"),
   };
 }

@@ -253,6 +253,12 @@
   "options_overlay_readout_hint": {
     "message": "顯示目前筆畫所對應的指令。"
   },
+  "options_overlay_release": {
+    "message": "放開時切換"
+  },
+  "options_overlay_release_hint": {
+    "message": "將游標停在項目上再放開觸發鍵，即可切換至該分頁。不需點擊，也不會跳出右鍵選單。"
+  },
   "options_overlay_size": {
     "message": "分頁格線大小"
   },

@@ -63,6 +63,14 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
 - No custom context menu. That was considered and rejected (spec §3.1).
 - Never toggle overlay visibility with `hidden` on an element that also carries a `display`
   utility such as `grid` or `flex`. Use `invisible`.
+- The grid never relies on its own listeners or `:hover` while a button is held. Blink captures
+  events to the node that took the press, so tiles are hit-tested from a window listener, and the
+  highlight is moved by hand (spec §6.1). Listen on `mousedown`: a chorded press fires no
+  `pointerdown` at all.
+- The grid panel opens beside the cursor, never under it. A tile under a cursor the user never
+  moved there would switch tabs on release (spec §6.3, §6.4).
+- A sub-frame never runs its gesture command before the top frame answers its `end`. Only the top
+  frame knows whether the release picked a tab (spec §6.3).
 - Generated directories get wiped without warning. `src/icons/material/` and `src/images/` are
   generated; anything authored goes beside them, never inside them.
 - Never import an asset from `node_modules` with `?raw`. Vite's root is `src/`, so it is served

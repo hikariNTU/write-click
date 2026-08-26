@@ -94,6 +94,10 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   let tabs: readonly TabSummary[] = [];
   let tabsPending: Promise<readonly TabSummary[]> = Promise.resolve([]);
   let gridTimer = 0;
+  /** Where the cursor is now: the panel opens beside it, not in the middle. */
+  let cursor: Point = { x: 0, y: 0 };
+  /** The tab's page zoom, which the panel cancels out so it holds its size. */
+  let zoom = 1;
 
   const paint = (): void => {
     if (sync.trail.showLabel && stroke) hud.show(describe(stroke, sync.gestures[stroke], tabs));
@@ -165,6 +169,11 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
    */
   const requestTabs = (): void => {
     tabs = [];
+    // Read per gesture rather than once: the user can zoom the page at any
+    // point, and a stale factor shows a panel of the wrong size.
+    void send({ type: "tabs.zoom" }).then((response) => {
+      if (response.ok && "zoom" in response) zoom = response.zoom;
+    });
     tabsPending = send({ type: "tabs.list" }).then((response) => {
       if (response.ok && "tabs" in response) return response.tabs;
       console.debug("[write-click] tab list failed", response);
@@ -189,7 +198,7 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     gridTimer = window.setTimeout(() => {
       void tabsPending.then((list) => {
         if (holding && list.length > 0) {
-          grid.show(list);
+          grid.show(list, cursor, zoom);
           return;
         }
         console.debug("[write-click] grid skipped", { holding, count: list.length });
@@ -208,12 +217,14 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
       points = [point];
       stroke = "";
       holding = true;
+      cursor = point;
       trail.render(points);
       requestTabs();
       scheduleGrid();
     },
     move(point) {
       points.push(point);
+      cursor = point;
       trail.render(points);
       // :hover is frozen by the same capture, so the highlight is moved by hand.
       grid?.hoverAt(point);
@@ -222,7 +233,18 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
       stroke = next;
       paint();
     },
-    end: clear,
+    end() {
+      // Releasing over a tile switches to it. That is the whole point of the
+      // option: the click that would otherwise be needed happens while the
+      // trigger button is still down, and on release Chrome opens the context
+      // menu the extension has no way to suppress (docs/SPEC.md §6.2).
+      const tabId = sync.grid.pickOnRelease ? grid?.hoveredTabId : undefined;
+      if (tabId !== undefined) {
+        pick(tabId);
+        return;
+      }
+      clear();
+    },
     cancel: clear,
   };
 }

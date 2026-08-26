@@ -33,6 +33,11 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
           .filter((entry): entry is TabSummary => entry !== undefined),
       };
     }
+    // Page zoom is not readable from a content script: devicePixelRatio folds
+    // it together with the display's scale factor. The overlay needs it to hold
+    // its size while the page around it grows.
+    case "tabs.zoom":
+      return { ok: true, zoom: await chrome.tabs.getZoom(tab.id) };
     case "tabs.activate":
       await chrome.tabs.update(request.tabId, { active: true });
       return { ok: true };

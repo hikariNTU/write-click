@@ -201,8 +201,9 @@ Rules:
 - Tiles get `pointer-events: auto`; the overlay host stays `none`. Visibility is toggled with
   `invisible`, never `hidden`: `hidden` and `grid` are both `display` utilities, so which one won
   would come down to CSS source order.
-- Selection listens on `pointerdown`, not `click` — the right button is still held, and the pick has
-  to land before the trigger's own `pointerup` ends the gesture.
+- Selection listens on `mousedown`, not `click` — the trigger button is still held, and the pick has
+  to land before the trigger's own release ends the gesture. Why `mousedown` and not `pointerdown`
+  is §6.1.
 - A tab with no usable favicon, or one whose favicon fails to load, falls back to a bundled glyph.
 - Hovering a tile highlights it. **Left-click while the trigger is still held** activates that tab
   and sets `cancelled`, so the pending stroke is discarded when the trigger is released.
@@ -211,6 +212,9 @@ Rules:
   name. The panel is already open while the trigger is held, which is exactly when someone wonders
   what else they could draw, so the reference belongs there rather than buried in settings. It can
   be switched off.
+- **Releasing the trigger over a tile switches to it**, without a click. On by default; §6.3.
+- The panel opens **beside the cursor**, not in the middle of the window, and holds one size at every
+  page zoom level; §6.4.
 - `Escape` closes the grid and cancels the gesture.
 
 ### 6.1 Picking a tile under mouse capture
@@ -253,8 +257,56 @@ Approaches that will not help, for the same reason:
   cancelled the gesture.
 - `chrome.contextMenus`: it customises the menu's contents, and cannot stop it from opening.
 
-The remaining workaround belongs to the user, not the code: release the button before clicking, or
+The answer is to not need a click at all: see §6.3.
+
+Failing that the workaround belongs to the user, not the code: release the button before clicking, or
 use a keyboard trigger, where no button is held during a pick and no menu follows.
+
+### 6.3 Switching on release
+
+`grid.pickOnRelease`, on by default. Releasing the trigger while a tile is highlighted switches to
+that tab and voids the stroke drawn underneath, exactly as a click would.
+
+This is what makes §6.2 stop mattering. The menu only follows a pick because the pick happens
+mid-gesture, with the button still down; a release that _is_ the pick has no button left to open one.
+Hover and release, and nothing is left over.
+
+Two rules keep it from firing on a tab nobody chose:
+
+- The highlight is only ever set by a **move**. A panel that happens to open under a resting cursor
+  therefore has nothing highlighted, and a release there falls through to normal stroke matching.
+- The **active tab's tile is never highlighted**, so releasing over it does nothing rather than
+  re-activating the tab already in front.
+
+**Sub-frames hold their command until the top frame answers.** A gesture drawn in an iframe runs its
+command in that frame, but only the top frame owns the grid and knows whether the release landed on a
+tile — and it learns that a postMessage hop later, long after the sub-frame has already decided. So
+`end` is now answered: the top frame replies `cancel` (a tab was picked) or `resume` (nothing was),
+and the sub-frame runs its held command only on `resume`. A reply that never arrives — a top frame
+without the content script — falls back to running it after 300ms, which is what used to happen
+unconditionally.
+
+### 6.4 Where the panel opens, and how big
+
+**Beside the cursor.** Down and to the right by a 16px gap, flipped to the other side when there is no
+room, then clamped to a 12px margin from every viewport edge so the panel's border is never clipped.
+When the panel is larger than the window the clamp wins and the cursor ends up over it; a panel the
+cursor overlaps beats one whose border is off-screen.
+
+The cursor stays **outside** the panel on every side it can open on. That is not cosmetic: a panel
+that opened under the cursor would put a tile beneath a cursor the user never moved there, and with
+§6.3 on, releasing would switch to it.
+
+Only `opacity` and `transform` transition. `transition-all` animates `left` and `top` too, and the
+panel visibly slides across the page from wherever the previous gesture left it.
+
+**Page zoom is cancelled out.** Chrome's page zoom scales CSS pixels, so an unmodified panel grows
+with the page and a user at 200% gets a picker covering half the screen. The panel reads the tab's
+zoom factor from the background — `chrome.tabs.getZoom`, since `devicePixelRatio` folds page zoom
+together with the display's scale factor and cannot be separated in a content script — and applies
+`transform: scale(1 / zoom)`, with its width and max-height divided back out of the same factor. The
+entrance scale is folded into that one transform rather than a second class, so the two cannot fight
+over the property. The factor is read once per gesture: the user can zoom at any time.
 
 ## 7. Overlay
 
@@ -344,8 +396,10 @@ is what makes nested iframes work: only the immediate parent can locate a child'
 The top frame owns the overlay and renders sub-frame gestures identically.
 
 Because commands never travel over `postMessage`, a page script that spoofs these messages can move
-a trail around and nothing else. The one message that travels **down** is the grid's "a tab was
-picked, drop your pending command", relayed along the same chain in reverse.
+a trail around and nothing else. The messages that travel **down** are the top frame's answer to an
+`end` — `cancel` ("a tab was picked, drop your held command") or `resume` ("nothing was, run it") —
+relayed along the same chain in reverse. §6.3 covers why the answer is needed and what happens when
+it never comes.
 
 Cross-origin iframes that have not loaded yet, `chrome://` pages, the Web Store, the PDF viewer, and
 `view-source:` cannot host a content script. Gestures do not work there; this is a platform limit,
@@ -356,9 +410,16 @@ not a bug to fix.
 ```ts
 interface SyncSettings {
   // chrome.storage.sync
-  version: 1;
+  version: 4;
+  language: "auto" | Locale; // §10.2
   gestures: Record<string, CommandId>; // stroke -> command
-  grid: { enabled: boolean; holdMs: number; size: "compact" | "normal" | "large" };
+  grid: {
+    enabled: boolean;
+    holdMs: number;
+    size: "compact" | "normal" | "large";
+    cheatsheet: boolean;
+    pickOnRelease: boolean; // §6.3
+  };
   trail: { color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
@@ -372,7 +433,8 @@ interface LocalSettings {
 ```
 
 `version` is bumped whenever a shape changes, with a migration in the service worker's
-`onInstalled`, which runs on both install and update. v2 replaced the grid's `columns` with `size`.
+`onInstalled`, which runs on both install and update. v2 replaced the grid's `columns` with `size`;
+v3 added the language override; v4 added `pickOnRelease`.
 
 Reads merge defaults **one level deep**. Storage is written per top-level key, so a stored `grid`
 written before a field existed would otherwise replace the whole default object and leave that field

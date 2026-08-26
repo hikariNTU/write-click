@@ -253,6 +253,12 @@
   "options_overlay_readout_hint": {
     "message": "Names the command the current stroke matches."
   },
+  "options_overlay_release": {
+    "message": "Switch on release"
+  },
+  "options_overlay_release_hint": {
+    "message": "Release the trigger over a tile to switch to that tab. No click, so no context menu follows."
+  },
   "options_overlay_size": {
     "message": "Tab grid size"
   },

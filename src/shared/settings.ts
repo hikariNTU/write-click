@@ -9,10 +9,17 @@ export type GridSize = "compact" | "normal" | "large";
 
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 3;
+  version: 4;
   language: LanguageSetting;
   gestures: Record<string, CommandId>;
-  grid: { enabled: boolean; holdMs: number; size: GridSize; cheatsheet: boolean };
+  grid: {
+    enabled: boolean;
+    holdMs: number;
+    size: GridSize;
+    cheatsheet: boolean;
+    /** Release the trigger over a tile to switch to it, without clicking. */
+    pickOnRelease: boolean;
+  };
   trail: { color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
@@ -26,10 +33,10 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 3,
+    version: 4,
     language: "auto",
     gestures: { ...DEFAULT_GESTURES },
-    grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true },
+    grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true, pickOnRelease: true },
     trail: { color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };
@@ -121,12 +128,13 @@ export async function migrate(): Promise<void> {
   const local = (await chrome.storage.local.get(null)) as { version?: number };
   const defaults = defaultSyncSettings();
 
-  if (stored.version !== 3) {
+  if (stored.version !== 4) {
     // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
     // v3 added the language override, which defaults to following the browser.
+    // v4 added picking on release.
     const grid = { ...defaults.grid, ...stored.grid };
     delete (grid as { columns?: number }).columns;
-    await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 3 });
+    await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 4 });
   }
 
   if (local.version !== 1) {
