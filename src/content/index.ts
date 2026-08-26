@@ -7,7 +7,7 @@ import type { Match } from "./hud";
 import { COMMAND_ICONS, UNKNOWN_ICON } from "./icons";
 import { createOverlay } from "./overlay";
 import { runPageCommand } from "./page-commands";
-import { DRIFT_THRESHOLD, distanceSquared, quantize } from "./recognizer";
+import { GRID_CANCEL_PX, distanceSquared, quantize } from "./recognizer";
 import type { Point } from "./recognizer";
 import { TabGrid } from "./tab-grid";
 import { Trail } from "./trail";
@@ -76,8 +76,15 @@ async function main(): Promise<void> {
     const pending = send({ type: "tabs.list" });
     gridTimer = window.setTimeout(() => {
       void pending.then((response) => {
-        if (!holding || moved || !response.ok || !("tabs" in response)) return;
-        grid.show(response.tabs);
+        if (holding && !moved && response.ok && "tabs" in response) {
+          grid.show(response.tabs);
+          return;
+        }
+        console.debug("[write-click] grid skipped", {
+          holding,
+          moved,
+          response,
+        });
       });
     }, sync.grid.holdMs);
   };
@@ -95,7 +102,11 @@ async function main(): Promise<void> {
     onMove(point) {
       points.push(point);
       const origin = points[0];
-      if (origin && distanceSquared(origin, point) > DRIFT_THRESHOLD ** 2) moved = true;
+      if (origin && distanceSquared(origin, point) > GRID_CANCEL_PX ** 2) {
+        moved = true;
+        // Past this point the user is drawing, not picking a tab.
+        grid?.hide();
+      }
       trail.render(points);
       const next = quantize(points);
       if (next === stroke) return;

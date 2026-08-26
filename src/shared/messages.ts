@@ -30,6 +30,16 @@ export function isBackgroundCommand(id: CommandId): id is BackgroundCommandId {
   return COMMANDS[id].where === "background";
 }
 
+/**
+ * Never rejects. A sleeping, reloaded or crashed service worker makes
+ * sendMessage throw "Could not establish connection", and an unhandled
+ * rejection here would make features fail with an empty console.
+ */
 export async function send(request: Request): Promise<Response> {
-  return (await chrome.runtime.sendMessage(request)) as Response;
+  try {
+    const response = (await chrome.runtime.sendMessage(request)) as Response | undefined;
+    return response ?? { ok: false, error: "no response from the service worker" };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
 }
