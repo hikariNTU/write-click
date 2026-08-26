@@ -37,6 +37,7 @@ import settings from "../icons/material/settings.svg?raw";
 import swipe from "../icons/material/swipe.svg?raw";
 import restore from "../icons/material/restore_from_trash.svg?raw";
 import tabCloseRight from "../icons/material/tab_close_right.svg?raw";
+import translate from "../icons/material/translate.svg?raw";
 import tabClose from "../icons/material/tab_close.svg?raw";
 import alignBottom from "../icons/material/vertical_align_bottom.svg?raw";
 import alignTop from "../icons/material/vertical_align_top.svg?raw";
@@ -109,6 +110,7 @@ export const UI_ICONS = {
   gestures: prepare(swipe),
   overlay: prepare(palette),
   sites: prepare(language),
+  language: prepare(translate),
   grid: prepare(gridView),
   draw: prepare(draw),
   clear: prepare(close),

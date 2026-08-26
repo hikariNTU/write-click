@@ -1,6 +1,6 @@
 import { loadSettings, saveLocal, saveSync } from "./shared/settings";
 import type { Modifier, Trigger } from "./shared/trigger";
-import { applyStaticMessages, t } from "./shared/i18n";
+import { applyStaticMessages, setLocale, t } from "./shared/i18n";
 import { BRAND_ICON, UI_ICONS } from "./shared/icons";
 import { el, icon, row, toggle } from "./ui";
 
@@ -31,11 +31,12 @@ async function originOfActiveTab(): Promise<string | undefined> {
 }
 
 void (async () => {
+  const { sync, local } = await loadSettings();
+  setLocale(sync.language);
   applyStaticMessages();
   const brand = document.querySelector<HTMLElement>("#brand");
   if (brand) brand.innerHTML = BRAND_ICON;
 
-  const { sync, local } = await loadSettings();
   const origin = await originOfActiveTab();
   const controls = document.querySelector<HTMLElement>("#controls");
 

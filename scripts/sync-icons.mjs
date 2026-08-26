@@ -57,6 +57,7 @@ const ICONS = [
   "swipe",
   "tab_close",
   "tab_close_right",
+  "translate",
   "vertical_align_bottom",
   "vertical_align_top",
 ];

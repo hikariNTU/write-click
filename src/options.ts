@@ -1,6 +1,7 @@
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
-import { applyStaticMessages, t } from "./shared/i18n";
+import { LOCALES, applyStaticMessages, setLocale, t } from "./shared/i18n";
+import type { LanguageSetting } from "./shared/i18n";
 import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
 import type { Point } from "./shared/recognizer";
@@ -168,26 +169,58 @@ function chips(stroke: string): HTMLElement {
 function drawPad(onDone: (stroke: string) => void, onCancel: () => void): HTMLElement {
   const pad = el(
     "div",
-    "mt-2 grid h-32 cursor-crosshair place-items-center rounded-xl border border-dashed " +
-      "border-emerald-300/40 bg-emerald-400/5 text-[11px] text-emerald-200/80",
+    "mt-2 grid h-56 cursor-crosshair select-none place-items-center rounded-xl border " +
+      "border-dashed border-emerald-300/40 bg-emerald-400/5 px-6 text-center text-[11px] " +
+      "text-emerald-200/80",
     t("options_gestures_pad"),
   );
   let points: Point[] = [];
   let drawing = false;
 
+  const inside = (event: PointerEvent): boolean => {
+    const box = pad.getBoundingClientRect();
+    return (
+      event.clientX >= box.left &&
+      event.clientX <= box.right &&
+      event.clientY >= box.top &&
+      event.clientY <= box.bottom
+    );
+  };
+
+  const stop = (message: string): void => {
+    drawing = false;
+    points = [];
+    pad.textContent = message;
+  };
+
   pad.addEventListener("pointerdown", (event) => {
     drawing = true;
     points = [{ x: event.clientX, y: event.clientY }];
+    // Capture keeps the stroke coherent if the pointer skims a child element,
+    // but it also suppresses pointerleave, so leaving is detected by geometry
+    // below rather than by a boundary event that will never arrive.
     pad.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
   pad.addEventListener("pointermove", (event) => {
     if (!drawing) return;
+    if (!inside(event)) {
+      // A stroke that wandered out of the pad was not drawn under the same
+      // conditions it will be recognized in, so it is thrown away rather than
+      // half-recorded.
+      stop(t("options_gestures_pad_void"));
+      return;
+    }
     points.push({ x: event.clientX, y: event.clientY });
     pad.textContent = quantize(points) || "…";
   });
-  pad.addEventListener("pointerup", () => {
+  pad.addEventListener("pointerup", (event) => {
+    if (!drawing) return;
     drawing = false;
+    if (!inside(event)) {
+      stop(t("options_gestures_pad_void"));
+      return;
+    }
     onDone(quantize(points));
   });
   pad.addEventListener("contextmenu", (event) => event.preventDefault());
@@ -256,6 +289,25 @@ function gestureRow(command: CommandId): HTMLElement {
 function gesturesCard(): HTMLElement {
   const section = card(t("options_gestures_title"), t("options_gestures_desc"), UI_ICONS.gestures);
   for (const command of Object.keys(COMMANDS) as CommandId[]) section.append(gestureRow(command));
+  return section;
+}
+
+/* --------------------------------------------------------------- language */
+
+function languageCard(): HTMLElement {
+  const section = card(t("options_language_title"), t("options_language_desc"), UI_ICONS.language);
+  const options = [{ value: "auto" as const, label: t("options_language_auto") }, ...LOCALES];
+  section.append(
+    row(
+      t("options_language_label"),
+      select(options, sync.language, (value) => {
+        // Applied before the re-render inside patchSync, so the page is already
+        // in the new language when it repaints.
+        setLocale(value as LanguageSetting);
+        void patchSync({ language: value as LanguageSetting });
+      }),
+    ),
+  );
   return section;
 }
 
@@ -392,6 +444,7 @@ function mount(id: string, content: HTMLElement): void {
 }
 
 function render(): void {
+  mount("language", languageCard());
   mount("trigger", triggerCard());
   mount("gestures", gesturesCard());
   mount("overlay", overlayCard());
@@ -422,7 +475,8 @@ function decorateChrome(): void {
 }
 
 void (async () => {
-  decorateChrome();
   ({ sync, local } = await loadSettings());
+  setLocale(sync.language);
+  decorateChrome();
   render();
 })();

@@ -1,125 +1,301 @@
 {
-  "extName": { "message": "Write Click" },
+  "extName": {
+    "message": "Write Click"
+  },
   "extDescription": {
     "message": "Draw mouse gestures to switch, close and reopen tabs, and to move around the page."
   },
-
-  "cmd_tab_prev": { "message": "Previous tab" },
-  "cmd_tab_next": { "message": "Next tab" },
-  "cmd_tab_first": { "message": "Leftmost tab" },
-  "cmd_tab_last": { "message": "Rightmost tab" },
-  "cmd_tab_close": { "message": "Close tab" },
-  "cmd_tab_reopen": { "message": "Reopen closed tab" },
-  "cmd_tab_closeRight": { "message": "Close tabs to the right" },
-  "cmd_tab_closeLeft": { "message": "Close tabs to the left" },
-  "cmd_tab_closeOthers": { "message": "Close other tabs" },
-  "cmd_tab_new": { "message": "New tab" },
-  "cmd_tab_duplicate": { "message": "Duplicate tab" },
-  "cmd_tab_togglePin": { "message": "Pin or unpin tab" },
-  "cmd_tab_toggleMute": { "message": "Mute or unmute tab" },
-  "cmd_tab_detach": { "message": "Move tab to a new window" },
-  "cmd_tab_reload": { "message": "Reload" },
-  "cmd_tab_reloadHard": { "message": "Reload without cache" },
-  "cmd_nav_back": { "message": "Back" },
-  "cmd_nav_forward": { "message": "Forward" },
-  "cmd_nav_stop": { "message": "Stop loading" },
-  "cmd_window_minimize": { "message": "Minimize window" },
-  "cmd_window_new": { "message": "New window" },
-  "cmd_window_fullscreen": { "message": "Toggle fullscreen" },
-  "cmd_zoom_in": { "message": "Zoom in" },
-  "cmd_zoom_out": { "message": "Zoom out" },
-  "cmd_zoom_reset": { "message": "Reset zoom" },
-  "cmd_page_up": { "message": "Page up" },
-  "cmd_page_down": { "message": "Page down" },
-  "cmd_page_top": { "message": "Scroll to top" },
-  "cmd_page_end": { "message": "Scroll to bottom" },
-
-  "hud_unassigned": { "message": "Unassigned" },
+  "cmd_tab_prev": {
+    "message": "Previous tab"
+  },
+  "cmd_tab_next": {
+    "message": "Next tab"
+  },
+  "cmd_tab_first": {
+    "message": "Leftmost tab"
+  },
+  "cmd_tab_last": {
+    "message": "Rightmost tab"
+  },
+  "cmd_tab_close": {
+    "message": "Close tab"
+  },
+  "cmd_tab_reopen": {
+    "message": "Reopen closed tab"
+  },
+  "cmd_tab_closeRight": {
+    "message": "Close tabs to the right"
+  },
+  "cmd_tab_closeLeft": {
+    "message": "Close tabs to the left"
+  },
+  "cmd_tab_closeOthers": {
+    "message": "Close other tabs"
+  },
+  "cmd_tab_new": {
+    "message": "New tab"
+  },
+  "cmd_tab_duplicate": {
+    "message": "Duplicate tab"
+  },
+  "cmd_tab_togglePin": {
+    "message": "Pin or unpin tab"
+  },
+  "cmd_tab_toggleMute": {
+    "message": "Mute or unmute tab"
+  },
+  "cmd_tab_detach": {
+    "message": "Move tab to a new window"
+  },
+  "cmd_tab_reload": {
+    "message": "Reload"
+  },
+  "cmd_tab_reloadHard": {
+    "message": "Reload without cache"
+  },
+  "cmd_nav_back": {
+    "message": "Back"
+  },
+  "cmd_nav_forward": {
+    "message": "Forward"
+  },
+  "cmd_nav_stop": {
+    "message": "Stop loading"
+  },
+  "cmd_window_minimize": {
+    "message": "Minimize window"
+  },
+  "cmd_window_new": {
+    "message": "New window"
+  },
+  "cmd_window_fullscreen": {
+    "message": "Toggle fullscreen"
+  },
+  "cmd_zoom_in": {
+    "message": "Zoom in"
+  },
+  "cmd_zoom_out": {
+    "message": "Zoom out"
+  },
+  "cmd_zoom_reset": {
+    "message": "Reset zoom"
+  },
+  "cmd_page_up": {
+    "message": "Page up"
+  },
+  "cmd_page_down": {
+    "message": "Page down"
+  },
+  "cmd_page_top": {
+    "message": "Scroll to top"
+  },
+  "cmd_page_end": {
+    "message": "Scroll to bottom"
+  },
+  "hud_unassigned": {
+    "message": "Unassigned"
+  },
   "hud_closeRight_one": {
     "message": "Close $COUNT$ tab to the right",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "hud_closeRight_other": {
     "message": "Close $COUNT$ tabs to the right",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "hud_closeLeft_one": {
     "message": "Close $COUNT$ tab to the left",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "hud_closeLeft_other": {
     "message": "Close $COUNT$ tabs to the left",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
-  "hud_closeRight_none": { "message": "No tabs to close to the right" },
-  "hud_closeLeft_none": { "message": "No tabs to close to the left" },
-
+  "hud_closeRight_none": {
+    "message": "No tabs to close to the right"
+  },
+  "hud_closeLeft_none": {
+    "message": "No tabs to close to the left"
+  },
   "grid_tabs_one": {
     "message": "$COUNT$ tab",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "grid_tabs_other": {
     "message": "$COUNT$ tabs",
-    "placeholders": { "count": { "content": "$1" } }
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
-  "grid_hint": { "message": "click to switch" },
-  "grid_cheatsheet": { "message": "Gestures" },
-
-  "popup_gestures": { "message": "Gestures" },
-  "popup_thisDevice": { "message": "This device." },
-  "popup_enabledHere": { "message": "Enabled here" },
-  "popup_notHere": { "message": "Gestures do not run on this page." },
-  "popup_settings": { "message": "Settings" },
-
-  "trigger_button_left": { "message": "left" },
-  "trigger_button_middle": { "message": "middle" },
-  "trigger_button_right": { "message": "right" },
+  "grid_hint": {
+    "message": "click to switch"
+  },
+  "grid_cheatsheet": {
+    "message": "Gestures"
+  },
+  "popup_gestures": {
+    "message": "Gestures"
+  },
+  "popup_thisDevice": {
+    "message": "This device."
+  },
+  "popup_enabledHere": {
+    "message": "Enabled here"
+  },
+  "popup_notHere": {
+    "message": "Gestures do not run on this page."
+  },
+  "popup_settings": {
+    "message": "Settings"
+  },
+  "trigger_button_left": {
+    "message": "left"
+  },
+  "trigger_button_middle": {
+    "message": "middle"
+  },
+  "trigger_button_right": {
+    "message": "right"
+  },
   "trigger_hold_key": {
     "message": "hold $KEY$",
-    "placeholders": { "key": { "content": "$1" } }
+    "placeholders": {
+      "key": {
+        "content": "$1"
+      }
+    }
   },
   "trigger_with_modifier": {
     "message": "$MODIFIER$ + $BUTTON$",
-    "placeholders": { "modifier": { "content": "$1" }, "button": { "content": "$2" } }
+    "placeholders": {
+      "modifier": {
+        "content": "$1"
+      },
+      "button": {
+        "content": "$2"
+      }
+    }
   },
-
-  "modifier_none": { "message": "No modifier" },
-  "modifier_alt": { "message": "Alt" },
-  "modifier_option": { "message": "Option" },
-  "modifier_shift": { "message": "Shift" },
-  "modifier_control": { "message": "Control" },
-  "modifier_meta": { "message": "Meta" },
-  "modifier_command": { "message": "Command" },
-
-  "options_subtitle": { "message": "Mouse gestures for tabs and pages." },
-  "options_saved": { "message": "Saved" },
-  "options_autosave": { "message": "Changes save as you make them." },
-  "options_reset": { "message": "Reset everything to defaults" },
-  "options_resetDone": { "message": "Everything is back to defaults." },
-
-  "options_trigger_title": { "message": "Trigger" },
+  "modifier_none": {
+    "message": "No modifier"
+  },
+  "modifier_alt": {
+    "message": "Alt"
+  },
+  "modifier_option": {
+    "message": "Option"
+  },
+  "modifier_shift": {
+    "message": "Shift"
+  },
+  "modifier_control": {
+    "message": "Control"
+  },
+  "modifier_meta": {
+    "message": "Meta"
+  },
+  "modifier_command": {
+    "message": "Command"
+  },
+  "options_subtitle": {
+    "message": "Mouse gestures for tabs and pages."
+  },
+  "options_saved": {
+    "message": "Saved"
+  },
+  "options_autosave": {
+    "message": "Changes save as you make them."
+  },
+  "options_reset": {
+    "message": "Reset everything to defaults"
+  },
+  "options_resetDone": {
+    "message": "Everything is back to defaults."
+  },
+  "options_language_title": {
+    "message": "Language"
+  },
+  "options_language_desc": {
+    "message": "Applies to the extension only. The name Chrome shows in its own menus always follows the browser's language."
+  },
+  "options_language_label": {
+    "message": "Language"
+  },
+  "options_language_auto": {
+    "message": "Follow the browser"
+  },
+  "options_trigger_title": {
+    "message": "Trigger"
+  },
   "options_trigger_desc": {
     "message": "What you hold to draw. Stored for this device only, since the context menu behaves differently per platform."
   },
-  "options_trigger_hold": { "message": "Hold" },
-  "options_trigger_kind_button": { "message": "Mouse button" },
-  "options_trigger_kind_key": { "message": "Keyboard key" },
-  "options_trigger_button": { "message": "Button" },
-  "options_trigger_button_left": { "message": "Left button" },
-  "options_trigger_button_middle": { "message": "Middle button" },
-  "options_trigger_button_right": { "message": "Right button" },
-  "options_trigger_modifier": { "message": "Modifier" },
-  "options_trigger_modifier_hint": { "message": "Held together with the button." },
-  "options_trigger_key": { "message": "Key" },
+  "options_trigger_hold": {
+    "message": "Hold"
+  },
+  "options_trigger_kind_button": {
+    "message": "Mouse button"
+  },
+  "options_trigger_kind_key": {
+    "message": "Keyboard key"
+  },
+  "options_trigger_button": {
+    "message": "Button"
+  },
+  "options_trigger_button_left": {
+    "message": "Left button"
+  },
+  "options_trigger_button_middle": {
+    "message": "Middle button"
+  },
+  "options_trigger_button_right": {
+    "message": "Right button"
+  },
+  "options_trigger_modifier": {
+    "message": "Modifier"
+  },
+  "options_trigger_modifier_hint": {
+    "message": "Held together with the button."
+  },
+  "options_trigger_key": {
+    "message": "Key"
+  },
   "options_trigger_key_hint": {
     "message": "Hold this key and move the mouse. Never touches the context menu."
   },
   "options_trigger_key_change": {
     "message": "$KEY$ — click to change",
-    "placeholders": { "key": { "content": "$1" } }
+    "placeholders": {
+      "key": {
+        "content": "$1"
+      }
+    }
   },
-  "options_trigger_key_press": { "message": "Press any key…" },
-
+  "options_trigger_key_press": {
+    "message": "Press any key…"
+  },
   "options_warn_menu_mouseup": {
     "message": "The native context menu still opens on a plain right-click; it is only suppressed once you have actually drawn."
   },
@@ -129,53 +305,102 @@
   "options_warn_menu_suppressed": {
     "message": "On this platform the context menu opens on mouse-down, so a bare right button suppresses it entirely. Shift+right-click still forces it. Pick a modifier to keep the menu."
   },
-
-  "options_gestures_title": { "message": "Gestures" },
+  "options_gestures_title": {
+    "message": "Gestures"
+  },
   "options_gestures_desc": {
     "message": "One stroke per command. Drawing a stroke that is already taken moves it, leaving the old command unbound."
   },
-  "options_gestures_draw": { "message": "Draw" },
-  "options_gestures_clear": { "message": "Clear" },
-  "options_gestures_unbound": { "message": "unbound" },
+  "options_gestures_draw": {
+    "message": "Draw"
+  },
+  "options_gestures_clear": {
+    "message": "Clear"
+  },
+  "options_gestures_unbound": {
+    "message": "unbound"
+  },
   "options_gestures_pad": {
     "message": "Draw here — hold any mouse button and move. Esc to cancel."
   },
+  "options_gestures_pad_void": {
+    "message": "Left the pad — that stroke was thrown away. Draw again."
+  },
   "options_gestures_taken": {
     "message": "$STROKE$ taken from “$LABEL$”, which is now unbound.",
-    "placeholders": { "stroke": { "content": "$1" }, "label": { "content": "$2" } }
+    "placeholders": {
+      "stroke": {
+        "content": "$1"
+      },
+      "label": {
+        "content": "$2"
+      }
+    }
   },
-
-  "options_overlay_title": { "message": "Overlay" },
-  "options_overlay_desc": { "message": "How the trail, the readout and the tab grid look." },
-  "options_overlay_color": { "message": "Trail colour" },
-  "options_overlay_width": { "message": "Trail thickness" },
-  "options_overlay_readout": { "message": "Show the readout" },
+  "options_overlay_title": {
+    "message": "Overlay"
+  },
+  "options_overlay_desc": {
+    "message": "How the trail, the readout and the tab grid look."
+  },
+  "options_overlay_color": {
+    "message": "Trail colour"
+  },
+  "options_overlay_width": {
+    "message": "Trail thickness"
+  },
+  "options_overlay_readout": {
+    "message": "Show the readout"
+  },
   "options_overlay_readout_hint": {
     "message": "Names the command the current stroke matches."
   },
-  "options_overlay_grid": { "message": "Show the tab grid" },
+  "options_overlay_grid": {
+    "message": "Show the tab grid"
+  },
   "options_overlay_grid_hint": {
     "message": "Appears while the trigger is held; click a tile to switch tabs."
   },
-  "options_overlay_cheatsheet": { "message": "Gesture cheatsheet" },
-  "options_overlay_cheatsheet_hint": { "message": "Lists every bound gesture under the tabs." },
-  "options_overlay_size": { "message": "Grid size" },
+  "options_overlay_cheatsheet": {
+    "message": "Gesture cheatsheet"
+  },
+  "options_overlay_cheatsheet_hint": {
+    "message": "Lists every bound gesture under the tabs."
+  },
+  "options_overlay_size": {
+    "message": "Grid size"
+  },
   "options_overlay_size_hint": {
     "message": "Tile width. The grid fits as many per row as the window allows."
   },
-  "options_size_compact": { "message": "Compact" },
-  "options_size_normal": { "message": "Normal" },
-  "options_size_large": { "message": "Large" },
-  "options_overlay_delay": { "message": "Grid delay" },
+  "options_size_compact": {
+    "message": "Compact"
+  },
+  "options_size_normal": {
+    "message": "Normal"
+  },
+  "options_size_large": {
+    "message": "Large"
+  },
+  "options_overlay_delay": {
+    "message": "Grid delay"
+  },
   "options_overlay_delay_hint": {
     "message": "Milliseconds before the grid appears, so quick strokes do not flash it."
   },
-
-  "options_sites_title": { "message": "Disabled sites" },
+  "options_sites_title": {
+    "message": "Disabled sites"
+  },
   "options_sites_desc": {
     "message": "Gestures are off on these origins. Add the current site from the toolbar popup."
   },
-  "options_sites_device": { "message": "Gestures on this device" },
-  "options_sites_none": { "message": "No sites disabled." },
-  "options_sites_remove": { "message": "Remove" }
+  "options_sites_device": {
+    "message": "Gestures on this device"
+  },
+  "options_sites_none": {
+    "message": "No sites disabled."
+  },
+  "options_sites_remove": {
+    "message": "Remove"
+  }
 }

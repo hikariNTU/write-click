@@ -2,6 +2,7 @@ import type { CommandId } from "../shared/commands";
 import { isBackgroundCommand, send } from "../shared/messages";
 import { quantize } from "../shared/recognizer";
 import type { Point } from "../shared/recognizer";
+import { setLocale } from "../shared/i18n";
 import { loadSettings } from "../shared/settings";
 import { createBridge } from "./frame-bridge";
 import type { Bridge } from "./frame-bridge";
@@ -21,6 +22,7 @@ async function run(command: CommandId, at: Point): Promise<void> {
 
 async function main(): Promise<void> {
   const { sync, local } = await loadSettings();
+  setLocale(sync.language);
   const isTop = window.top === window;
 
   let points: Point[] = [];
@@ -97,6 +99,7 @@ async function main(): Promise<void> {
     detach?.();
     detach = undefined;
     view?.cancel();
+    view?.refresh();
     if (on) detach = attachTrigger(local.trigger, handlers);
   };
 
@@ -108,6 +111,7 @@ async function main(): Promise<void> {
     void loadSettings().then((next) => {
       Object.assign(sync, next.sync);
       Object.assign(local, next.local);
+      setLocale(sync.language);
       apply();
     });
   });

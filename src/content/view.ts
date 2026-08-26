@@ -64,6 +64,8 @@ function describe(
 }
 
 export interface View {
+  /** Rebuilds anything rendered from settings: bindings, and their language. */
+  refresh(): void;
   start(point: Point): void;
   move(point: Point): void;
   end(): void;
@@ -80,7 +82,6 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
   const trail = new Trail(overlay, sync.trail);
   const hud = new Hud(overlay);
   const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
-  if (sync.grid.cheatsheet) grid?.setGestures(sync.gestures);
 
   let points: Point[] = [];
   let stroke = "";
@@ -148,7 +149,13 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     }, sync.grid.holdMs);
   };
 
+  const refresh = (): void => {
+    grid?.setGestures(sync.grid.cheatsheet ? sync.gestures : {});
+  };
+  refresh();
+
   return {
+    refresh,
     start(point) {
       points = [point];
       stroke = "";

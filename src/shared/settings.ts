@@ -1,5 +1,6 @@
 import { DEFAULT_GESTURES } from "./commands";
 import type { CommandId } from "./commands";
+import type { LanguageSetting } from "./i18n";
 import { defaultTrigger } from "./trigger";
 import type { Trigger } from "./trigger";
 
@@ -8,7 +9,8 @@ export type GridSize = "compact" | "normal" | "large";
 
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 2;
+  version: 3;
+  language: LanguageSetting;
   gestures: Record<string, CommandId>;
   grid: { enabled: boolean; holdMs: number; size: GridSize; cheatsheet: boolean };
   trail: { color: string; width: number; showLabel: boolean };
@@ -24,7 +26,8 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 2,
+    version: 3,
+    language: "auto",
     gestures: { ...DEFAULT_GESTURES },
     grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true },
     trail: { color: "#34d399", width: 4, showLabel: true },
@@ -118,11 +121,12 @@ export async function migrate(): Promise<void> {
   const local = (await chrome.storage.local.get(null)) as { version?: number };
   const defaults = defaultSyncSettings();
 
-  if (stored.version !== 2) {
+  if (stored.version !== 3) {
     // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
+    // v3 added the language override, which defaults to following the browser.
     const grid = { ...defaults.grid, ...stored.grid };
     delete (grid as { columns?: number }).columns;
-    await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 2 });
+    await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 3 });
   }
 
   if (local.version !== 1) {

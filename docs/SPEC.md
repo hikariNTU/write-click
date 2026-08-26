@@ -384,6 +384,24 @@ command's `labelKey` exists.
 
 Shipping: `en` (default) and `zh_TW`.
 
+### Language override
+
+`sync.language` is `auto` (follow the browser) or a locale id. `chrome.i18n` always follows the
+browser's UI language and cannot be told to use another, so a picker has to resolve messages itself:
+`setLocale()` stores the override and `t()` reads the bundled catalogue directly, falling through to
+English for a missing key. Only `auto` goes through `chrome.i18n`.
+
+Catalogues are **bundled**, not fetched from `_locales` at runtime — fetching would mean exposing
+them as web-accessible resources for the content script, plus asynchronous loading before the first
+label is drawn. At two locales that costs a few kB. Past a handful, revisit it.
+
+The manifest's name and description cannot be overridden: Chrome renders those itself, from the
+browser's language. The settings page says so rather than leaving it as a puzzle.
+
+Every entry point calls `setLocale()` right after loading settings, and content scripts re-apply on
+`storage.onChanged`, which also rebuilds the cheatsheet so a language change reaches open tabs
+without a reload.
+
 ## 11. Phases
 
 1. **Scaffold** — done. Vite + crxjs + Tailwind + oxc, shadow-root overlay, trigger defaults.

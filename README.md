@@ -94,7 +94,10 @@ Changes apply to open tabs immediately, with no reload.
 
 ## Languages
 
-English and 繁體中文. Adding one is a file: copy `src/public/_locales/en/messages.json` to
+English and 繁體中文, following the browser by default and switchable in settings — the extension's
+own language, that is; the name Chrome shows in its menus always follows the browser.
+
+Adding one is a file: copy `src/public/_locales/en/messages.json` to
 `src/public/_locales/<locale>/`, translate the `message` values, and `npm test` will tell you if a
 key or a `$PLACEHOLDER$` went missing.
 
