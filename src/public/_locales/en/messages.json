@@ -1,4 +1,7 @@
 {
+  "cmd_app_options": {
+    "message": "Open write-click settings"
+  },
   "cmd_nav_back": {
     "message": "Back"
   },
@@ -252,6 +255,12 @@
   },
   "options_overlay_grid_hint": {
     "message": "Appears while the trigger is held. Click a tile to switch to that tab."
+  },
+  "options_overlay_trail": {
+    "message": "Draw the trail"
+  },
+  "options_overlay_trail_hint": {
+    "message": "Off still recognises the stroke and runs the command."
   },
   "options_overlay_readout": {
     "message": "Show the readout"

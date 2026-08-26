@@ -64,6 +64,7 @@ function prepare(svg: string): string {
 export const COMMAND_ICONS: Record<CommandId, string> = {
   // Chevrons step through the strip; the plain arrows are history, which is
   // what they mean everywhere else in a browser.
+  "app.options": prepare(settings),
   "tab.next": prepare(chevronRight),
   "tab.prev": prepare(chevronLeft),
   "nav.back": prepare(arrowBack),

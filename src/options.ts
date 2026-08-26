@@ -365,6 +365,13 @@ function overlayCard(): HTMLElement {
 
   section.append(
     row(t("options_overlay_scale"), scaleControl, t("options_overlay_scale_hint")),
+    row(
+      t("options_overlay_trail"),
+      toggle(sync.trail.show, (value) => {
+        void patchSync({ trail: { ...sync.trail, show: value } });
+      }),
+      t("options_overlay_trail_hint"),
+    ),
     row(t("options_overlay_color"), color),
     row(t("options_overlay_width"), width),
     row(

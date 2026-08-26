@@ -94,7 +94,14 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
   const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
   // Built last, and handed the grid: the stroke draws above the panels, and
   // thins out where it crosses one so the tile underneath stays readable.
-  const trail = new Trail(overlay, sync.trail, () => grid?.panelRects() ?? []);
+  // Read through a function, not captured: `chrome.storage.onChanged` replaces
+  // `sync.trail` wholesale, so a captured object would be the settings as they
+  // were when the tab loaded.
+  const trail = new Trail(
+    overlay,
+    () => sync.trail,
+    () => grid?.panelRects() ?? [],
+  );
 
   let points: Point[] = [];
   let stroke = "";

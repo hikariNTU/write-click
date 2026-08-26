@@ -147,6 +147,7 @@ gesture stays armed and the trail sticks on screen until the next click.
 | `page.down`       | Scroll down one viewport                         | content    | `U`            |
 | `page.up`         | Scroll up one viewport                           | content    | `D`            |
 | `page.end`        | Scroll to bottom                                 | content    | _(unbound)_    |
+| `app.options`     | Open this extension's settings page              | background | _(unbound)_    |
 
 The scheme: a single flick steps sideways through tabs, doubling back (`LRL`, `RLR`) runs to that
 end of the strip, and a leading `R`/`L` with a `D` tail closes something. Order matters, so `RD` and
@@ -334,6 +335,25 @@ panel visibly reflows as the tab count lands.
 - The trail is a `<canvas>` sized to the viewport times `devicePixelRatio`, redrawn on
   `requestAnimationFrame`: a wide blurred underlay for the glow, a crisp core on top, joined through
   midpoints with `quadraticCurveTo` so it reads as a stroke rather than a polyline.
+- **The drawn line is not the sample list.** A mouse reports far more samples than a line needs, and
+  `getCoalescedEvents` hands over every one the compositor buffered — several within a single pixel,
+  carrying the hand's tremor and the sensor's rounding but no shape, and each one a control point the
+  curve is obliged to pass through. Two things fix that, and **neither may delay the head**, because
+  the trail is the only feedback that the gesture is being seen at all:
+  - Samples less than **3 CSS pixels** from the last kept one are dropped.
+  - A kept sample is smoothed — pulled a quarter of the way towards each neighbour — only once it
+    has a successor and is no longer the tip. Smoothing the head instead is what makes a trail lag
+    behind the cursor; here the tip is always the raw sample that just arrived, and only the part
+    already behind the pointer is tidied.
+
+  The line drawn ends with the newest raw sample, so it reaches the cursor rather than stopping up to
+  a step short of it. The recognizer never sees any of this: it quantizes the raw points, so
+  smoothing cannot change which command a stroke matches.
+
+- **`trail.show` turns the line off without turning anything else off.** The recognizer, the readout,
+  the tab grid and every command keep running — it hides the drawing, not the gesture. Trail options
+  are read through a function rather than captured, because `storage.onChanged` replaces
+  `sync.trail` wholesale and a captured object would be the settings as they were at page load.
 - Glass surfaces blur the backdrop by **6px**. Heavier blurs turn the page behind into an unreadable
   smear, which matters here because the overlay covers content the user is still reading.
 - Layering inside the shadow root is explicit, not append order: tab grid `z-10`, trail `z-20`,

@@ -82,7 +82,7 @@ const page = (site: Site): string =>
  * whole top-level key: writing `{ showLabel }` alone would be typed as a
  * partial trail and read back as one. Keep in step with `defaultSyncSettings`.
  */
-const TRAIL = { color: "#34d399", width: 4 } as const;
+const TRAIL = { show: true, color: "#34d399", width: 4 } as const;
 
 /** Everything except `enabled`, which each shot sets for itself. */
 const GRID = {

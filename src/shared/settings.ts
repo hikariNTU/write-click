@@ -20,7 +20,13 @@ export interface SyncSettings {
     /** Release the trigger over a tile to switch to it, without clicking. */
     pickOnRelease: boolean;
   };
-  trail: { color: string; width: number; showLabel: boolean };
+  trail: {
+    /** Draw the stroke at all. Off leaves the recognizer and every command running. */
+    show: boolean;
+    color: string;
+    width: number;
+    showLabel: boolean;
+  };
   disabledOrigins: string[];
 }
 
@@ -43,7 +49,7 @@ export function defaultSyncSettings(): SyncSettings {
     language: "auto",
     gestures: { ...DEFAULT_GESTURES },
     grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true, pickOnRelease: true },
-    trail: { color: "#34d399", width: 4, showLabel: true },
+    trail: { show: true, color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };
 }

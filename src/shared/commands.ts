@@ -31,6 +31,7 @@ export const COMMANDS = {
   "page.down": { labelKey: "cmd_page_down", where: "content" },
   "page.top": { labelKey: "cmd_page_top", where: "content" },
   "page.end": { labelKey: "cmd_page_end", where: "content" },
+  "app.options": { labelKey: "cmd_app_options", where: "background" },
 } as const satisfies Record<string, { labelKey: MessageKey; where: "background" | "content" }>;
 
 export type CommandId = keyof typeof COMMANDS;

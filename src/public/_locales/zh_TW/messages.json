@@ -1,4 +1,7 @@
 {
+  "cmd_app_options": {
+    "message": "開啟 write-click 設定"
+  },
   "cmd_nav_back": {
     "message": "上一頁"
   },
@@ -252,6 +255,12 @@
   },
   "options_overlay_grid_hint": {
     "message": "按住觸發鍵時顯示。點選項目即可切換至該分頁。"
+  },
+  "options_overlay_trail": {
+    "message": "顯示軌跡"
+  },
+  "options_overlay_trail_hint": {
+    "message": "關閉後仍會辨識筆勢並執行指令。"
   },
   "options_overlay_readout": {
     "message": "顯示指令提示"

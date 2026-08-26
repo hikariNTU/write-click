@@ -127,6 +127,12 @@ export async function runTabCommand(
       if (sender.id !== undefined) await chrome.tabs.remove(sender.id);
       return;
     }
+    case "app.options": {
+      // `openOptionsPage` focuses the tab if the page is already open, which is
+      // the behaviour anyone drawing this twice expects.
+      await chrome.runtime.openOptionsPage();
+      return;
+    }
     case "tab.reopen": {
       await chrome.sessions.restore();
       return;
