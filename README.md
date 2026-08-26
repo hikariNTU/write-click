@@ -121,9 +121,8 @@ npm run format     # oxfmt .
 Load `dist/`, not `src/`, as an unpacked extension at `chrome://extensions`.
 
 The dev server writes its own unpacked extension to `dist-dev/`, so load that one instead while
-running `npm run dev`. The two directories are deliberately separate: dev used to write over `dist`
-and emptied it on startup, which dropped a loaded extension mid-session with "Manifest file is
-missing or unreadable".
+running `npm run dev`. Keep only one of the two enabled at a time — both loaded means two content
+scripts on every page.
 
 ## Stack
 

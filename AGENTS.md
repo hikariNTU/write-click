@@ -71,9 +71,11 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   moved there would switch tabs on release (spec §6.3, §6.4).
 - A sub-frame never runs its gesture command before the top frame answers its `end`. Only the top
   frame knows whether the release picked a tab (spec §6.3).
+- `build.outDir` stays **absolute**. The dev server resolves a relative one two ways — against Vite's
+  root for its per-script writes, against the working directory for its rollup pass — and the half
+  that carries the manifest lands outside the project, leaving a directory Chrome refuses.
 - The dev server never writes to `dist/`. It has its own `dist-dev/` and does not empty it: emptying
-  a directory Chrome has loaded makes the extension vanish with "Manifest file is missing or
-  unreadable".
+  a directory Chrome has loaded makes the extension vanish mid-session.
 - Generated directories get wiped without warning. `src/icons/material/` and `src/images/` are
   generated; anything authored goes beside them, never inside them.
 - Never import an asset from `node_modules` with `?raw`. Vite's root is `src/`, so it is served
