@@ -124,6 +124,10 @@ The dev server writes its own unpacked extension to `dist-dev/`, so load that on
 running `npm run dev`. Keep only one of the two enabled at a time — both loaded means two content
 scripts on every page.
 
+The overlay's stylesheet is written once when the dev server starts, so restart it after using a
+Tailwind class the overlay has not used before; otherwise that class is missing and the overlay
+renders unstyled.
+
 ## Stack
 
 Vite, `@crxjs/vite-plugin` (MV3), TypeScript strict, Tailwind v4, oxlint + oxfmt.

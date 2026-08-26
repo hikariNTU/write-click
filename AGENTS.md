@@ -97,6 +97,9 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   `chrome.i18n` has no plural support.
 - Tailwind only sees complete class strings in the source. Never build a class name by
   concatenating fragments at runtime.
+- Restart `npm run dev` after using a utility class the overlay has not used before. The dev server
+  writes the content script's `?inline` stylesheet once at startup and never re-emits it, so the new
+  class is missing and the overlay renders as unstyled boxes in the top-left corner (spec §7.3).
 
 ## Release
 

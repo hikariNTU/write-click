@@ -383,6 +383,14 @@ is only ever adopted into the closed shadow root, so in a packed build none of t
 every `var()` resolves to nothing, and borders, transforms and shadows disappear. A dev build hides
 this: Vite also puts the stylesheet in the document, which registers them.
 
+**The dev server freezes this stylesheet.** The content script imports it with `?inline`, and the
+dev server writes that import to disk as its own module once, at startup. Editing a `.ts` file
+rewrites that file's module and not the stylesheet, so a utility class used for the first time never
+reaches the shadow root: the class is simply absent, and the overlay collapses to unstyled boxes in
+the top-left corner. Touching the CSS entry to make Tailwind regenerate does not help — the writer
+still does not re-emit it. **Restart `npm run dev` after introducing a class the overlay has not used
+before**, or check the behaviour in a `npm run build` load, which is what AGENTS.md asks for anyway.
+
 Tailwind's own fallback sits behind an `@supports` test that Chrome passes, so it never applies.
 `withPropertyFallback()` in `src/content/css-fallback.ts` rebuilds it from the registrations found in
 the sheet — one zero-specificity rule that any utility setting the variable still overrides. Do not
