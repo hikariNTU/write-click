@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Write Click",
+  "version": "0.1.0",
+  "description": "Draw mouse gestures to switch, close and reopen tabs, and to move around the page.",
+  "permissions": ["tabs", "sessions", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background/service_worker.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/index.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

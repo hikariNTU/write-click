@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/*
+ * Loaded with ?inline and adopted by the overlay's shadow root, so Tailwind's
+ * preflight resets only our own subtree and never the host page.
+ */

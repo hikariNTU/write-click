@@ -1,0 +1,32 @@
+{
+  "name": "write-click",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mouse gesture extension for Chrome. Draw with the right button, get tab and page commands.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "pack:linux": "zip -r ./dist.zip ./dist",
+    "pack:windows": "powershell Compress-Archive -Path ./dist/* -DestinationPath dist.zip -Force"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.7.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/chrome": "^0.2.7",
+    "@types/node": "^26.3.0",
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.80.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
