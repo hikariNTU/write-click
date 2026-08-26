@@ -104,7 +104,9 @@ to 150% as on one at 100%.
 second computer. It carries the trigger and the overlay size too, which are otherwise per device: an
 export is asked for by name, and a backup that restores everything except the button you press is
 not a backup. An import replaces what is there, and leaves out any binding this version does not
-recognise rather than storing one that can never fire.
+recognise rather than storing one that can never fire. The same contents sit in a textarea below,
+for moving settings between two computers without moving a file — copy it out, paste it in over
+there, apply.
 
 The popup carries the two switches worth reaching in one click — gestures on/off for this device, and
 on/off for the site you are on.

@@ -185,6 +185,15 @@
   "options_autosave": {
     "message": "Changes are saved automatically."
   },
+  "options_backup_apply": {
+    "message": "Apply"
+  },
+  "options_backup_copied": {
+    "message": "Copied to the clipboard."
+  },
+  "options_backup_copy": {
+    "message": "Copy"
+  },
   "options_backup_desc": {
     "message": "Settings can be written to a file, and read back after a reinstall or on another computer."
   },
@@ -217,10 +226,10 @@
     "message": "Includes the trigger and the overlay size, which are otherwise kept per device."
   },
   "options_backup_failed_json": {
-    "message": "That file is not JSON."
+    "message": "That is not JSON."
   },
   "options_backup_failed_shape": {
-    "message": "That file is not a write-click backup."
+    "message": "That is not a write-click backup."
   },
   "options_backup_import": {
     "message": "Import from a file"
@@ -230,6 +239,12 @@
   },
   "options_backup_import_hint": {
     "message": "Replaces every setting on this device. Bindings this version does not recognise are left out."
+  },
+  "options_backup_text": {
+    "message": "Settings as text"
+  },
+  "options_backup_text_hint": {
+    "message": "The same contents as the file. Copy it to another computer, or paste one in and apply it."
   },
   "options_backup_title": {
     "message": "Backup"

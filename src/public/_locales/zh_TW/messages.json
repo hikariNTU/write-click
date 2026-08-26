@@ -185,6 +185,15 @@
   "options_autosave": {
     "message": "變更會自動儲存。"
   },
+  "options_backup_apply": {
+    "message": "套用"
+  },
+  "options_backup_copied": {
+    "message": "已複製到剪貼簿。"
+  },
+  "options_backup_copy": {
+    "message": "複製"
+  },
   "options_backup_desc": {
     "message": "設定可寫入檔案，於重新安裝後或在另一台電腦上讀回。"
   },
@@ -217,10 +226,10 @@
     "message": "包含觸發方式與覆蓋層尺寸，這兩項平時各裝置分別儲存。"
   },
   "options_backup_failed_json": {
-    "message": "該檔案不是 JSON。"
+    "message": "這不是 JSON。"
   },
   "options_backup_failed_shape": {
-    "message": "該檔案不是 write-click 的備份。"
+    "message": "這不是 write-click 的備份。"
   },
   "options_backup_import": {
     "message": "從檔案匯入"
@@ -230,6 +239,12 @@
   },
   "options_backup_import_hint": {
     "message": "取代這台裝置上的所有設定。此版本無法辨識的繫結將略過。"
+  },
+  "options_backup_text": {
+    "message": "文字形式的設定"
+  },
+  "options_backup_text_hint": {
+    "message": "內容與檔案相同。可複製到另一台電腦，或貼上一份後套用。"
   },
   "options_backup_title": {
     "message": "備份"

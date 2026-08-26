@@ -636,7 +636,12 @@ the page says out loud rather than silently dropping.
 The trigger section shows what the current choice does to the native context menu, since that is the
 part that surprises people, and the wording follows §3.1 per platform.
 
-The backup section is two buttons over §9.1. The download goes through an object URL and a
+The backup section is two buttons and a textarea over §9.1, both paths through the same
+`restore(text)`. The textarea holds the same contents as the file, because moving a backup between
+two computers otherwise means moving a file, and it is the only way to read what an export contains
+before sending it anywhere. It is rebuilt from stored settings on every render, so it never shows a
+state that is not the current one; `Copy` falls back to selecting the text when the clipboard is
+denied, which leaves the keyboard shortcut. The download goes through an object URL and a
 synthetic click rather than `chrome.downloads`, which would need a permission nothing else here
 wants; the object URL is revoked on a timer, because revoking it in the same task cancels the
 download in Chromium. The file input is hidden behind a styled button and cleared after every pick,

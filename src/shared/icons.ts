@@ -125,6 +125,7 @@ export const UI_ICONS = {
   openInNew: prepare(openInNew),
   blocked: prepare(block),
   backup: prepare(backup),
+  copy: prepare(duplicate),
   export: prepare(download),
   import: prepare(upload),
 } as const;

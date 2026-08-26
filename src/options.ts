@@ -450,8 +450,9 @@ function download(text: string, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-async function importFrom(file: File): Promise<void> {
-  const result = parseBackup(await file.text());
+/** The text of a backup, whether it came from a file or from the textarea. */
+async function restore(text: string): Promise<void> {
+  const result = parseBackup(text);
   if (!result.ok) {
     notice(
       t(result.reason === "json" ? "options_backup_failed_json" : "options_backup_failed_shape"),
@@ -475,12 +476,15 @@ async function importFrom(file: File): Promise<void> {
   notice(t(key, formatNumber(result.dropped)));
 }
 
+function backupText(): string {
+  return JSON.stringify(buildBackup(sync, local, chrome.runtime.getManifest().version), null, 2);
+}
+
 function backupCard(): HTMLElement {
   const section = card(t("options_backup_title"), t("options_backup_desc"), UI_ICONS.backup);
 
   const exportButton = iconButton(UI_ICONS.export, t("options_backup_export_action"), () => {
-    const file = buildBackup(sync, local, chrome.runtime.getManifest().version);
-    download(JSON.stringify(file, null, 2), backupFilename());
+    download(backupText(), backupFilename());
   });
 
   // The input is what actually opens the picker; the button is only what it
@@ -493,16 +497,52 @@ function backupCard(): HTMLElement {
     // Cleared first: picking the same file twice in a row fires no change event
     // otherwise, which reads as an import that silently did nothing.
     input.value = "";
-    if (file) void importFrom(file);
+    if (file) void file.text().then(restore);
   });
   const importButton = iconButton(UI_ICONS.import, t("options_backup_import_action"), () =>
     input.click(),
+  );
+
+  // The whole backup, in the open. A file is the better backup, but moving one
+  // between two computers means moving a file; this is the same contents in a
+  // form that survives a clipboard, and it is also the only way to see what an
+  // export actually contains before sending it anywhere.
+  const area = el(
+    "textarea",
+    FIELD + " mt-2 h-40 w-full resize-y font-mono text-[11px] leading-relaxed",
+  );
+  area.value = backupText();
+  area.spellcheck = false;
+  area.autocapitalize = "off";
+  area.setAttribute("autocorrect", "off");
+
+  const copy = iconButton(UI_ICONS.copy, t("options_backup_copy"), () => {
+    void navigator.clipboard.writeText(area.value).then(
+      () => notice(t("options_backup_copied")),
+      // Denied, or no focus. Selecting it leaves the keyboard shortcut, which
+      // needs no permission and always works.
+      () => area.select(),
+    );
+  });
+  const apply = iconButton(UI_ICONS.import, t("options_backup_apply"), () => {
+    void restore(area.value);
+  });
+  const actions = el("div", "mt-3 flex items-center gap-2");
+  actions.append(copy, apply);
+
+  const text = el("div", "border-t border-white/5 pt-4");
+  text.append(
+    el("div", "text-[13px] font-medium text-mist-200", t("options_backup_text")),
+    el("div", "mt-0.5 text-[11px] text-mist-500", t("options_backup_text_hint")),
+    area,
+    actions,
   );
 
   section.append(
     row(t("options_backup_export"), exportButton, t("options_backup_export_hint")),
     row(t("options_backup_import"), importButton, t("options_backup_import_hint")),
     input,
+    text,
   );
   return section;
 }
