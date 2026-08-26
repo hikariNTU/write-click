@@ -209,7 +209,7 @@ Rules:
 
 ### 7.1 Icons
 
-Material Symbols **Rounded**, vendored into `src/icons/` by `scripts/sync-icons.mjs` and imported
+Material Symbols **Rounded**, vendored into `src/icons/material/` by `scripts/sync-icons.mjs` and imported
 with `?raw`. An extension cannot fetch a webfont at runtime under its own CSP, and the dozen glyphs
 actually used cost a few kB against the ~4 MB variable font.
 
@@ -218,7 +218,9 @@ They are copied under the root rather than imported from `node_modules` directly
 resolves against the root and turns into `src/@fs/...` — an ENOENT on every content-script load in
 `npm run dev`. The build resolves those on disk and never sees it, so this only ever breaks dev.
 
-The copies are committed, and `prebuild`/`predev` re-sync them. Adding a glyph means adding its name
+The script **wipes its target directory** before copying, so it targets `src/icons/material/` and
+hand-authored artwork lives one level up in `src/icons/`. The copies are committed, and
+`prebuild`/`predev` re-sync them. Adding a glyph means adding its name
 to the `ICONS` list in that script, not a new import path into `node_modules`.
 
 Weight is **700** — the heaviest the Material Symbols `wght` axis defines. There is no 900 in this
@@ -229,9 +231,19 @@ Each SVG is rewritten on import to carry `fill="currentColor"` and to drop its f
 
 ## 8. Frames
 
-The content script runs in all frames at `document_start`. Sub-frames record pointer events and
-forward them to the top frame via `postMessage`, offset-corrected; the top frame owns the overlay
-and the recognizer. Page commands are routed back to the originating frame.
+The content script runs in all frames at `document_start`. **Every frame runs its own trigger and
+recognizer and executes its own commands** — that is what makes a page command scroll the frame the
+gesture was actually drawn in, with no routing back down.
+
+Only the _drawing_ is relayed. A sub-frame posts its points to `window.parent`, one hop at a time,
+each hop adding that frame's offset (the child's iframe content box, found by comparing
+`contentWindow`, which works across origins). Hopping rather than posting straight to `window.top`
+is what makes nested iframes work: only the immediate parent can locate a child's iframe element.
+The top frame owns the overlay and renders sub-frame gestures identically.
+
+Because commands never travel over `postMessage`, a page script that spoofs these messages can move
+a trail around and nothing else. The one message that travels **down** is the grid's "a tab was
+picked, drop your pending command", relayed along the same chain in reverse.
 
 Cross-origin iframes that have not loaded yet, `chrome://` pages, the Web Store, the PDF viewer, and
 `view-source:` cannot host a content script. Gestures do not work there; this is a platform limit,
@@ -315,7 +327,7 @@ script cannot run and the toggle would be a lie.
 5. **Options** — done. Trigger picker with key capture, gesture remap by drawing, overlay
    appearance, per-origin disable, reset, and storage migrations. The toolbar popup carries the two
    switches worth reaching quickly.
-6. **Frames and release** — sub-frame bridge, release workflow, icons, store listing.
+6. **Frames and release** — sub-frame bridge done; release workflow, icons and store listing next.
 
 Done criteria per phase: `npm run build`, `npm run typecheck`, and `npm run lint` all clean, and the
 phase's behaviour verified in a loaded unpacked build.

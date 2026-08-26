@@ -1,0 +1,162 @@
+import { COMMANDS } from "../shared/commands";
+import type { CommandId } from "../shared/commands";
+import { COMMAND_ICONS, UNKNOWN_ICON } from "../shared/icons";
+import { send } from "../shared/messages";
+import type { TabSummary } from "../shared/messages";
+import { quantize } from "../shared/recognizer";
+import type { Point } from "../shared/recognizer";
+import type { SyncSettings } from "../shared/settings";
+import { tabsOnSide } from "../shared/tabs";
+import { Hud } from "./hud";
+import type { Match } from "./hud";
+import { createOverlay } from "./overlay";
+import { TabGrid } from "./tab-grid";
+import { Trail } from "./trail";
+
+/**
+ * How many tabs a close-to-the-side command would take, using the same filter
+ * the background uses, so the number shown and the number closed agree.
+ * Undefined for every other command.
+ */
+function closingCount(command: CommandId, tabs: readonly TabSummary[]): number | undefined {
+  if (command !== "tab.closeRight" && command !== "tab.closeLeft") return undefined;
+  const active = tabs.find((tab) => tab.active);
+  if (!active) return undefined;
+  const side = command === "tab.closeRight" ? "right" : "left";
+  return tabsOnSide(tabs, active.index, side).length;
+}
+
+function describe(
+  stroke: string,
+  command: CommandId | undefined,
+  tabs: readonly TabSummary[],
+): Match {
+  if (!command) {
+    return { stroke, label: "Unassigned", icon: UNKNOWN_ICON, state: "unassigned" };
+  }
+
+  const icon = COMMAND_ICONS[command];
+  const count = closingCount(command, tabs);
+  if (count === undefined) {
+    return { stroke, label: COMMANDS[command].label, icon, state: "matched" };
+  }
+
+  const side = command === "tab.closeRight" ? "right" : "left";
+  if (count === 0) {
+    // Honest about doing nothing, rather than promising a close that cannot
+    // happen because everything that way is pinned or there is nothing there.
+    return { stroke, label: `No tabs to close to the ${side}`, icon, state: "unassigned" };
+  }
+  return {
+    stroke,
+    label: `Close ${count} tab${count === 1 ? "" : "s"} to the ${side}`,
+    icon,
+    state: "matched",
+  };
+}
+
+export interface View {
+  start(point: Point): void;
+  move(point: Point): void;
+  end(): void;
+  cancel(): void;
+}
+
+/**
+ * Everything drawn on screen, and nothing that runs a command. It lives only in
+ * the top frame, and renders gestures drawn in sub-frames just the same, so a
+ * stroke started inside an iframe still gets a trail across the whole page.
+ */
+export function createView(sync: SyncSettings, onPick: () => void): View {
+  const overlay = createOverlay();
+  const trail = new Trail(overlay, sync.trail);
+  const hud = new Hud(overlay);
+  const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
+
+  let points: Point[] = [];
+  let stroke = "";
+  let holding = false;
+  let tabs: readonly TabSummary[] = [];
+  let tabsPending: Promise<readonly TabSummary[]> = Promise.resolve([]);
+  let gridTimer = 0;
+
+  const paint = (): void => {
+    if (sync.trail.showLabel && stroke) hud.show(describe(stroke, sync.gestures[stroke], tabs));
+  };
+
+  const clear = (): void => {
+    points = [];
+    stroke = "";
+    holding = false;
+    clearTimeout(gridTimer);
+    trail.clear();
+    hud.hide();
+    grid?.hide();
+  };
+
+  grid?.onSelect((tabId) => {
+    onPick();
+    clear();
+    void send({ type: "tabs.activate", tabId });
+  });
+
+  /**
+   * The tab list is fetched the moment the trigger goes down. Both the grid and
+   * the readout's "close N tabs" count need it, so it is fetched even when the
+   * grid is switched off.
+   */
+  const requestTabs = (): void => {
+    tabs = [];
+    tabsPending = send({ type: "tabs.list" }).then((response) => {
+      if (response.ok && "tabs" in response) return response.tabs;
+      console.debug("[write-click] tab list failed", response);
+      return [];
+    });
+    void tabsPending.then((list) => {
+      if (!holding) return;
+      tabs = list;
+      // The stroke may already be drawn and labelled without a count.
+      paint();
+    });
+  };
+
+  /**
+   * The panel appears a beat after the trigger goes down, so a quick flick
+   * gesture never flashes it. Movement does not dismiss it — picking a tile
+   * means moving onto the tile, so anything that treats movement as "the user
+   * is drawing instead" cancels the feature the moment it is used.
+   */
+  const scheduleGrid = (): void => {
+    if (!grid) return;
+    gridTimer = window.setTimeout(() => {
+      void tabsPending.then((list) => {
+        if (holding && list.length > 0) {
+          grid.show(list);
+          return;
+        }
+        console.debug("[write-click] grid skipped", { holding, count: list.length });
+      });
+    }, sync.grid.holdMs);
+  };
+
+  return {
+    start(point) {
+      points = [point];
+      stroke = "";
+      holding = true;
+      trail.render(points);
+      requestTabs();
+      scheduleGrid();
+    },
+    move(point) {
+      points.push(point);
+      trail.render(points);
+      const next = quantize(points);
+      if (next === stroke) return;
+      stroke = next;
+      paint();
+    },
+    end: clear,
+    cancel: clear,
+  };
+}
