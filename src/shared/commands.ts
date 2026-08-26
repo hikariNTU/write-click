@@ -48,6 +48,10 @@ export type CommandId = keyof typeof COMMANDS;
  * Other gesture products put them on a plain `L`/`R`, but those are spent on
  * tab switching here.
  *
+ * `app.options` takes a four-leg `DLUR`. It opens a page rather than acting on
+ * one, so it should not be reachable by a slip of the hand — and the short
+ * strokes are spent anyway.
+ *
  * `page.end` and the rest of the catalogue ship unbound: there is no short
  * stroke left that does not collide, and guessing at bindings nobody asked for
  * is worse than leaving them for the options page.
@@ -70,4 +74,7 @@ export const DEFAULT_GESTURES: Record<string, CommandId> = {
   DL: "nav.back",
   DR: "nav.forward",
   DU: "tab.new",
+  // Four legs, because it opens a page rather than acting on one: nothing this
+  // deliberate should be reachable by a slip of the hand.
+  DLUR: "app.options",
 };

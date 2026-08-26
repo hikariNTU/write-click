@@ -9,7 +9,7 @@ export type GridSize = "compact" | "normal" | "large";
 
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 4;
+  version: 5;
   language: LanguageSetting;
   gestures: Record<string, CommandId>;
   grid: {
@@ -45,7 +45,7 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 4,
+    version: 5,
     language: "auto",
     gestures: { ...DEFAULT_GESTURES },
     grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true, pickOnRelease: true },
@@ -163,13 +163,22 @@ export async function migrate(): Promise<void> {
   const local = (await chrome.storage.local.get(null)) as { version?: number };
   const defaults = defaultSyncSettings();
 
-  if (stored.version !== 4) {
+  if (stored.version !== 5) {
     // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
     // v3 added the language override, which defaults to following the browser.
     // v4 added picking on release.
     const grid = { ...defaults.grid, ...stored.grid };
     delete (grid as { columns?: number }).columns;
-    await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 4 });
+
+    // v5 added `app.options`, on the stroke it ships with. Merging the whole
+    // default map back in would resurrect every binding the user has cleared,
+    // so only this one command is added, and only if nothing already holds
+    // either it or its stroke.
+    const gestures = { ...(stored.gestures ?? defaults.gestures) };
+    const spoken = Object.values(gestures).includes("app.options");
+    if (!spoken && !gestures.DLUR) gestures.DLUR = "app.options";
+
+    await chrome.storage.sync.set({ ...defaults, ...stored, gestures, grid, version: 5 });
   }
 
   // v2 added the overlay scale.

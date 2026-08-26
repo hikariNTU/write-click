@@ -147,7 +147,7 @@ gesture stays armed and the trail sticks on screen until the next click.
 | `page.down`       | Scroll down one viewport                         | content    | `U`            |
 | `page.up`         | Scroll up one viewport                           | content    | `D`            |
 | `page.end`        | Scroll to bottom                                 | content    | _(unbound)_    |
-| `app.options`     | Open this extension's settings page              | background | _(unbound)_    |
+| `app.options`     | Open this extension's settings page              | background | `DLUR`         |
 
 The scheme: a single flick steps sideways through tabs, doubling back (`LRL`, `RLR`) runs to that
 end of the strip, and a leading `R`/`L` with a `D` tail closes something. Order matters, so `RD` and
@@ -155,6 +155,9 @@ end of the strip, and a leading `R`/`L` with a `D` tail closes something. Order 
 
 Vertical page strokes are **inverted on purpose**: `U` pushes the page up, which scrolls down, the
 way a touch surface behaves. Do not "fix" this.
+
+`app.options` takes a four-leg `DLUR`. It opens a page rather than acting on one, so it should not
+be reachable by a slip of the hand, and the short strokes are spent anyway.
 
 Back and forward take `DL` and `DR`, mirroring the direction they travel. Every other gesture product
 puts them on a plain `L`/`R`; those are spent on tab switching here.
@@ -502,7 +505,7 @@ not a bug to fix.
 ```ts
 interface SyncSettings {
   // chrome.storage.sync
-  version: 4;
+  version: 5;
   language: "auto" | Locale; // §10.2
   gestures: Record<string, CommandId>; // stroke -> command
   grid: {
