@@ -38,18 +38,24 @@ at all. `Control` is never a default modifier: on macOS that is right-click emul
 
 ## Gestures
 
-| Stroke | Command                 |     | Stroke | Command          |
-| ------ | ----------------------- | --- | ------ | ---------------- |
-| `R`    | next tab                |     | `U`    | page up          |
-| `L`    | previous tab            |     | `D`    | page down        |
-| `DR`   | close tab               |     | `UL`   | scroll to top    |
-| `UR`   | reopen closed tab       |     | `DL`   | scroll to bottom |
-| `RD`   | close tabs to the right |     |        |                  |
-| `LD`   | close tabs to the left  |     |        |                  |
+| Stroke | Command       |     | Stroke | Command                 |
+| ------ | ------------- | --- | ------ | ----------------------- |
+| `L`    | previous tab  |     | `RD`   | close tab               |
+| `R`    | next tab      |     | `LU`   | reopen closed tab       |
+| `LRL`  | leftmost tab  |     | `URD`  | close tabs to the right |
+| `RLR`  | rightmost tab |     | `ULD`  | close tabs to the left  |
+| `U`    | page down     |     | `LD`   | minimize window         |
+| `D`    | page up       |     | `RU`   | scroll to top           |
+
+A single flick steps sideways through tabs; doubling back runs to that end of the strip; a leading
+`R`/`L` with a `D` tail closes something.
+
+Vertical strokes are inverted on purpose — `U` pushes the page up, which scrolls down, the way a
+touch surface behaves.
 
 Strokes are read as four cardinal directions with hysteresis, so a wobbly hand cannot turn one
-corner into four letters. `DR` and `RD` are different strokes — order matters. `DR`/`UR` act on the tab itself; `RD`/`LD`
-point at the side being closed. All remappable in options once phase 5 lands.
+corner into four letters. `RD` and `DR` are different strokes — order matters. All remappable once
+the options page lands, and `page.end` ships unbound waiting for a stroke you like.
 
 ## Tab grid
 

@@ -108,25 +108,36 @@ apart. Four directions removes the ambiguity and is what makes the hysteresis ru
 
 ## 5. Commands
 
-| Command id       | Action                                           | Runs in    | Default stroke |
-| ---------------- | ------------------------------------------------ | ---------- | -------------- |
-| `tab.next`       | Activate next tab, wrapping                      | background | `R`            |
-| `tab.prev`       | Activate previous tab, wrapping                  | background | `L`            |
-| `tab.close`      | Close the active tab                             | background | `DR`           |
-| `tab.reopen`     | `chrome.sessions.restore()`                      | background | `UR`           |
-| `tab.closeRight` | Close every unpinned tab right of the active one | background | `RD`           |
-| `tab.closeLeft`  | Close every unpinned tab left of the active one  | background | `LD`           |
-| `page.up`        | Scroll up one viewport                           | content    | `U`            |
-| `page.down`      | Scroll down one viewport                         | content    | `D`            |
-| `page.top`       | Scroll to top                                    | content    | `UL`           |
-| `page.end`       | Scroll to bottom                                 | content    | `DL`           |
+| Command id        | Action                                           | Runs in    | Default stroke |
+| ----------------- | ------------------------------------------------ | ---------- | -------------- |
+| `tab.prev`        | Activate previous tab, wrapping                  | background | `L`            |
+| `tab.next`        | Activate next tab, wrapping                      | background | `R`            |
+| `tab.first`       | Activate the leftmost tab                        | background | `LRL`          |
+| `tab.last`        | Activate the rightmost tab                       | background | `RLR`          |
+| `tab.close`       | Close the active tab                             | background | `RD`           |
+| `tab.reopen`      | `chrome.sessions.restore()`                      | background | `LU`           |
+| `tab.closeRight`  | Close every unpinned tab right of the active one | background | `URD`          |
+| `tab.closeLeft`   | Close every unpinned tab left of the active one  | background | `ULD`          |
+| `window.minimize` | Minimize the current window                      | background | `LD`           |
+| `page.top`        | Scroll to top                                    | content    | `RU`           |
+| `page.down`       | Scroll down one viewport                         | content    | `U`            |
+| `page.up`         | Scroll up one viewport                           | content    | `D`            |
+| `page.end`        | Scroll to bottom                                 | content    | _(unbound)_    |
 
-Mnemonic: `DR`/`UR` are destroy/undo on the tab itself; `RD`/`LD` point at the side being closed.
-Order matters, so `DR` and `RD` are distinct strokes.
+The scheme: a single flick steps sideways through tabs, doubling back (`LRL`, `RLR`) runs to that
+end of the strip, and a leading `R`/`L` with a `D` tail closes something. Order matters, so `RD` and
+`DR` are distinct strokes.
+
+Vertical page strokes are **inverted on purpose**: `U` pushes the page up, which scrolls down, the
+way a touch surface behaves. Do not "fix" this.
+
+`page.end` ships unbound — every remaining short stroke collides with something. It exists so it can
+be bound in options.
 
 Rules:
 
 - Tab commands never touch pinned tabs in the bulk closers.
+- `window.minimize` uses `chrome.windows.update`, which needs no extra permission.
 - Page commands run in the frame that started the gesture, not the top frame, so gestures inside a
   scrollable iframe scroll that iframe.
 - Within that frame they target the nearest scrollable ancestor of the point where the gesture

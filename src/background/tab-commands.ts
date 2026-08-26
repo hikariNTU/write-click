@@ -44,6 +44,16 @@ export async function runTabCommand(
       await activate(tabs[(at + step + tabs.length) % tabs.length]);
       return;
     }
+    case "tab.first":
+    case "tab.last": {
+      const tabs = await siblings(windowId);
+      await activate(id === "tab.first" ? tabs[0] : tabs.at(-1));
+      return;
+    }
+    case "window.minimize": {
+      await chrome.windows.update(windowId, { state: "minimized" });
+      return;
+    }
     case "tab.close": {
       if (sender.id !== undefined) await chrome.tabs.remove(sender.id);
       return;
