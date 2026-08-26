@@ -207,7 +207,15 @@ Rules:
   rendered as rotated arrows rather than letters. Emerald tint when the stroke matches, amber when
   it is unassigned.
 
-### 7.1 Icons
+### 7.1 Extension icon
+
+`src/icons/write-click.svg` is the source art. `scripts/render-icons.mjs` rasterizes it to
+`src/images/icon-{16,32,48,128}.png`, which is what the manifest points at — Chrome accepts no SVG
+for `icons` or `action.default_icon`. Rendering uses `@resvg/resvg-js` rather than a headless
+browser, so the build needs no Chrome, and the PNGs are committed with CI failing if a build changes
+them.
+
+### 7.2 Command icons
 
 Material Symbols **Rounded**, vendored into `src/icons/material/` by `scripts/sync-icons.mjs` and imported
 with `?raw`. An extension cannot fetch a webfont at runtime under its own CSP, and the dozen glyphs
@@ -327,7 +335,8 @@ script cannot run and the toggle would be a lie.
 5. **Options** — done. Trigger picker with key capture, gesture remap by drawing, overlay
    appearance, per-origin disable, reset, and storage migrations. The toolbar popup carries the two
    switches worth reaching quickly.
-6. **Frames and release** — sub-frame bridge done; release workflow, icons and store listing next.
+6. **Frames and release** — done. Sub-frame bridge, extension icons rendered from the source SVG,
+   CI, and a release workflow that tags and attaches `dist.zip` on a version bump.
 
 Done criteria per phase: `npm run build`, `npm run typecheck`, and `npm run lint` all clean, and the
 phase's behaviour verified in a loaded unpacked build.

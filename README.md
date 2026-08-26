@@ -9,11 +9,11 @@ and scripts cannot see it, restyle it, or reach into it.
 
 ## Status
 
-**Phase 5 of 6 — options.** Gestures are captured, quantized and drawn as a glowing trail, the
+**Feature complete.** Gestures are captured, quantized and drawn as a glowing trail, the
 matched command is named in a glass readout, and releasing the trigger runs it. Holding the trigger
 opens a grid of the window's tabs: click one, with the trigger still held, to jump straight to it and
-discard the stroke. Everything is configurable from the settings page. Next up: sub-frames and
-release packaging.
+discard the stroke. Everything is configurable from the settings page. Gestures work inside iframes,
+scrolling the frame they were drawn in.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
 

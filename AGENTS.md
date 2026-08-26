@@ -19,7 +19,11 @@ npm run typecheck  # tsc --noEmit
 npm run lint       # oxlint
 npm run format     # oxfmt .
 npm test           # node --test, runs *.test.ts directly via type stripping
+npm run assets     # re-sync glyphs and re-render icon PNGs (prebuild/predev do this)
+npm run bump patch # or minor / major — versions must agree across all three files
 ```
+
+Generated assets are committed, and CI fails if a build changes them.
 
 Load `dist/`, never `src/`, as the unpacked extension. A phase is done when build, typecheck and
 lint are all clean and the behaviour is verified in a loaded unpacked build.
@@ -33,7 +37,8 @@ lint are all clean and the behaviour is verified in a loaded unpacked build.
 - `src/shared/trigger.ts` — trigger types, per-platform defaults, context-menu timing
 - `src/icons/material/` — vendored Material Symbols glyphs, **generated**; `scripts/sync-icons.mjs`
   wipes this directory on every build. Never put hand-authored artwork in it.
-- `src/icons/` — hand-authored artwork (the extension's own icon). Safe from the sync script.
+- `src/icons/` — hand-authored artwork (`write-click.svg`, the extension's own icon)
+- `src/images/` — **generated** PNGs rendered from that SVG by `scripts/render-icons.mjs`
 - `src/shared/icons.ts`, `src/shared/recognizer.ts` — shared by the content script and the options
   page; the options draw pad must keep using the same `quantize`
 - `src/options.ts`, `src/popup.ts`, `src/ui.ts` — extension pages and their shared DOM helpers
@@ -55,11 +60,18 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
 - No custom context menu. That was considered and rejected (spec §3.1).
 - Never toggle overlay visibility with `hidden` on an element that also carries a `display`
   utility such as `grid` or `flex`. Use `invisible`.
-- Generated directories get wiped without warning. `src/icons/material/` is generated; anything
-  authored goes beside it, never inside it.
+- Generated directories get wiped without warning. `src/icons/material/` and `src/images/` are
+  generated; anything authored goes beside them, never inside them.
 - Never import an asset from `node_modules` with `?raw`. Vite's root is `src/`, so it is served
   over `/@fs/` and the dev server resolves that against the root, yielding `src/@fs/...` and an
   ENOENT — in dev only, so the build will not catch it. Vendor the file with
   `scripts/sync-icons.mjs` instead.
 - Tailwind only sees complete class strings in the source. Never build a class name by
   concatenating fragments at runtime.
+
+## Release
+
+Push to `main` with a bumped version and the workflow tags `vX.Y.Z` and attaches `dist.zip`. A push
+without a bump is a no-op, since the tag already exists. `npm run bump` keeps `package.json`,
+`package-lock.json` and `src/manifest.json` in agreement — Chrome reads the manifest and the
+workflow reads package.json, so a mismatch ships a build tagged as something it is not.
