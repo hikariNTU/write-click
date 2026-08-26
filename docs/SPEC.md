@@ -19,6 +19,10 @@ maps, syncing the trigger across devices, replacing the native context menu.
 - **Command** — a named action, e.g. `tab.close`.
 - **Overlay** — the closed shadow root drawn above the page.
 - **Tab grid** — the tab picker shown inside the overlay while the trigger is held.
+- **Readout** — the card naming the command the stroke currently matches.
+- **Cheatsheet** — the list of bound gestures shown while the trigger is held.
+- **Overlay scale** — the factor everything the overlay draws is multiplied by, the user's size
+  preference divided by the tab's page zoom; §7.4.
 
 ## 3. Trigger model
 
@@ -601,6 +605,9 @@ without a reload.
    switches worth reaching quickly.
 6. **Frames and release** — done. Sub-frame bridge, extension icons rendered from the source SVG,
    CI, and a release workflow that tags and attaches `dist.zip` on a version bump.
+7. **Fit and finish** — done. Switching on release (§6.3), the three-band overlay layout (§6.4), an
+   overlay scale that cancels page zoom and exposes a per-device size (§7.4), and a side navigation
+   on the settings page (§10.1).
 
 Done criteria per phase: `npm run build`, `npm run typecheck`, and `npm run lint` all clean, and the
 phase's behaviour verified in a loaded unpacked build.

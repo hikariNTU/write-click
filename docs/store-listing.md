@@ -34,7 +34,7 @@ WHAT IT DOES
 • Reopen what you closed, in order.
 • Move around the page — scroll a screen at a time, or jump to the top or the bottom. Gestures work inside frames, and the page you drew on is the page that scrolls.
 • Navigate — back, forward, reload, reload without cache.
-• Tab grid — while the trigger is held, every open tab appears as a tile with its title, site and icon. Click one to switch to it, and the stroke drawn underneath is discarded. The gesture list sits below the grid, so the reference is on screen at the moment you need it.
+• Tab grid — while the trigger is held, every open tab appears as a tile with its title, site and icon, docked to the top of the window. Release the trigger over a tile to switch to that tab: nothing is clicked, so no context menu follows the switch. Clicking a tile works as well, and either way the stroke drawn underneath is discarded. The gesture list runs along the bottom edge, so the reference is on screen at the moment you need it and the middle of the window stays clear for drawing.
 
 THE TRIGGER IS YOURS
 
@@ -47,6 +47,8 @@ Rebind by drawing. The settings page recognises strokes with the same code the p
 DESIGNED TO STAY OUT OF THE WAY
 
 The trail, the readout and the tab grid live in a closed shadow root, so no page can restyle them and none of their styles can leak into the page. The overlay ignores pointer events except on the tiles you can click. Gestures can be switched off for individual sites from the toolbar popup, or entirely on one device.
+
+They are also drawn at one size whatever the page is zoomed to, so a page at 150% does not come with a tab grid at 150%. A slider in settings sets how large the overlay is drawn on that device, from 50% to 200%, for a display where the designed size reads too small or too large.
 
 PRIVACY
 
@@ -89,7 +91,7 @@ Write Click 將按住的滑鼠按鍵轉為繪製區域。按住觸發鍵、畫�
 • 依序復原已關閉的分頁。
 • 頁面捲動：一次捲動一個畫面，或直接捲動至頂端與底部。手勢在內嵌框架中同樣可用，繪製所在的頁面即為捲動的頁面。
 • 瀏覽操作：上一頁、下一頁、重新載入、重新載入並略過快取。
-• 分頁格線：按住觸發鍵時，所有已開啟的分頁會以項目形式顯示，含標題、網站與圖示。點選任一項目即可切換，且其下方所繪製的筆畫會被捨棄。手勢清單位於格線下方，需要時即在畫面上。
+• 分頁格線：按住觸發鍵時，所有已開啟的分頁會以項目形式顯示於視窗頂端，含標題、網站與圖示。將游標移至任一項目後放開觸發鍵，即可切換至該分頁：過程中不需點擊，因此不會跳出右鍵選單。點選項目同樣可切換，兩種方式皆會捨棄其下方所繪製的筆畫。手勢清單位於視窗底部，需要時即在畫面上，視窗中央則保留給筆畫繪製。
 
 觸發鍵可自行選擇
 
@@ -101,7 +103,9 @@ Write Click 將按住的滑鼠按鍵轉為繪製區域。按住觸發鍵、畫�
 
 不干擾原有操作
 
-軌跡、指令提示與分頁格線置於封閉的 shadow root 中，網頁無法變更其樣式，其樣式亦不會影響網頁。除可點選的項目外，疊層不接收指標事件。可由工具列彈出視窗針對個別網站停用手勢，或於單一裝置整體停用。
+軌跡、指令提示與分頁格線置於封閉的 shadow root 中，網頁無法變更其樣式，其樣式亦不會影響網頁。除可點選的項目外，畫面不接收指標事件。可由工具列彈出視窗針對個別網站停用手勢，或於單一裝置整體停用。
+
+無論頁面縮放為何，上述元件均以固定大小繪製，頁面縮放至 150% 時，分頁格線不會隨之放大。設定頁面提供大小滑桿，範圍為 50% 至 200%，僅套用於本裝置，可用於預設大小過小或過大的螢幕。
 
 隱私權
 
@@ -125,7 +129,7 @@ Write Click has one purpose: to run browser and page commands from mouse gesture
 **tabs**
 
 ```
-Gesture commands act on tabs: switch to the previous, next, leftmost or rightmost tab; close the current tab, the tabs to the right, or the tabs to the left; duplicate, pin, mute, reload, or move a tab to a new window. The tab grid additionally reads the title, URL and favicon of the open tabs in the current window in order to draw a tile for each one, and to show how many tabs a bulk-close would affect before the user releases the button. This data is rendered on screen and never stored or transmitted.
+Gesture commands act on tabs: switch to the previous, next, leftmost or rightmost tab; close the current tab, the tabs to the right, or the tabs to the left; duplicate, pin, mute, reload, or move a tab to a new window. The tab grid additionally reads the title, URL and favicon of the open tabs in the current window in order to draw a tile for each one, and to show how many tabs a bulk-close would affect before the user releases the button. The current tab's zoom level is read so that the overlay can be drawn at one size whatever the page is zoomed to. This data is rendered on screen and never stored or transmitted.
 ```
 
 **sessions**
@@ -137,7 +141,7 @@ Used by a single command, "Reopen closed tab", which calls chrome.sessions.resto
 **storage**
 
 ```
-Stores the user's settings: the gesture-to-command map, overlay appearance, tab grid options, chosen language, and the list of sites where gestures are switched off. The trigger (which button or key starts a gesture) is stored in local storage rather than sync, because the correct default differs per platform. Nothing else is stored.
+Stores the user's settings: the gesture-to-command map, overlay appearance, tab grid options, chosen language, and the list of sites where gestures are switched off. Two are held in local storage rather than sync, because the right value differs from one device to the next: the trigger (which button or key starts a gesture), whose correct default differs per platform, and the overlay size. Nothing else is stored.
 ```
 
 **host permissions (<all_urls>)**
@@ -169,7 +173,8 @@ Write Click makes no network requests of any kind. It contains no analytics, no 
 
 ## Before uploading
 
-1. `npm run bump 1.0.0` — 0.1.0 reads as unfinished on a public listing.
+1. `npm run bump <major|minor|patch>` if anything has changed since the last
+   upload; the store rejects a package whose version it already has.
 2. `npm run build`
 3. `npm run pack:linux` (or `pack:windows`) to produce `dist.zip`.
 4. Upload `dist.zip`. The store reads `default_locale`, so both listings can be
@@ -179,8 +184,8 @@ Write Click makes no network requests of any kind. It contains no analytics, no 
 
 The store shows up to five. In order of usefulness:
 
-1. The tab grid open over a real page, with the trail drawn and the cheatsheet
-   visible underneath.
+1. The tab grid open over a real page: the grid docked at the top, the trail
+   drawn across the middle, and the cheatsheet along the bottom edge.
 2. The readout mid-gesture on a destructive command, showing the tab count —
    "Close 3 tabs to the right".
 3. The settings page, gesture section, with the draw pad open.

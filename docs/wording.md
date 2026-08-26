@@ -24,16 +24,19 @@ happen; it does not comment on it.
   together with the button", not "you hold it with the button".
 - Terminology is fixed. One concept, one word:
 
-  | Concept                              | Word       |
-  | ------------------------------------ | ---------- |
-  | The drawn path                       | stroke     |
-  | Stroke plus its command              | gesture    |
-  | What is held while drawing           | trigger    |
-  | Alt / Shift / Control / Meta         | modifier   |
-  | The panel of tabs                    | tab grid   |
-  | The label naming the matched command | readout    |
-  | The gesture list under the grid      | cheatsheet |
-  | A command with no stroke             | unassigned |
+  | Concept                              | Word         |
+  | ------------------------------------ | ------------ |
+  | The drawn path                       | stroke       |
+  | Stroke plus its command              | gesture      |
+  | What is held while drawing           | trigger      |
+  | Alt / Shift / Control / Meta         | modifier     |
+  | The panel of tabs                    | tab grid     |
+  | The label naming the matched command | readout      |
+  | The gesture list under the grid      | cheatsheet   |
+  | A command with no stroke             | unassigned   |
+  | Everything drawn above the page      | overlay      |
+  | How large the overlay is drawn       | overlay size |
+  | The browser's own per-site zoom      | page zoom    |
 
 - Never "unbound" in one place and "unassigned" in another.
 
@@ -58,6 +61,8 @@ happen; it does not comment on it.
   | unassigned | 未指派   |
   | window     | 視窗     |
   | pinned     | 釘選     |
+  | overlay    | 畫面     |
+  | page zoom  | 頁面縮放 |
 
 ## Mechanics
 
@@ -74,5 +79,10 @@ happen; it does not comment on it.
 - `chrome.i18n` has no plural support: counted strings ship as `_one` and
   `_other`, even where a language does not inflect.
 - Numbers go through `Intl`, never string interpolation of a raw value.
+- **A locale directory name is not a language tag.** Chrome names `_locales`
+  directories with an underscore (`zh_TW`); `Intl` wants BCP 47 and throws
+  `RangeError: invalid language tag` on the underscore form. Everything reaching
+  `Intl` goes through `bcp47()` in `src/shared/i18n.ts` first, and a test asserts
+  every shipped locale name survives it.
 - Layout must survive a ~1.6x length change between zh-Hant and English. No
   fixed-width text containers, and no truncation without a `title`.

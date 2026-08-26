@@ -1,8 +1,8 @@
 # Write Click
 
 Chrome extension for mouse gestures. Hold the trigger, draw a stroke, release — the stroke runs a
-tab or page command. While the trigger is held, a grid of open tabs appears and can be clicked to
-jump straight to one.
+tab or page command. While the trigger is held, a grid of open tabs appears: release the trigger
+over a tile to jump straight to that tab.
 
 Everything the extension draws lives in a closed shadow root above the page, so the host page's CSS
 and scripts cannot see it, restyle it, or reach into it.
@@ -11,9 +11,9 @@ and scripts cannot see it, restyle it, or reach into it.
 
 **Feature complete.** Gestures are captured, quantized and drawn as a glowing trail, the
 matched command is named in a glass readout, and releasing the trigger runs it. Holding the trigger
-opens a grid of the window's tabs: click one, with the trigger still held, to jump straight to it and
-discard the stroke. Everything is configurable from the settings page. Gestures work inside iframes,
-scrolling the frame they were drawn in.
+opens a grid of the window's tabs: release over a tile to jump straight to it and discard the
+stroke. Everything is configurable from the settings page, including how large the overlay is drawn.
+Gestures work inside iframes, scrolling the frame they were drawn in.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
 
@@ -66,15 +66,22 @@ Vertical strokes are inverted on purpose — `U` pushes the page up, which scrol
 touch surface behaves.
 
 Strokes are read as four cardinal directions with hysteresis, so a wobbly hand cannot turn one
-corner into four letters. `RD` and `DR` are different strokes — order matters. All remappable once
-the options page lands, and `page.end` ships unbound waiting for a stroke you like.
+corner into four letters. `RD` and `DR` are different strokes — order matters. All remappable from the
+settings page, and `page.end` ships unbound waiting for a stroke you like.
 
 ## Tab grid
 
-Hold the trigger without moving and a panel of the current window's tabs fades in, with every bound
-gesture listed underneath it as a cheatsheet. Click a tile —
-left button, trigger still held — to switch to that tab; whatever stroke was underway is thrown
-away. Flick straight into a gesture and the panel never appears.
+Hold the trigger without moving and a panel of the current window's tabs fades in at the top of the
+window, with every bound gesture listed as a cheatsheet along the bottom. Flick straight into a
+gesture and neither appears.
+
+The two panels are docked to the edges on purpose: the middle of the window is where the stroke gets
+drawn, so nothing that takes pointer events is allowed to sit there. The readout naming the matched
+command does sit in the centre, and ignores the pointer entirely.
+
+Move onto a tile and **release the trigger** to switch to that tab. Nothing is clicked, so no context
+menu follows the switch. Clicking a tile with the trigger still held works too. Either way, whatever
+stroke was underway is thrown away.
 
 ## Settings
 
@@ -85,7 +92,13 @@ which command lost it.
 
 The tab grid comes in Compact, Normal and Large. That sets how wide a tile wants to be — the number
 per row follows from your window, rather than being pinned to a column count that is wrong on either
-a laptop or an ultrawide.
+a laptop or an ultrawide. Switching on release can be turned off, leaving the click as the only way
+to pick.
+
+Overlay size is a slider, 50% to 200%, stored per device. It scales the trail, the readout and the
+tab grid together, for a display where the designed size reads too small or too large. It is
+separate from page zoom, which the overlay cancels out: the grid is the same size on a page zoomed
+to 150% as on one at 100%.
 
 The popup carries the two switches worth reaching in one click — gestures on/off for this device, and
 on/off for the site you are on.
