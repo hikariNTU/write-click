@@ -21,15 +21,47 @@ export const BUTTON =
   "rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 " +
   "transition-colors hover:border-emerald-300/40 hover:text-emerald-200";
 
-export function card(title: string, description: string): HTMLElement {
+/** A sized box holding raw SVG markup, coloured by the surrounding text. */
+export function icon(svg: string, className = "h-4 w-4"): HTMLSpanElement {
+  const node = el(
+    "span",
+    `inline-grid shrink-0 place-items-center [&>svg]:h-full [&>svg]:w-full ${className}`,
+  );
+  node.innerHTML = svg;
+  return node;
+}
+
+export function card(title: string, description: string, glyph?: string): HTMLElement {
   const section = el("div", CARD);
-  const head = el("div", "mb-5");
-  head.append(
+  const head = el("div", "mb-5 flex items-start gap-3");
+
+  if (glyph) {
+    const tile = el(
+      "div",
+      "grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300 " +
+        "ring-1 ring-emerald-300/20 [&>svg]:h-5 [&>svg]:w-5",
+    );
+    tile.innerHTML = glyph;
+    head.append(tile);
+  }
+
+  const text = el("div", "min-w-0");
+  text.append(
     el("h2", "text-sm font-semibold tracking-tight text-slate-100", title),
     el("p", "mt-1 text-xs leading-relaxed text-slate-400", description),
   );
+  head.append(text);
   section.append(head);
   return section;
+}
+
+/** A small button with a leading glyph, used for row actions. */
+export function iconButton(glyph: string, label: string, onClick: () => void): HTMLButtonElement {
+  const node = el("button", `${BUTTON} inline-flex items-center gap-1.5`);
+  node.type = "button";
+  node.append(icon(glyph, "h-3.5 w-3.5"), document.createTextNode(label));
+  node.addEventListener("click", onClick);
+  return node;
 }
 
 export function row(label: string, control: HTMLElement, hint?: string): HTMLElement {

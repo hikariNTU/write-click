@@ -1,6 +1,6 @@
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
-import { COMMAND_ICONS, strokeChipsHtml } from "./shared/icons";
+import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
 import type { Point } from "./shared/recognizer";
 import {
@@ -16,7 +16,7 @@ import {
 import type { LocalSettings, SyncSettings } from "./shared/settings";
 import { detectPlatform, menuFiresOnMouseDown } from "./shared/trigger";
 import type { Modifier, Trigger } from "./shared/trigger";
-import { BUTTON, FIELD, card, el, row, select, toggle } from "./ui";
+import { BUTTON, FIELD, card, el, icon, iconButton, row, select, toggle } from "./ui";
 
 const platform = detectPlatform();
 let sync: SyncSettings;
@@ -82,6 +82,7 @@ function triggerCard(): HTMLElement {
   const section = card(
     "Trigger",
     "What you hold to draw. Stored for this device only, since the context menu behaves differently per platform.",
+    UI_ICONS.trigger,
   );
 
   const kind = select(
@@ -258,6 +259,7 @@ function gesturesCard(): HTMLElement {
   const section = card(
     "Gestures",
     "One stroke per command. Drawing a stroke that is already taken moves it, leaving the old command unbound.",
+    UI_ICONS.gestures,
   );
   for (const command of Object.keys(COMMANDS) as CommandId[]) section.append(gestureRow(command));
   return section;
@@ -266,7 +268,11 @@ function gesturesCard(): HTMLElement {
 /* ---------------------------------------------------------------- overlay */
 
 function overlayCard(): HTMLElement {
-  const section = card("Overlay", "How the trail, the readout and the tab grid look.");
+  const section = card(
+    "Overlay",
+    "How the trail, the readout and the tab grid look.",
+    UI_ICONS.overlay,
+  );
 
   const color = el(
     "input",
@@ -342,6 +348,7 @@ function sitesCard(): HTMLElement {
   const section = card(
     "Disabled sites",
     "Gestures are off on these origins. Add the current site from the toolbar popup.",
+    UI_ICONS.sites,
   );
 
   section.append(
@@ -352,14 +359,17 @@ function sitesCard(): HTMLElement {
   );
 
   if (sync.disabledOrigins.length === 0) {
-    section.append(el("p", "pt-2 text-[11px] italic text-slate-500", "No sites disabled."));
+    const empty = el("div", "flex items-center gap-2 pt-2 text-[11px] italic text-slate-500");
+    empty.append(
+      icon(UI_ICONS.blocked, "h-3.5 w-3.5"),
+      document.createTextNode("No sites disabled."),
+    );
+    section.append(empty);
     return section;
   }
 
   for (const origin of sync.disabledOrigins) {
-    const remove = el("button", BUTTON, "Remove");
-    remove.type = "button";
-    remove.addEventListener("click", () => {
+    const remove = iconButton(UI_ICONS.remove, "Remove", () => {
       void patchSync({
         disabledOrigins: sync.disabledOrigins.filter((entry) => entry !== origin),
       });
@@ -406,7 +416,19 @@ document.querySelector<HTMLButtonElement>("#reset")?.addEventListener("click", (
   })();
 });
 
+function decorateChrome(): void {
+  const brand = document.querySelector<HTMLElement>("#brand");
+  if (brand) brand.innerHTML = BRAND_ICON;
+
+  const savedNode = document.querySelector<HTMLElement>("#saved");
+  savedNode?.prepend(icon(UI_ICONS.saved, "h-3.5 w-3.5"));
+
+  const reset = document.querySelector<HTMLElement>("#reset");
+  reset?.prepend(icon(UI_ICONS.reset, "h-3.5 w-3.5"));
+}
+
 void (async () => {
+  decorateChrome();
   ({ sync, local } = await loadSettings());
   render();
 })();

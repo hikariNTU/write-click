@@ -6,15 +6,29 @@ import doubleLeft from "../icons/material/keyboard_double_arrow_left.svg?raw";
 import doubleRight from "../icons/material/keyboard_double_arrow_right.svg?raw";
 import doubleUp from "../icons/material/keyboard_double_arrow_up.svg?raw";
 import globe from "../icons/material/public.svg?raw";
+import block from "../icons/material/block.svg?raw";
 import cached from "../icons/material/cached.svg?raw";
+import checkCircle from "../icons/material/check_circle.svg?raw";
+import close from "../icons/material/close.svg?raw";
+import trash from "../icons/material/delete.svg?raw";
+import draw from "../icons/material/draw.svg?raw";
+import gridView from "../icons/material/grid_view.svg?raw";
+import language from "../icons/material/language.svg?raw";
 import minimize from "../icons/material/minimize.svg?raw";
+import mouse from "../icons/material/mouse.svg?raw";
+import openInNew from "../icons/material/open_in_new.svg?raw";
+import palette from "../icons/material/palette.svg?raw";
+import restartAlt from "../icons/material/restart_alt.svg?raw";
 import refresh from "../icons/material/refresh.svg?raw";
+import settings from "../icons/material/settings.svg?raw";
+import swipe from "../icons/material/swipe.svg?raw";
 import restore from "../icons/material/restore_from_trash.svg?raw";
 import tabCloseRight from "../icons/material/tab_close_right.svg?raw";
 import tabClose from "../icons/material/tab_close.svg?raw";
 import alignBottom from "../icons/material/vertical_align_bottom.svg?raw";
 import alignTop from "../icons/material/vertical_align_top.svg?raw";
 import type { CommandId } from "../shared/commands";
+import brand from "../icons/write-click.svg?raw";
 import type { Direction } from "./recognizer";
 
 /**
@@ -53,6 +67,29 @@ export const COMMAND_ICONS: Record<CommandId, string> = {
 };
 
 export const UNKNOWN_ICON = prepare(help);
+
+/**
+ * The extension's own mark. Unlike the glyphs it keeps its own gradients, so it
+ * is embedded as authored — no currentColor rewrite.
+ */
+export const BRAND_ICON = brand;
+
+/** Icons for the options page and the popup, not for any gesture. */
+export const UI_ICONS = {
+  trigger: prepare(mouse),
+  gestures: prepare(swipe),
+  overlay: prepare(palette),
+  sites: prepare(language),
+  grid: prepare(gridView),
+  draw: prepare(draw),
+  clear: prepare(close),
+  remove: prepare(trash),
+  reset: prepare(restartAlt),
+  saved: prepare(checkCircle),
+  settings: prepare(settings),
+  openInNew: prepare(openInNew),
+  blocked: prepare(block),
+} as const;
 
 /** Stands in when a tab has no favicon, or its favicon fails to load. */
 export const FALLBACK_FAVICON = prepare(globe);
