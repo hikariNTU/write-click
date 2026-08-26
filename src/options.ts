@@ -287,15 +287,6 @@ function overlayCard(): HTMLElement {
     void patchSync({ trail: { ...sync.trail, width: Number(width.value) } });
   });
 
-  const columns = el("input", FIELD + " w-20");
-  columns.type = "number";
-  columns.min = "2";
-  columns.max = "8";
-  columns.value = String(sync.grid.columns);
-  columns.addEventListener("change", () => {
-    void patchSync({ grid: { ...sync.grid, columns: Number(columns.value) } });
-  });
-
   const hold = el("input", FIELD + " w-24");
   hold.type = "number";
   hold.min = "0";
@@ -323,7 +314,19 @@ function overlayCard(): HTMLElement {
       }),
       "Appears while the trigger is held; click a tile to switch tabs.",
     ),
-    row("Grid columns", columns),
+    row(
+      "Grid size",
+      select(
+        [
+          { value: "compact", label: "Compact" },
+          { value: "normal", label: "Normal" },
+          { value: "large", label: "Large" },
+        ] as const,
+        sync.grid.size,
+        (value) => void patchSync({ grid: { ...sync.grid, size: value } }),
+      ),
+      "Tile width. The grid fits as many per row as the window allows.",
+    ),
     row(
       "Grid delay",
       hold,

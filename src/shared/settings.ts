@@ -3,11 +3,14 @@ import type { CommandId } from "./commands";
 import { defaultTrigger } from "./trigger";
 import type { Trigger } from "./trigger";
 
+/** How wide the tab grid's tiles are, and therefore how many fit per row. */
+export type GridSize = "compact" | "normal" | "large";
+
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 1;
+  version: 2;
   gestures: Record<string, CommandId>;
-  grid: { enabled: boolean; holdMs: number; columns: number };
+  grid: { enabled: boolean; holdMs: number; size: GridSize };
   trail: { color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
@@ -21,9 +24,9 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 1,
+    version: 2,
     gestures: { ...DEFAULT_GESTURES },
-    grid: { enabled: true, holdMs: 180, columns: 4 },
+    grid: { enabled: true, holdMs: 180, size: "normal" },
     trail: { color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };
@@ -33,10 +36,25 @@ export function defaultLocalSettings(): LocalSettings {
   return { version: 1, trigger: defaultTrigger(), enabled: true };
 }
 
-/** Reads an area, filling in anything the user has never set. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Reads an area, filling in anything the user has never set. The merge goes one
+ * level deep on purpose: settings are stored per top-level key, so a stored
+ * `grid` written before a field existed would otherwise replace the defaults
+ * wholesale and leave that field undefined.
+ */
 async function read<T extends object>(area: chrome.storage.StorageArea, defaults: T): Promise<T> {
   const stored = await area.get(defaults as Record<string, unknown>);
-  return { ...defaults, ...stored } as unknown as T;
+  const merged: Record<string, unknown> = { ...(defaults as Record<string, unknown>) };
+  for (const [key, value] of Object.entries(stored)) {
+    const fallback = merged[key];
+    merged[key] =
+      isPlainObject(fallback) && isPlainObject(value) ? { ...fallback, ...value } : value;
+  }
+  return merged as unknown as T;
 }
 
 export async function loadSettings(): Promise<{ sync: SyncSettings; local: LocalSettings }> {
@@ -96,11 +114,17 @@ export function unbind(
  * reading a field that is not there.
  */
 export async function migrate(): Promise<void> {
-  const sync = (await chrome.storage.sync.get(null)) as Partial<SyncSettings>;
-  const local = (await chrome.storage.local.get(null)) as Partial<LocalSettings>;
+  const stored = (await chrome.storage.sync.get(null)) as Partial<SyncSettings>;
+  const local = (await chrome.storage.local.get(null)) as { version?: number };
+  const defaults = defaultSyncSettings();
 
-  if (sync.version !== 1)
-    await chrome.storage.sync.set({ ...defaultSyncSettings(), ...sync, version: 1 });
+  if (stored.version !== 2) {
+    // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
+    const grid = { ...defaults.grid, ...stored.grid };
+    delete (grid as { columns?: number }).columns;
+    await chrome.storage.sync.set({ ...defaults, ...stored, grid, version: 2 });
+  }
+
   if (local.version !== 1) {
     await chrome.storage.local.set({ ...defaultLocalSettings(), ...local, version: 1 });
   }

@@ -76,6 +76,10 @@ stroke in a pad that runs the same recognizer the content script does, so what y
 match. A stroke means one command: drawing one that is already taken moves it, and the page tells you
 which command lost it.
 
+The tab grid comes in Compact, Normal and Large. That sets how wide a tile wants to be — the number
+per row follows from your window, rather than being pinned to a column count that is wrong on either
+a laptop or an ultrawide.
+
 The popup carries the two switches worth reaching in one click — gestures on/off for this device, and
 on/off for the site you are on.
 

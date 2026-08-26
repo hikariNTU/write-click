@@ -75,7 +75,7 @@ async function main(): Promise<void> {
   const overlay = createOverlay();
   const trail = new Trail(overlay, sync.trail);
   const hud = new Hud(overlay);
-  const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.columns) : undefined;
+  const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
   let points: Point[] = [];
   let stroke = "";
   let holding = false;

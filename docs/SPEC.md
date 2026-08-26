@@ -167,6 +167,12 @@ Rules:
 - Data comes from the background: `{ id, title, favIconUrl, active, index }` for the current window.
 - Layout is a **grid** of tiles — favicon plus truncated title, active tab highlighted. A radial or
   pie layout was considered and dropped: it stops scaling past roughly eight tabs.
+- Tiles are **sized, not counted**: the track list is `repeat(auto-fit, minmax(<tile>px, 1fr))`, so
+  how many fit per row falls out of the window width. A fixed column count was tried first and made
+  the panel wrong at both ends — cramped on a laptop, sparse on a wide display.
+- Three presets, exposed in options as Compact / Normal / Large: tile widths 150 / 220 / 300px,
+  panel caps 720 / 900 / 1120px. The panel is additionally capped at the width the tiles actually
+  present would occupy, so three open tabs do not stretch across the whole screen.
 - Tiles get `pointer-events: auto`; the overlay host stays `none`. Visibility is toggled with
   `invisible`, never `hidden`: `hidden` and `grid` are both `display` utilities, so which one won
   would come down to CSS source order.
@@ -238,7 +244,7 @@ interface SyncSettings {
   // chrome.storage.sync
   version: 1;
   gestures: Record<string, CommandId>; // stroke -> command
-  grid: { enabled: boolean; holdMs: number; columns: number };
+  grid: { enabled: boolean; holdMs: number; size: "compact" | "normal" | "large" };
   trail: { color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
@@ -252,7 +258,12 @@ interface LocalSettings {
 ```
 
 `version` is bumped whenever a shape changes, with a migration in the service worker's
-`onInstalled`, which runs on both install and update. `migrate()` fills in fields the stored object
+`onInstalled`, which runs on both install and update. v2 replaced the grid's `columns` with `size`.
+
+Reads merge defaults **one level deep**. Storage is written per top-level key, so a stored `grid`
+written before a field existed would otherwise replace the whole default object and leave that field
+`undefined` — a shallow merge makes every future nested addition a crash waiting for the next
+release. `migrate()` fills in fields the stored object
 never had rather than letting a reader find `undefined`.
 
 Content scripts subscribe to `chrome.storage.onChanged` and re-apply without a reload: gesture and
