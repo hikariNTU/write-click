@@ -97,6 +97,10 @@ itself, no code needed); a per-origin disable toggle; a global off switch.
   `45 + HYSTERESIS_DEG` degrees off it before the stroke changes letter. A real corner clears that
   easily; hand tremor does not. Without it a single corner reads as `RURU`.
 
+`quantize` is covered by `src/content/recognizer.test.ts`. Reversals are the case that breaks: a
+buggy angle comparison can read a 180° turn as 0° apart and hold the old direction forever, which
+looks like `LRL` collapsing to `L`.
+
 Eight directions were tried and dropped. A single diagonal drag emitted `DR`, which is the same
 string as the two-segment down-then-right stroke — one string, two gestures, no way to tell them
 apart. Four directions removes the ambiguity and is what makes the hysteresis rule simple.

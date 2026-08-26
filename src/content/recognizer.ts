@@ -30,10 +30,10 @@ function canonicalDegrees(direction: Direction): number {
   return DIRECTIONS.indexOf(direction) * 90;
 }
 
-/** Shortest signed distance between two angles, in degrees, always 0..180. */
+/** Shortest distance between two angles, in degrees, always 0..180. */
 function angularDistance(a: number, b: number): number {
-  const diff = Math.abs(((a - b + 540) % 360) - 180);
-  return 180 - diff;
+  const diff = Math.abs(a - b) % 360;
+  return diff > 180 ? 360 - diff : diff;
 }
 
 function nearest(degrees: number): Direction {

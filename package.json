@@ -16,7 +16,8 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "pack:linux": "zip -r ./dist.zip ./dist",
-    "pack:windows": "powershell Compress-Archive -Path ./dist/* -DestinationPath dist.zip -Force"
+    "pack:windows": "powershell Compress-Archive -Path ./dist/* -DestinationPath dist.zip -Force",
+    "test": "node --test 'src/**/*.test.ts'"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.7.1",
