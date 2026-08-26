@@ -33,6 +33,18 @@ export function icon(svg: string, className = "h-4 w-4"): HTMLSpanElement {
   return node;
 }
 
+/**
+ * Fills a sized box that the static HTML already carries. Glyphs are bundled
+ * with the module, which runs a few frames after the first paint — appending
+ * one to a button that is already on screen widens it and shoves the label
+ * sideways. The box is in the markup at its final size, so only its contents
+ * arrive late.
+ */
+export function paintIcon(selector: string, svg: string): void {
+  const node = document.querySelector<HTMLElement>(selector);
+  if (node) node.innerHTML = svg;
+}
+
 export function card(title: Localized, description: Localized, glyph?: string): HTMLElement {
   const section = el("div", CARD);
   const head = el("div", "mb-5 flex items-start gap-3");

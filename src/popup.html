@@ -18,9 +18,16 @@
       id="options"
       type="button"
       class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-mist-300 transition-colors hover:border-emerald-300/40 hover:text-emerald-200"
-      data-i18n="popup_settings"
     >
-      Settings
+      <span
+        id="options-icon"
+        class="h-3.5 w-3.5 inline-grid shrink-0 place-items-center [&>svg]:h-full [&>svg]:w-full"
+      ></span>
+      <span data-i18n="popup_settings">Settings</span>
+      <span
+        id="options-open"
+        class="h-3 w-3 inline-grid shrink-0 place-items-center [&>svg]:h-full [&>svg]:w-full"
+      ></span>
     </button>
     <script type="module" src="./popup.ts"></script>
   </body>

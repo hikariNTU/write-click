@@ -359,9 +359,10 @@ export class TabGrid {
       const image = document.createElement("img");
       image.src = tab.favIconUrl;
       image.className = "h-4 w-4 rounded-sm";
-      // A blocked or broken favicon falls back to the bundled glyph.
-      image.addEventListener("error", () => (icon.innerHTML = FALLBACK_FAVICON), { once: true });
-      icon.replaceChildren(image);
+      // The glyph holds the slot until the favicon has actually decoded. Swapping
+      // it in up front leaves an empty square for as long as the fetch takes, and
+      // a blocked or broken favicon never fills it at all.
+      image.addEventListener("load", () => icon.replaceChildren(image), { once: true });
     }
 
     const text = document.createElement("div");

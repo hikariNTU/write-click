@@ -217,6 +217,8 @@ Rules:
   to land before the trigger's own release ends the gesture. Why `mousedown` and not `pointerdown`
   is §6.1.
 - A tab with no usable favicon, or one whose favicon fails to load, falls back to a bundled glyph.
+  The glyph is what is drawn first and the favicon replaces it on `load`, so the slot is never an
+  empty square while the image is still being fetched.
 - Hovering a tile highlights it. **Left-click while the trigger is still held** activates that tab
   and sets `cancelled`, so the pending stroke is discarded when the trigger is released.
 - Moving off every tile and releasing the trigger falls through to normal stroke matching.
@@ -622,6 +624,12 @@ Every handler is exhaustive over the union; adding a member must break the build
 
 `src/options.html` + `src/options.ts`, opened in a tab. Every control writes on change; there is no
 save button. Sections: language, trigger, gestures, overlay, disabled sites, backup, reset.
+
+Icons are bundled with the module, which runs after the first paint, so every glyph the static
+shell shows has an empty box of its final size waiting for it in the markup — `paintIcon` fills the
+box rather than appending to a button that is already on screen, which would shift the label beside
+it. The label sits in its own `data-i18n` span for the same reason: `applyStaticMessages` writes
+`textContent`, which would wipe a sibling placeholder out of the button.
 
 A **side navigation** lists those sections and highlights the one in view. One table in `options.ts`
 drives both it and the cards, so a new section cannot appear in one and be forgotten in the other,

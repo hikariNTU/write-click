@@ -27,7 +27,7 @@ import {
 import type { LocalSettings, SyncSettings } from "./shared/settings";
 import { detectPlatform, menuFiresOnMouseDown } from "./shared/trigger";
 import type { Modifier, Trigger } from "./shared/trigger";
-import { BUTTON, FIELD, card, el, icon, iconButton, row, select, toggle } from "./ui";
+import { BUTTON, FIELD, card, el, icon, iconButton, paintIcon, row, select, toggle } from "./ui";
 
 const platform = detectPlatform();
 let sync: SyncSettings;
@@ -714,11 +714,8 @@ function decorateChrome(): void {
   const brand = document.querySelector<HTMLElement>("#brand");
   if (brand) brand.innerHTML = BRAND_ICON;
 
-  const savedNode = document.querySelector<HTMLElement>("#saved");
-  savedNode?.prepend(icon(UI_ICONS.saved, "h-3.5 w-3.5"));
-
-  const reset = document.querySelector<HTMLElement>("#reset");
-  reset?.prepend(icon(UI_ICONS.reset, "h-3.5 w-3.5"));
+  paintIcon("#saved-icon", UI_ICONS.saved);
+  paintIcon("#reset-icon", UI_ICONS.reset);
 }
 
 void (async () => {

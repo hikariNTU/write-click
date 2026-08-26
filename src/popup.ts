@@ -2,7 +2,7 @@ import { loadSettings, saveLocal, saveSync } from "./shared/settings";
 import type { Modifier, Trigger } from "./shared/trigger";
 import { applyStaticMessages, dynamic, setLocale, t } from "./shared/i18n";
 import { BRAND_ICON, UI_ICONS } from "./shared/icons";
-import { el, icon, row, toggle } from "./ui";
+import { el, paintIcon, row, toggle } from "./ui";
 
 const BUTTON_KEYS = [
   "trigger_button_left",
@@ -70,9 +70,9 @@ void (async () => {
     controls?.append(el("p", "py-2 text-[11px] italic text-mist-500", t("popup_notHere")));
   }
 
+  paintIcon("#options-icon", UI_ICONS.settings);
+  paintIcon("#options-open", UI_ICONS.openInNew);
   const options = document.querySelector<HTMLButtonElement>("#options");
-  options?.prepend(icon(UI_ICONS.settings, "h-3.5 w-3.5"));
-  options?.append(icon(UI_ICONS.openInNew, "h-3 w-3"));
   options?.addEventListener("click", () => {
     void chrome.runtime.openOptionsPage();
   });

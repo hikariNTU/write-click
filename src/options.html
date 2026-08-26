@@ -26,10 +26,13 @@
           </div>
           <p
             id="saved"
-            class="flex items-center gap-1.5 text-xs font-medium text-emerald-300 opacity-0 transition-opacity [&>span>svg]:h-full [&>span>svg]:w-full"
-            data-i18n="options_saved"
+            class="flex items-center gap-1.5 text-xs font-medium text-emerald-300 opacity-0 transition-opacity"
           >
-            Saved
+            <span
+              id="saved-icon"
+              class="h-3.5 w-3.5 inline-grid shrink-0 place-items-center [&>svg]:h-full [&>svg]:w-full"
+            ></span>
+            <span data-i18n="options_saved">Saved</span>
           </p>
         </header>
 
@@ -48,9 +51,12 @@
             id="reset"
             type="button"
             class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-mist-300 transition-colors hover:border-rose-400/40 hover:text-rose-300"
-            data-i18n="options_reset"
           >
-            Reset all settings to defaults
+            <span
+              id="reset-icon"
+              class="h-3.5 w-3.5 inline-grid shrink-0 place-items-center [&>svg]:h-full [&>svg]:w-full"
+            ></span>
+            <span data-i18n="options_reset">Reset all settings to defaults</span>
           </button>
         </footer>
       </main>
