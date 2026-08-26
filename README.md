@@ -101,6 +101,12 @@ Adding one is a file: copy `src/public/_locales/en/messages.json` to
 `src/public/_locales/<locale>/`, translate the `message` values, and `npm test` will tell you if a
 key or a `$PLACEHOLDER$` went missing.
 
+## Publishing
+
+Listing copy for both languages, the permission justifications and the privacy
+answers live in [`docs/store-listing.md`](docs/store-listing.md). The policy
+itself is [`PRIVACY.md`](PRIVACY.md).
+
 ## Develop
 
 ```bash
