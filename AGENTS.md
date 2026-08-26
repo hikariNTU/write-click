@@ -71,6 +71,8 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   `scripts/sync-icons.mjs` instead.
 - **[`docs/wording.md`](docs/wording.md) governs every user-visible string**, in both languages:
   register, fixed terminology, and the i18n mechanics. Tests enforce the parts that can be checked.
+- UI helpers take `Localized`, which only `t()` and `dynamic()` produce. If a label will not
+  typecheck, the fix is a message key — never a cast.
 - No user-facing English in code. Add a key to `src/public/_locales/en/messages.json` and use `t()`;
   static markup uses `data-i18n`. Counted strings need separate `_one` / `_other` messages, because
   `chrome.i18n` has no plural support.

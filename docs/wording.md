@@ -63,6 +63,12 @@ happen; it does not comment on it.
 
 - Every user-visible string goes through `t()`. No exceptions: placeholders,
   `aria-label`, `title`, empty states.
+- `t()` returns `Localized`, a branded string, and the UI helpers in `src/ui.ts`
+  accept nothing else. A hard-coded literal in a label is therefore a type
+  error, not a string that survives until someone switches language and finds
+  half a page in the wrong one. Text that is not translatable because it comes
+  from elsewhere — a key code, an origin, a command id — goes through
+  `dynamic()`, which exists to be greppable. Never use it to smuggle in copy.
 - Never build a sentence by concatenation. Word order differs between locales,
   so each message is one complete templated string with `$PLACEHOLDERS$`.
 - `chrome.i18n` has no plural support: counted strings ship as `_one` and

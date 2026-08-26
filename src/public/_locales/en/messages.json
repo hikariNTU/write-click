@@ -322,16 +322,8 @@
   "options_trigger_key": {
     "message": "Key"
   },
-  "options_trigger_key_change": {
-    "message": "$KEY$. Click to change.",
-    "placeholders": {
-      "key": {
-        "content": "$1"
-      }
-    }
-  },
   "options_trigger_key_hint": {
-    "message": "Held while the mouse moves. The context menu is left untouched."
+    "message": "Held while the mouse moves. Click to change the key. The context menu is left untouched."
   },
   "options_trigger_key_press": {
     "message": "Press any key"

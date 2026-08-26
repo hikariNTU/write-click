@@ -322,16 +322,8 @@
   "options_trigger_key": {
     "message": "按鍵"
   },
-  "options_trigger_key_change": {
-    "message": "$KEY$。點選可變更。",
-    "placeholders": {
-      "key": {
-        "content": "$1"
-      }
-    }
-  },
   "options_trigger_key_hint": {
-    "message": "按住此鍵並移動滑鼠，不影響右鍵選單。"
+    "message": "按住此鍵並移動滑鼠。點選按鈕可變更按鍵。不影響右鍵選單。"
   },
   "options_trigger_key_press": {
     "message": "請按任一鍵"

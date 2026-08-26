@@ -1,6 +1,6 @@
 import { loadSettings, saveLocal, saveSync } from "./shared/settings";
 import type { Modifier, Trigger } from "./shared/trigger";
-import { applyStaticMessages, setLocale, t } from "./shared/i18n";
+import { applyStaticMessages, dynamic, setLocale, t } from "./shared/i18n";
 import { BRAND_ICON, UI_ICONS } from "./shared/icons";
 import { el, icon, row, toggle } from "./ui";
 
@@ -63,13 +63,11 @@ void (async () => {
             : [...sync.disabledOrigins, origin];
           void saveSync({ disabledOrigins: next });
         }),
-        new URL(origin).host,
+        dynamic(new URL(origin).host),
       ),
     );
   } else {
-    controls?.append(
-      el("p", "py-2 text-[11px] italic text-slate-500", "Gestures do not run on this page."),
-    );
+    controls?.append(el("p", "py-2 text-[11px] italic text-slate-500", t("popup_notHere")));
   }
 
   const options = document.querySelector<HTMLButtonElement>("#options");

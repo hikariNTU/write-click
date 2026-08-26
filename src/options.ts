@@ -1,7 +1,7 @@
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
-import { LOCALES, applyStaticMessages, setLocale, t } from "./shared/i18n";
-import type { LanguageSetting } from "./shared/i18n";
+import { LOCALES, applyStaticMessages, dynamic, setLocale, t } from "./shared/i18n";
+import type { LanguageSetting, Localized } from "./shared/i18n";
 import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
 import type { Point } from "./shared/recognizer";
@@ -68,7 +68,7 @@ const MODIFIERS = [
  * Explains what the current trigger does to the native context menu, which is
  * the one thing about this setting that surprises people. See docs/SPEC.md §3.
  */
-function triggerWarning(trigger: Trigger): string | undefined {
+function triggerWarning(trigger: Trigger): Localized | undefined {
   if (trigger.kind === "key") return undefined;
   if (trigger.button !== 2) return undefined;
   if (!menuFiresOnMouseDown()) return t("options_warn_menu_mouseup");
@@ -117,11 +117,10 @@ function triggerCard(): HTMLElement {
     );
   } else {
     const code = local.trigger.code;
-    const capture = el(
-      "button",
-      FIELD + " min-w-40 text-left",
-      t("options_trigger_key_change", code),
-    );
+    // The button carries the key code alone. Any label around it would have to
+    // grow with the translation, and this row already sits beside a fixed-width
+    // control column.
+    const capture = el("button", FIELD + " min-w-32 text-left", dynamic(code));
     capture.type = "button";
     capture.addEventListener("click", () => {
       capture.textContent = t("options_trigger_key_press");
@@ -134,9 +133,7 @@ function triggerCard(): HTMLElement {
         { capture: true, once: true },
       );
     });
-    section.append(
-      row("Key", capture, "Hold this key and move the mouse. Never touches the context menu."),
-    );
+    section.append(row(t("options_trigger_key"), capture, t("options_trigger_key_hint")));
   }
 
   const warning = triggerWarning(local.trigger);
@@ -248,12 +245,12 @@ function gestureRow(command: CommandId): HTMLElement {
   const label = el("div", "min-w-0 flex-1");
   label.append(
     el("div", "text-[13px] font-medium text-slate-200", t(COMMANDS[command].labelKey)),
-    el("div", "mt-0.5 font-mono text-[10px] text-slate-500", command),
+    el("div", "mt-0.5 font-mono text-[10px] text-slate-500", dynamic(command)),
   );
 
-  const edit = el("button", BUTTON, "Draw");
+  const edit = el("button", BUTTON, t("options_gestures_draw"));
   edit.type = "button";
-  const clear = el("button", BUTTON, "Clear");
+  const clear = el("button", BUTTON, t("options_gestures_clear"));
   clear.type = "button";
   clear.addEventListener(
     "click",
@@ -382,11 +379,7 @@ function overlayCard(): HTMLElement {
       ),
       t("options_overlay_size_hint"),
     ),
-    row(
-      "Grid delay",
-      hold,
-      "Milliseconds before the grid appears, so quick strokes do not flash it.",
-    ),
+    row(t("options_overlay_delay"), hold, t("options_overlay_delay_hint")),
   );
   return section;
 }
@@ -407,7 +400,7 @@ function sitesCard(): HTMLElement {
     const empty = el("div", "flex items-center gap-2 pt-2 text-[11px] italic text-slate-500");
     empty.append(
       icon(UI_ICONS.blocked, "h-3.5 w-3.5"),
-      document.createTextNode("No sites disabled."),
+      document.createTextNode(t("options_sites_none")),
     );
     section.append(empty);
     return section;
@@ -419,14 +412,14 @@ function sitesCard(): HTMLElement {
         disabledOrigins: sync.disabledOrigins.filter((entry) => entry !== origin),
       });
     });
-    section.append(row(origin, remove));
+    section.append(row(dynamic(origin), remove));
   }
   return section;
 }
 
 /* ----------------------------------------------------------------- notice */
 
-function notice(text: string): void {
+function notice(text: Localized): void {
   const node = el(
     "div",
     "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-xl border border-white/10 bg-slate-900/95 " +

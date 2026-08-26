@@ -23,13 +23,31 @@ const CATALOGUES: Record<string, Record<string, Entry>> = { en, zh_TW: zhTW };
 
 /** Offered in settings, named in the language itself. */
 export const LOCALES = [
-  { value: "en", label: "English" },
-  { value: "zh_TW", label: "繁體中文" },
+  { value: "en", label: dynamic("English") },
+  { value: "zh_TW", label: dynamic("繁體中文") },
 ] as const;
 
 export type Locale = (typeof LOCALES)[number]["value"];
 /** "auto" follows the browser's UI language, which is what most people want. */
 export type LanguageSetting = Locale | "auto";
+
+declare const brand: unique symbol;
+
+/**
+ * Text that is safe to show. Only `t()` and `dynamic()` produce it, and the UI
+ * helpers accept nothing else, so a hard-coded English literal in a label is a
+ * type error rather than a string that survives until someone switches language
+ * and sees half a page in the wrong one.
+ */
+export type Localized = string & { readonly [brand]: true };
+
+/**
+ * Marks text that is not translatable because it comes from elsewhere: a key
+ * code, a tab title, an origin. Never use it to smuggle in English copy.
+ */
+export function dynamic(value: string): Localized {
+  return value as Localized;
+}
 
 let override: Locale | undefined;
 
@@ -66,12 +84,12 @@ function substitute(entry: Entry, substitutions: string[]): string {
  * showing `options_trigger_title` is obviously broken and names the missing
  * key, while one showing nothing at all looks like a rendering bug.
  */
-export function t(key: MessageKey, ...substitutions: string[]): string {
+export function t(key: MessageKey, ...substitutions: string[]): Localized {
   if (override) {
     const entry = CATALOGUES[override]?.[key] ?? (en as Record<string, Entry>)[key];
-    if (entry) return substitute(entry, substitutions);
+    if (entry) return substitute(entry, substitutions) as Localized;
   }
-  return chrome.i18n?.getMessage(key, substitutions) || key;
+  return (chrome.i18n?.getMessage(key, substitutions) || key) as Localized;
 }
 
 /**

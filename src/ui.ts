@@ -1,8 +1,10 @@
+import type { Localized } from "./shared/i18n";
+
 /** Tiny DOM helpers shared by the options page and the popup. */
 export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   className = "",
-  text?: string,
+  text?: Localized,
 ): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   node.className = className;
@@ -31,7 +33,7 @@ export function icon(svg: string, className = "h-4 w-4"): HTMLSpanElement {
   return node;
 }
 
-export function card(title: string, description: string, glyph?: string): HTMLElement {
+export function card(title: Localized, description: Localized, glyph?: string): HTMLElement {
   const section = el("div", CARD);
   const head = el("div", "mb-5 flex items-start gap-3");
 
@@ -56,7 +58,11 @@ export function card(title: string, description: string, glyph?: string): HTMLEl
 }
 
 /** A small button with a leading glyph, used for row actions. */
-export function iconButton(glyph: string, label: string, onClick: () => void): HTMLButtonElement {
+export function iconButton(
+  glyph: string,
+  label: Localized,
+  onClick: () => void,
+): HTMLButtonElement {
   const node = el("button", `${BUTTON} inline-flex items-center gap-1.5`);
   node.type = "button";
   node.append(icon(glyph, "h-3.5 w-3.5"), document.createTextNode(label));
@@ -64,7 +70,7 @@ export function iconButton(glyph: string, label: string, onClick: () => void): H
   return node;
 }
 
-export function row(label: string, control: HTMLElement, hint?: string): HTMLElement {
+export function row(label: Localized, control: HTMLElement, hint?: Localized): HTMLElement {
   const wrapper = el("div", "flex items-center justify-between gap-6 py-2.5");
   const text = el("div", "min-w-0");
   text.append(el("div", "text-[13px] font-medium text-slate-200", label));
@@ -74,7 +80,7 @@ export function row(label: string, control: HTMLElement, hint?: string): HTMLEle
 }
 
 export function select<T extends string>(
-  options: readonly { value: T; label: string }[],
+  options: readonly { value: T; label: Localized }[],
   value: T,
   onChange: (value: T) => void,
 ): HTMLSelectElement {

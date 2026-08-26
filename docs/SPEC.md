@@ -390,6 +390,11 @@ banned asides, that zh-Hant copy stays third-person, and that "unbound" never re
 
 Counts go through `formatNumber()`, which is `Intl.NumberFormat` on the active locale.
 
+`t()` returns a branded `Localized` string and the helpers in `src/ui.ts` accept only that, so a
+hard-coded label fails to compile. Untranslatable text — a key code, an origin, a command id — is
+wrapped in `dynamic()`. The brand was added after five literals survived a catalogue rewrite and
+shipped a half-translated settings page; typecheck then found three more that a grep had missed.
+
 Shipping: `en` (default) and `zh_TW`.
 
 ### Language override
