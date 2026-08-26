@@ -3,9 +3,18 @@ import type { CommandId } from "../shared/commands";
 import { formatNumber, t } from "../shared/i18n";
 import { FALLBACK_FAVICON, strokeChipsHtml } from "../shared/icons";
 import type { TabSummary } from "../shared/messages";
+import { containsPoint } from "../shared/geometry";
+import type { Point } from "../shared/recognizer";
 import type { GridSize } from "../shared/settings";
 
 const PANEL_HIDDEN = ["opacity-0", "scale-95"] as const;
+
+/**
+ * Applied by hand rather than by `:hover`. While a mouse button is held, Blink
+ * captures events to the node that received the press, and hover stops
+ * following the cursor with it.
+ */
+const HOVER = ["border-emerald-300/40", "bg-emerald-400/10"] as const;
 
 /** Must match the panel's `duration-150`, or the teardown cuts the fade short. */
 const FADE_MS = 150;
@@ -34,9 +43,11 @@ export class TabGrid {
   readonly #caption = document.createElement("div");
   readonly #size: { tile: number; panel: number };
   readonly #cheatsheet = document.createElement("div");
-  #onSelect: (tabId: number) => void = () => {};
   #visible = false;
   #teardown = 0;
+  /** Tiles in view, for hit testing the pointer against their boxes. */
+  #tiles: { tabId: number; node: HTMLElement; active: boolean }[] = [];
+  #hovered: HTMLElement | undefined;
 
   constructor(root: ShadowRoot, size: GridSize) {
     this.#size = SIZES[size] ?? SIZES.normal;
@@ -106,8 +117,36 @@ export class TabGrid {
     return this.#visible;
   }
 
-  onSelect(handler: (tabId: number) => void): void {
-    this.#onSelect = handler;
+  /**
+   * The tab whose tile is under a point, if any.
+   *
+   * The grid opens while a mouse button is already held, and Blink captures
+   * mouse and pointer events to the node that received that press — a page
+   * element, since the grid did not exist yet. A listener on a tile therefore
+   * never fires for the click that picks it. Hit testing the boxes from a
+   * window-level listener is the way to see the press at all; see docs/SPEC.md
+   * §6.
+   */
+  pickAt(point: Point): number | undefined {
+    return this.#tileAt(point)?.tabId;
+  }
+
+  /** Moves the highlight, since `:hover` is frozen by the same capture. */
+  hoverAt(point: Point): void {
+    if (!this.#visible) return;
+    const found = this.#tileAt(point);
+    // The active tab's tile already carries these classes; taking them off it
+    // on the way out would strip its own styling.
+    const node = found && !found.active ? found.node : undefined;
+    if (node === this.#hovered) return;
+    this.#hovered?.classList.remove(...HOVER);
+    this.#hovered = node;
+    node?.classList.add(...HOVER);
+  }
+
+  #tileAt(point: Point): { tabId: number; node: HTMLElement; active: boolean } | undefined {
+    if (!this.#visible) return undefined;
+    return this.#tiles.find(({ node }) => containsPoint(node.getBoundingClientRect(), point));
   }
 
   show(tabs: readonly TabSummary[]): void {
@@ -119,7 +158,13 @@ export class TabGrid {
       label(t(tabs.length === 1 ? "grid_tabs_one" : "grid_tabs_other", formatNumber(tabs.length))),
       label(t("grid_hint")),
     );
-    this.#grid.replaceChildren(...tabs.map((tab) => this.#tile(tab)));
+    this.#tiles = tabs.map((tab) => ({
+      tabId: tab.id,
+      node: this.#tile(tab),
+      active: tab.active,
+    }));
+    this.#hovered = undefined;
+    this.#grid.replaceChildren(...this.#tiles.map(({ node }) => node));
     // Never stretch a handful of tabs across the full panel: cap the panel at
     // the width the tiles there actually are would occupy.
     this.#panel.style.width = `min(${this.#size.panel}px, 86vw, ${tabs.length * (this.#size.tile + 8) + 32}px)`;
@@ -138,6 +183,8 @@ export class TabGrid {
     // Tearing the panel down has to wait for the fade. Clearing the tiles or
     // flipping visibility now collapses the panel to nothing first, so what
     // fades out is an empty box rather than the grid the user was looking at.
+    this.#hovered = undefined;
+    this.#tiles = [];
     this.#teardown = window.setTimeout(() => {
       this.#root.classList.add("invisible");
       this.#grid.replaceChildren();
@@ -177,15 +224,6 @@ export class TabGrid {
     host.textContent = hostOf(tab.url);
     text.append(title, host);
     tile.append(icon, text);
-
-    // pointerdown, not click: the right button is still held, and this has to
-    // land before the trigger's own pointerup ends the gesture.
-    tile.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0) return;
-      event.preventDefault();
-      event.stopPropagation();
-      this.#onSelect(tab.id);
-    });
 
     return tile;
   }

@@ -213,6 +213,24 @@ Rules:
   be switched off.
 - `Escape` closes the grid and cancels the gesture.
 
+### 6.1 Picking a tile under mouse capture
+
+A tile is picked by hit testing, not by a listener on the tile.
+
+Blink captures mouse and pointer events to the node that received the press, for as long as a button
+is held. The grid opens a beat _after_ the trigger button goes down, so that node is whatever page
+element sat under the cursor beforehand — never a tile. Events still travel through the tree, so a
+window-level listener sees them, but their target is that page element and a listener on a tile never
+runs. With a keyboard trigger no button is down, nothing is captured, and a tile listener worked
+fine, which is what made this look like a packed-build problem rather than a mouse one.
+
+So the top frame listens on `window` in the capture phase, and `TabGrid.pickAt()` finds the tile
+whose box contains the pointer. The press is then cancelled and the following `click` and `mouseup`
+are swallowed: the capture node underneath is a page element, and picking a tab that happens to sit
+over a link must not also follow it.
+
+`:hover` is frozen by the same capture, so the highlight is moved by hand in `hoverAt()`.
+
 ## 7. Overlay
 
 - One closed shadow root per frame, appended to `document.documentElement`.

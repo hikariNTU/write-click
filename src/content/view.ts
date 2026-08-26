@@ -77,6 +77,11 @@ export interface View {
  * the top frame, and renders gestures drawn in sub-frames just the same, so a
  * stroke started inside an iframe still gets a trail across the whole page.
  */
+function swallow(event: Event): void {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 export function createView(sync: SyncSettings, onPick: () => void): View {
   const overlay = createOverlay();
   const trail = new Trail(overlay, sync.trail);
@@ -104,7 +109,7 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     grid?.hide();
   };
 
-  grid?.onSelect((tabId) => {
+  const pick = (tabId: number): void => {
     onPick();
     clear();
     // Not fire-and-forget: a pick that fails silently looks identical to a tile
@@ -112,7 +117,37 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     void send({ type: "tabs.activate", tabId }).then((response) => {
       if (!response.ok) console.warn("[write-click] tabs.activate", tabId, response.error);
     });
-  });
+  };
+
+  /**
+   * The press that picks a tile is seen here rather than on the tile.
+   *
+   * The grid opens while the trigger button is already down, and Blink captures
+   * mouse and pointer events to the node that received that press — a page
+   * element, because the grid did not exist yet. Events still travel through
+   * the tree to this listener, but their target is that page element, so a
+   * listener on a tile never runs. Hit testing the tiles ourselves is what makes
+   * the pick work at all with a button trigger; with a keyboard trigger nothing
+   * is captured and it worked either way.
+   */
+  const onPress = (event: PointerEvent): void => {
+    if (!grid?.visible || event.button !== 0 || event.pointerType !== "mouse") return;
+    const tabId = grid.pickAt({ x: event.clientX, y: event.clientY });
+    if (tabId === undefined) return;
+    // The capture node underneath is a page element, and it must not also be
+    // clicked: picking a tab that happens to sit over a link would follow it.
+    event.preventDefault();
+    event.stopPropagation();
+    window.addEventListener("click", swallow, { capture: true, once: true });
+    window.addEventListener("mouseup", swallow, { capture: true, once: true });
+    setTimeout(() => {
+      window.removeEventListener("click", swallow, true);
+      window.removeEventListener("mouseup", swallow, true);
+    }, 0);
+    pick(tabId);
+  };
+
+  window.addEventListener("pointerdown", onPress, { capture: true });
 
   /**
    * The tab list is fetched the moment the trigger goes down. Both the grid and
@@ -171,6 +206,8 @@ export function createView(sync: SyncSettings, onPick: () => void): View {
     move(point) {
       points.push(point);
       trail.render(points);
+      // :hover is frozen by the same capture, so the highlight is moved by hand.
+      grid?.hoverAt(point);
       const next = quantize(points);
       if (next === stroke) return;
       stroke = next;
