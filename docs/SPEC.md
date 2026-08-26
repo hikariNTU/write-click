@@ -280,10 +280,11 @@ Two rules keep it from firing on a tab nobody chose:
 - The highlight is only ever set by a **move**. A panel that happens to open under a resting cursor
   therefore has nothing highlighted, and a release there falls through to normal stroke matching.
 - The **active tab's tile is never highlighted**, so releasing over it does nothing rather than
-  re-activating the tab already in front. It carries its own marking instead — a different colour
-  from the hover highlight, plus a dot, since colour alone carries it for most people and not for
-  everyone. Painting the two alike said the opposite of what is true: hover means "release here and
-  you land on this tab", and the current tab is the one tile where releasing does nothing.
+  re-activating the tab already in front. It carries its own marking instead — a
+  brighter neutral than a resting tile, plus a dot, since brightness alone carries it for most
+  people and not for everyone. It is deliberately not a second accent colour: hover means "release
+  here and you land on this tab", so the accent belongs to the tile that does something, and the
+  current tab's tile is only stating where you already are.
 
 **Sub-frames hold their command until the top frame answers.** A gesture drawn in an iframe runs its
 command in that frame, but only the top frame owns the grid and knows whether the release landed on a
