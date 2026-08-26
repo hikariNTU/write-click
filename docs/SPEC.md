@@ -150,11 +150,14 @@ Rules:
 
 ## 6. Tab grid
 
-- Shown while the trigger is held, after `GRID_HOLD_MS = 180`, and only if the pointer has not yet
-  wandered `GRID_CANCEL_PX` (= `SEGMENT_MIN`, 32px). Not `DRIFT_THRESHOLD`: pressing a mouse button
-  physically shifts the cursor several pixels, so 8px would suppress the grid on a genuine hold.
-- Once the pointer does pass `GRID_CANCEL_PX` the grid hides again — past that the user is drawing,
-  not picking. So holding still opens it; flicking straight into a stroke never does.
+- Shown while the trigger is held, after `GRID_HOLD_MS = 180`. The delay is only there so a quick
+  flick gesture, which is over before the timer fires, never flashes it.
+- **Movement must not dismiss it.** Picking a tile means moving the pointer onto the tile, so any
+  rule that reads movement as "the user is drawing instead" cancels the feature at exactly the
+  moment it is being used. This was tried with an 8px threshold and again with 32px; both made the
+  grid unreachable. Do not reintroduce it.
+- The stroke keeps being recognized while the panel is open, and the readout keeps naming it. A
+  release with no tile picked runs that stroke as usual. So holding still opens it; flicking straight into a stroke never does.
 - The tab list is requested the instant the trigger goes down, in parallel with that timer, so the
   panel has no fetch latency when it appears.
 - Data comes from the background: `{ id, title, favIconUrl, active, index }` for the current window.

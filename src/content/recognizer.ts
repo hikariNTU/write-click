@@ -13,14 +13,6 @@ export const SEGMENT_MIN = 32;
  * wobbly hand alternates letters and a single corner reads as `RURU`.
  */
 export const HYSTERESIS_DEG = 28;
-/**
- * How far the pointer may wander before the tab grid is treated as a stroke
- * instead of a hold. Deliberately much larger than DRIFT_THRESHOLD: pressing a
- * mouse button shifts the cursor several pixels, and that must not count as
- * "the user started drawing".
- */
-export const GRID_CANCEL_PX = SEGMENT_MIN;
-
 /** Longer strokes are truncated and will simply not match anything. */
 export const MAX_SEGMENTS = 6;
 
