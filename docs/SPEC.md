@@ -75,14 +75,21 @@ on contextmenu(e):
 - `preventDefault` the `keyup` if a gesture ran, so releasing a bare `Alt` does not open Chrome's
   menu bar on Windows.
 
-### 3.4 Escape hatches
+### 3.4 Suppressed side effects
+
+A button gesture that drifted swallows the `click`/`auxclick` that follows, so a stroke ending on a
+link does not also activate it. A middle-button trigger calls `preventDefault` on pointerdown to
+stop Chrome's autoscroll. A key trigger calls `preventDefault` on the `keyup` that ended a gesture.
+
+### 3.5 Escape hatches
 
 Always available, on every platform: `Shift` + right-click forces the native menu (Chrome does this
 itself, no code needed); a per-origin disable toggle; a global off switch.
 
 ## 4. Recognition
 
-- Sample `mousemove` (coalesced events where available) into a point list.
+- Sample `pointermove` into a point list, expanding `getCoalescedEvents()` where available.
+  Pointer events are used throughout for movement; `contextmenu` stays a `MouseEvent`.
 - `DRIFT_THRESHOLD = 8` px, compared squared. Below it, the gesture is "not drawn".
 - `SEGMENT_MIN = 20` px. Movement shorter than this does not emit a direction.
 - Quantize each segment to 8 directions: `U D L R UL UR DL DR`. Collapse consecutive repeats.
@@ -187,7 +194,7 @@ Every handler is exhaustive over the union; adding a member must break the build
 ## 11. Phases
 
 1. **Scaffold** — done. Vite + crxjs + Tailwind + oxc, shadow-root overlay, trigger defaults.
-2. **Trigger + recognizer** — all three trigger kinds, `contextmenu` rules from §3.2, stroke
+2. **Trigger + recognizer** — done. All three trigger kinds, `contextmenu` rules from §3.2, stroke
    quantization, canvas trail. Commands logged, not run.
 3. **Commands** — background tab commands, content-local scroll commands, default map from §5.
 4. **Tab grid** — §6 in full, including click-to-switch and gesture cancellation.

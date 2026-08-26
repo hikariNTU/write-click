@@ -9,8 +9,9 @@ and scripts cannot see it, restyle it, or reach into it.
 
 ## Status
 
-**Phase 1 of 6 — scaffold.** The content script mounts, Tailwind loads into the shadow root, and
-trigger defaults resolve per platform. No gestures are recognized yet.
+**Phase 2 of 6 — trigger and recognizer.** Gestures are captured, quantized into strokes and drawn
+as a trail, and the matched command is named in an on-screen label. Commands are logged to the
+console rather than executed; phase 3 runs them.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
 
