@@ -493,6 +493,23 @@ written before a field existed would otherwise replace the whole default object 
 release. `migrate()` fills in fields the stored object
 never had rather than letting a reader find `undefined`.
 
+Two things about that merge are load-bearing, and both were bugs first.
+
+**Settings are read by key name, never by handing `chrome.storage.get` an object of defaults.**
+Given an object, Chrome performs a one-level merge of its own — the default is merged _into_ the
+stored value before anything is returned. Asking for `{ trigger: <default> }` when
+`{ kind: "button", button: 2 }` is stored returns `{ kind: "button", button: 2, modifier: "Alt" }`
+on a platform whose default carries a modifier. That merge happens upstream of our code, so the only
+way to control it is not to ask for it: `get(Object.keys(defaults))` returns exactly what is stored,
+and missing keys fall back to the defaults here.
+
+**`trigger` replaces its default rather than merging into it.** A `Trigger` is a discriminated union
+(§3), and merging one variant into another produces neither. The options page writes a bare button
+trigger with no `modifier` key at all, so any merge — Chrome's or ours — hands the modifier back and
+clearing it silently does not stick. On Windows the default has no modifier and the bug is invisible;
+on macOS and Linux it made the bare right button unselectable. Every other settings object is a bag
+of independent fields, where merging is exactly what makes a newly added field appear.
+
 Content scripts subscribe to `chrome.storage.onChanged` and re-apply without a reload: gesture and
 overlay changes take effect on the next stroke, and a trigger change tears down its listeners and
 re-attaches. Turning gestures off, globally or for the origin, detaches them entirely.

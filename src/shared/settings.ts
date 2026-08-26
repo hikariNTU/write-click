@@ -57,18 +57,41 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Keys whose stored value replaces the default outright instead of merging into
+ * it.
+ *
+ * `trigger` is a discriminated union, and merging one variant into another
+ * produces neither: a stored `{ kind: "button", button: 2 }` — what the options
+ * page writes when the modifier is cleared — merged into a macOS default of
+ * `{ kind: "button", button: 2, modifier: "Alt" }` hands back the modifier the
+ * user just removed. Every other settings object is a bag of independent
+ * fields, where merging is exactly what makes a newly added field appear.
+ */
+const REPLACED = new Set(["trigger"]);
+
+/**
  * Reads an area, filling in anything the user has never set. The merge goes one
  * level deep on purpose: settings are stored per top-level key, so a stored
  * `grid` written before a field existed would otherwise replace the defaults
  * wholesale and leave that field undefined.
  */
 async function read<T extends object>(area: chrome.storage.StorageArea, defaults: T): Promise<T> {
-  const stored = await area.get(defaults as Record<string, unknown>);
+  // Asked for by name, never by handing `get` an object of defaults.
+  //
+  // Chrome merges an object-valued default into the stored value itself, one
+  // level deep, before returning anything: ask for `{ trigger: <default> }` and
+  // a stored `{ kind: "button", button: 2 }` comes back carrying the default's
+  // `modifier`. That merge happens upstream of everything here, so the only way
+  // to control it is never to ask for it. A key that is not stored is simply
+  // absent from the result, and the defaults below fill it in.
+  const stored = await area.get(Object.keys(defaults));
   const merged: Record<string, unknown> = { ...(defaults as Record<string, unknown>) };
   for (const [key, value] of Object.entries(stored)) {
     const fallback = merged[key];
     merged[key] =
-      isPlainObject(fallback) && isPlainObject(value) ? { ...fallback, ...value } : value;
+      !REPLACED.has(key) && isPlainObject(fallback) && isPlainObject(value)
+        ? { ...fallback, ...value }
+        : value;
   }
   return merged as unknown as T;
 }
