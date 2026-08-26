@@ -43,6 +43,8 @@ lint are all clean and the behaviour is verified in a loaded unpacked build.
 - `src/shared/icons.ts`, `src/shared/recognizer.ts` — shared by the content script and the options
   page; the options draw pad must keep using the same `quantize`
 - `src/options.ts`, `src/popup.ts`, `src/ui.ts` — extension pages and their shared DOM helpers
+- `src/public/_locales/` — message catalogues, copied to `dist/_locales` by Vite's public dir
+- `src/shared/i18n.ts` — `t()`, with keys typed from the English catalogue
 
 ## Tests
 
@@ -67,6 +69,9 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   over `/@fs/` and the dev server resolves that against the root, yielding `src/@fs/...` and an
   ENOENT — in dev only, so the build will not catch it. Vendor the file with
   `scripts/sync-icons.mjs` instead.
+- No user-facing English in code. Add a key to `src/public/_locales/en/messages.json` and use `t()`;
+  static markup uses `data-i18n`. Counted strings need separate `_one` / `_other` messages, because
+  `chrome.i18n` has no plural support.
 - Tailwind only sees complete class strings in the source. Never build a class name by
   concatenating fragments at runtime.
 

@@ -1,13 +1,20 @@
 import { loadSettings, saveLocal, saveSync } from "./shared/settings";
 import type { Modifier, Trigger } from "./shared/trigger";
+import { applyStaticMessages, t } from "./shared/i18n";
 import { BRAND_ICON, UI_ICONS } from "./shared/icons";
 import { el, icon, row, toggle } from "./ui";
 
+const BUTTON_KEYS = [
+  "trigger_button_left",
+  "trigger_button_middle",
+  "trigger_button_right",
+] as const;
+
 function describeTrigger(trigger: Trigger): string {
-  if (trigger.kind === "key") return `hold ${trigger.code}`;
-  const button = ["left", "middle", "right"][trigger.button] ?? "button";
+  if (trigger.kind === "key") return t("trigger_hold_key", trigger.code);
+  const button = t(BUTTON_KEYS[trigger.button]);
   const modifier: Modifier | undefined = trigger.modifier;
-  return modifier ? `${modifier} + ${button}` : button;
+  return modifier ? t("trigger_with_modifier", modifier, button) : button;
 }
 
 async function originOfActiveTab(): Promise<string | undefined> {
@@ -24,6 +31,7 @@ async function originOfActiveTab(): Promise<string | undefined> {
 }
 
 void (async () => {
+  applyStaticMessages();
   const brand = document.querySelector<HTMLElement>("#brand");
   if (brand) brand.innerHTML = BRAND_ICON;
 
@@ -37,9 +45,9 @@ void (async () => {
 
   controls?.append(
     row(
-      "Gestures",
+      t("popup_gestures"),
       toggle(local.enabled, (value) => void saveLocal({ enabled: value })),
-      "This device.",
+      t("popup_thisDevice"),
     ),
   );
 
@@ -47,7 +55,7 @@ void (async () => {
     const disabled = sync.disabledOrigins.includes(origin);
     controls?.append(
       row(
-        "Enabled here",
+        t("popup_enabledHere"),
         toggle(!disabled, (value) => {
           const next = value
             ? sync.disabledOrigins.filter((entry) => entry !== origin)

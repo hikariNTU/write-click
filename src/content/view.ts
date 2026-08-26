@@ -1,5 +1,6 @@
 import { COMMANDS } from "../shared/commands";
 import type { CommandId } from "../shared/commands";
+import { t } from "../shared/i18n";
 import { COMMAND_ICONS, UNKNOWN_ICON } from "../shared/icons";
 import { send } from "../shared/messages";
 import type { TabSummary } from "../shared/messages";
@@ -32,27 +33,34 @@ function describe(
   tabs: readonly TabSummary[],
 ): Match {
   if (!command) {
-    return { stroke, label: "Unassigned", icon: UNKNOWN_ICON, state: "unassigned" };
+    return { stroke, label: t("hud_unassigned"), icon: UNKNOWN_ICON, state: "unassigned" };
   }
 
   const icon = COMMAND_ICONS[command];
   const count = closingCount(command, tabs);
   if (count === undefined) {
-    return { stroke, label: COMMANDS[command].label, icon, state: "matched" };
+    return { stroke, label: t(COMMANDS[command].labelKey), icon, state: "matched" };
   }
 
-  const side = command === "tab.closeRight" ? "right" : "left";
+  const right = command === "tab.closeRight";
   if (count === 0) {
     // Honest about doing nothing, rather than promising a close that cannot
     // happen because everything that way is pinned or there is nothing there.
-    return { stroke, label: `No tabs to close to the ${side}`, icon, state: "unassigned" };
+    const key = right ? "hud_closeRight_none" : "hud_closeLeft_none";
+    return { stroke, label: t(key), icon, state: "unassigned" };
   }
-  return {
-    stroke,
-    label: `Close ${count} tab${count === 1 ? "" : "s"} to the ${side}`,
-    icon,
-    state: "matched",
-  };
+
+  // Separate singular and plural messages: chrome.i18n has no plural support,
+  // and a language that pluralizes differently needs both strings anyway.
+  const one = count === 1;
+  const key = right
+    ? one
+      ? "hud_closeRight_one"
+      : "hud_closeRight_other"
+    : one
+      ? "hud_closeLeft_one"
+      : "hud_closeLeft_other";
+  return { stroke, label: t(key, String(count)), icon, state: "matched" };
 }
 
 export interface View {

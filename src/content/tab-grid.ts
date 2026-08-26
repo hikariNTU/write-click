@@ -1,5 +1,6 @@
 import { COMMANDS } from "../shared/commands";
 import type { CommandId } from "../shared/commands";
+import { t } from "../shared/i18n";
 import { FALLBACK_FAVICON, strokeChipsHtml } from "../shared/icons";
 import type { TabSummary } from "../shared/messages";
 import type { GridSize } from "../shared/settings";
@@ -66,7 +67,7 @@ export class TabGrid {
    */
   setGestures(gestures: Record<string, CommandId>): void {
     const entries = Object.entries(gestures).toSorted(([, a], [, b]) =>
-      COMMANDS[a].label.localeCompare(COMMANDS[b].label),
+      t(COMMANDS[a].labelKey).localeCompare(t(COMMANDS[b].labelKey)),
     );
     if (entries.length === 0) {
       this.#cheatsheet.replaceChildren();
@@ -87,7 +88,7 @@ export class TabGrid {
 
       const name = document.createElement("span");
       name.className = "truncate text-[11px] text-slate-400";
-      name.textContent = COMMANDS[command].label;
+      name.textContent = t(COMMANDS[command].labelKey);
 
       line.append(chips, name);
       wrap.append(line);
@@ -96,7 +97,7 @@ export class TabGrid {
     const heading = document.createElement("div");
     heading.className =
       "mb-2 mt-4 border-t border-white/5 px-1 pt-3 text-[10px] font-medium uppercase tracking-wider text-slate-500";
-    heading.textContent = "Gestures";
+    heading.textContent = t("grid_cheatsheet");
 
     this.#cheatsheet.replaceChildren(heading, wrap);
   }
@@ -115,8 +116,8 @@ export class TabGrid {
     clearTimeout(this.#teardown);
     this.#panel.classList.remove("pointer-events-none");
     this.#caption.replaceChildren(
-      label(`${tabs.length} tab${tabs.length === 1 ? "" : "s"}`),
-      label("click to switch"),
+      label(t(tabs.length === 1 ? "grid_tabs_one" : "grid_tabs_other", String(tabs.length))),
+      label(t("grid_hint")),
     );
     this.#grid.replaceChildren(...tabs.map((tab) => this.#tile(tab)));
     // Never stretch a handful of tabs across the full panel: cap the panel at

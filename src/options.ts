@@ -1,5 +1,6 @@
 import { COMMANDS } from "./shared/commands";
 import type { CommandId } from "./shared/commands";
+import { applyStaticMessages, t } from "./shared/i18n";
 import { BRAND_ICON, COMMAND_ICONS, UI_ICONS, strokeChipsHtml } from "./shared/icons";
 import { quantize } from "./shared/recognizer";
 import type { Point } from "./shared/recognizer";
@@ -49,17 +50,17 @@ async function patchLocal(patch: Partial<LocalSettings>): Promise<void> {
 /* ---------------------------------------------------------------- trigger */
 
 const BUTTONS = [
-  { value: "2", label: "Right button" },
-  { value: "1", label: "Middle button" },
-  { value: "0", label: "Left button" },
+  { value: "2", label: t("options_trigger_button_right") },
+  { value: "1", label: t("options_trigger_button_middle") },
+  { value: "0", label: t("options_trigger_button_left") },
 ] as const;
 
 const MODIFIERS = [
-  { value: "", label: "No modifier" },
-  { value: "Alt", label: platform === "macos" ? "Option" : "Alt" },
-  { value: "Shift", label: "Shift" },
-  { value: "Control", label: "Control" },
-  { value: "Meta", label: platform === "macos" ? "Command" : "Meta" },
+  { value: "", label: t("modifier_none") },
+  { value: "Alt", label: t(platform === "macos" ? "modifier_option" : "modifier_alt") },
+  { value: "Shift", label: t("modifier_shift") },
+  { value: "Control", label: t("modifier_control") },
+  { value: "Meta", label: t(platform === "macos" ? "modifier_command" : "modifier_meta") },
 ] as const;
 
 /**
@@ -69,26 +70,18 @@ const MODIFIERS = [
 function triggerWarning(trigger: Trigger): string | undefined {
   if (trigger.kind === "key") return undefined;
   if (trigger.button !== 2) return undefined;
-  if (!menuFiresOnMouseDown()) {
-    return "The native context menu still opens on a plain right-click; it is only suppressed once you have actually drawn.";
-  }
-  if (trigger.modifier) {
-    return "A plain right-click keeps its native context menu — only the modified one is taken over.";
-  }
-  return "On this platform the context menu opens on mouse-down, so a bare right button suppresses it entirely. Shift+right-click still forces it. Pick a modifier to keep the menu.";
+  if (!menuFiresOnMouseDown()) return t("options_warn_menu_mouseup");
+  if (trigger.modifier) return t("options_warn_menu_modified");
+  return t("options_warn_menu_suppressed");
 }
 
 function triggerCard(): HTMLElement {
-  const section = card(
-    "Trigger",
-    "What you hold to draw. Stored for this device only, since the context menu behaves differently per platform.",
-    UI_ICONS.trigger,
-  );
+  const section = card(t("options_trigger_title"), t("options_trigger_desc"), UI_ICONS.trigger);
 
   const kind = select(
     [
-      { value: "button", label: "Mouse button" },
-      { value: "key", label: "Keyboard key" },
+      { value: "button", label: t("options_trigger_kind_button") },
+      { value: "key", label: t("options_trigger_kind_key") },
     ],
     local.trigger.kind,
     (value) => {
@@ -98,13 +91,13 @@ function triggerCard(): HTMLElement {
       });
     },
   );
-  section.append(row("Hold", kind));
+  section.append(row(t("options_trigger_hold"), kind));
 
   if (local.trigger.kind === "button") {
     const trigger = local.trigger;
     section.append(
       row(
-        "Button",
+        t("options_trigger_button"),
         select(BUTTONS, String(trigger.button) as "0" | "1" | "2", (value) => {
           void patchLocal({
             trigger: { ...trigger, button: Number(value) as 0 | 1 | 2 },
@@ -112,21 +105,25 @@ function triggerCard(): HTMLElement {
         }),
       ),
       row(
-        "Modifier",
+        t("options_trigger_modifier"),
         select(MODIFIERS, (trigger.modifier ?? "") as Modifier | "", (value) => {
           const next: Trigger = { kind: "button", button: trigger.button };
           if (value) next.modifier = value as Modifier;
           void patchLocal({ trigger: next });
         }),
-        "Held together with the button.",
+        t("options_trigger_modifier_hint"),
       ),
     );
   } else {
     const code = local.trigger.code;
-    const capture = el("button", FIELD + " min-w-40 text-left", `${code} — click to change`);
+    const capture = el(
+      "button",
+      FIELD + " min-w-40 text-left",
+      t("options_trigger_key_change", code),
+    );
     capture.type = "button";
     capture.addEventListener("click", () => {
-      capture.textContent = "Press any key…";
+      capture.textContent = t("options_trigger_key_press");
       window.addEventListener(
         "keydown",
         (event) => {
@@ -159,7 +156,8 @@ function triggerCard(): HTMLElement {
 function chips(stroke: string): HTMLElement {
   const holder = el("div", "flex items-center gap-1 text-slate-300 [&>svg]:h-3.5 [&>svg]:w-3.5");
   if (stroke) holder.innerHTML = strokeChipsHtml(stroke);
-  else holder.append(el("span", "text-[11px] italic text-slate-500", "unbound"));
+  else
+    holder.append(el("span", "text-[11px] italic text-slate-500", t("options_gestures_unbound")));
   return holder;
 }
 
@@ -172,7 +170,7 @@ function drawPad(onDone: (stroke: string) => void, onCancel: () => void): HTMLEl
     "div",
     "mt-2 grid h-32 cursor-crosshair place-items-center rounded-xl border border-dashed " +
       "border-emerald-300/40 bg-emerald-400/5 text-[11px] text-emerald-200/80",
-    "Draw here — hold any mouse button and move. Esc to cancel.",
+    t("options_gestures_pad"),
   );
   let points: Point[] = [];
   let drawing = false;
@@ -216,7 +214,7 @@ function gestureRow(command: CommandId): HTMLElement {
 
   const label = el("div", "min-w-0 flex-1");
   label.append(
-    el("div", "text-[13px] font-medium text-slate-200", COMMANDS[command].label),
+    el("div", "text-[13px] font-medium text-slate-200", t(COMMANDS[command].labelKey)),
     el("div", "mt-0.5 font-mono text-[10px] text-slate-500", command),
   );
 
@@ -241,7 +239,7 @@ function gestureRow(command: CommandId): HTMLElement {
           const taken = sync.gestures[drawn];
           void patchSync({ gestures: bind(sync.gestures, command, drawn) }).then(() => {
             if (taken && taken !== command) {
-              notice(`${drawn} taken from “${COMMANDS[taken].label}”, which is now unbound.`);
+              notice(t("options_gestures_taken", drawn, t(COMMANDS[taken].labelKey)));
             }
           });
         },
@@ -256,11 +254,7 @@ function gestureRow(command: CommandId): HTMLElement {
 }
 
 function gesturesCard(): HTMLElement {
-  const section = card(
-    "Gestures",
-    "One stroke per command. Drawing a stroke that is already taken moves it, leaving the old command unbound.",
-    UI_ICONS.gestures,
-  );
+  const section = card(t("options_gestures_title"), t("options_gestures_desc"), UI_ICONS.gestures);
   for (const command of Object.keys(COMMANDS) as CommandId[]) section.append(gestureRow(command));
   return section;
 }
@@ -268,11 +262,7 @@ function gesturesCard(): HTMLElement {
 /* ---------------------------------------------------------------- overlay */
 
 function overlayCard(): HTMLElement {
-  const section = card(
-    "Overlay",
-    "How the trail, the readout and the tab grid look.",
-    UI_ICONS.overlay,
-  );
+  const section = card(t("options_overlay_title"), t("options_overlay_desc"), UI_ICONS.overlay);
 
   const color = el(
     "input",
@@ -304,41 +294,41 @@ function overlayCard(): HTMLElement {
   });
 
   section.append(
-    row("Trail colour", color),
-    row("Trail thickness", width),
+    row(t("options_overlay_color"), color),
+    row(t("options_overlay_width"), width),
     row(
-      "Show the readout",
+      t("options_overlay_readout"),
       toggle(sync.trail.showLabel, (value) => {
         void patchSync({ trail: { ...sync.trail, showLabel: value } });
       }),
-      "Names the command the current stroke matches.",
+      t("options_overlay_readout_hint"),
     ),
     row(
-      "Show the tab grid",
+      t("options_overlay_grid"),
       toggle(sync.grid.enabled, (value) => {
         void patchSync({ grid: { ...sync.grid, enabled: value } });
       }),
-      "Appears while the trigger is held; click a tile to switch tabs.",
+      t("options_overlay_grid_hint"),
     ),
     row(
-      "Gesture cheatsheet",
+      t("options_overlay_cheatsheet"),
       toggle(sync.grid.cheatsheet, (value) => {
         void patchSync({ grid: { ...sync.grid, cheatsheet: value } });
       }),
-      "Lists every bound gesture under the tabs.",
+      t("options_overlay_cheatsheet_hint"),
     ),
     row(
-      "Grid size",
+      t("options_overlay_size"),
       select(
         [
-          { value: "compact", label: "Compact" },
-          { value: "normal", label: "Normal" },
-          { value: "large", label: "Large" },
+          { value: "compact", label: t("options_size_compact") },
+          { value: "normal", label: t("options_size_normal") },
+          { value: "large", label: t("options_size_large") },
         ] as const,
         sync.grid.size,
         (value) => void patchSync({ grid: { ...sync.grid, size: value } }),
       ),
-      "Tile width. The grid fits as many per row as the window allows.",
+      t("options_overlay_size_hint"),
     ),
     row(
       "Grid delay",
@@ -352,15 +342,11 @@ function overlayCard(): HTMLElement {
 /* ------------------------------------------------------------------ sites */
 
 function sitesCard(): HTMLElement {
-  const section = card(
-    "Disabled sites",
-    "Gestures are off on these origins. Add the current site from the toolbar popup.",
-    UI_ICONS.sites,
-  );
+  const section = card(t("options_sites_title"), t("options_sites_desc"), UI_ICONS.sites);
 
   section.append(
     row(
-      "Gestures on this device",
+      t("options_sites_device"),
       toggle(local.enabled, (value) => void patchLocal({ enabled: value })),
     ),
   );
@@ -376,7 +362,7 @@ function sitesCard(): HTMLElement {
   }
 
   for (const origin of sync.disabledOrigins) {
-    const remove = iconButton(UI_ICONS.remove, "Remove", () => {
+    const remove = iconButton(UI_ICONS.remove, t("options_sites_remove"), () => {
       void patchSync({
         disabledOrigins: sync.disabledOrigins.filter((entry) => entry !== origin),
       });
@@ -419,11 +405,12 @@ document.querySelector<HTMLButtonElement>("#reset")?.addEventListener("click", (
     ({ sync, local } = await loadSettings());
     flashSaved();
     render();
-    notice("Everything is back to defaults.");
+    notice(t("options_resetDone"));
   })();
 });
 
 function decorateChrome(): void {
+  applyStaticMessages();
   const brand = document.querySelector<HTMLElement>("#brand");
   if (brand) brand.innerHTML = BRAND_ICON;
 

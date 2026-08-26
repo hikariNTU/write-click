@@ -92,6 +92,12 @@ on/off for the site you are on.
 
 Changes apply to open tabs immediately, with no reload.
 
+## Languages
+
+English and 繁體中文. Adding one is a file: copy `src/public/_locales/en/messages.json` to
+`src/public/_locales/<locale>/`, translate the `message` values, and `npm test` will tell you if a
+key or a `$PLACEHOLDER$` went missing.
+
 ## Develop
 
 ```bash

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Write Click",
+  "name": "__MSG_extName__",
   "version": "0.1.0",
-  "description": "Draw mouse gestures to switch, close and reopen tabs, and to move around the page.",
+  "description": "__MSG_extDescription__",
   "permissions": ["tabs", "sessions", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
@@ -35,5 +35,6 @@
     "32": "images/icon-32.png",
     "48": "images/icon-48.png",
     "128": "images/icon-128.png"
-  }
+  },
+  "default_locale": "en"
 }

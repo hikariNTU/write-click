@@ -359,6 +359,31 @@ The popup carries only what is worth reaching in one click: gestures on/off for 
 on/off for the current origin. It offers no origin toggle on browser-internal pages, where a content
 script cannot run and the toggle would be a lie.
 
+## 10.2 Localization
+
+Messages live in `src/public/_locales/<locale>/messages.json` and reach `dist/_locales` through
+Vite's public directory. `default_locale` is `en`, and the manifest's `name` and `description` go
+through `__MSG_extName__` / `__MSG_extDescription__`.
+
+`t()` in `src/shared/i18n.ts` wraps `chrome.i18n.getMessage`. Its key type is derived from the
+English catalogue with `keyof typeof import(...)`, a type-only import, so a typo or a message deleted
+from the catalogue is a build error rather than a blank label at runtime. A missing message falls
+back to the key itself: a screen reading `options_trigger_title` is visibly broken and names what is
+missing, while an empty string looks like a rendering bug.
+
+Commands carry a `labelKey`, never English text. Static markup carries `data-i18n` attributes, with
+the English left in the HTML as documentation, filled in by `applyStaticMessages()` on load.
+
+`chrome.i18n` has **no plural support**, so counted strings ship as separate singular and plural
+messages — `hud_closeRight_one` / `hud_closeRight_other`. A language that pluralizes differently needs
+both strings anyway.
+
+`src/shared/i18n.test.ts` enforces that every translation has exactly the English key set, that
+placeholders survive translation and are actually referenced in the translated string, and that every
+command's `labelKey` exists.
+
+Shipping: `en` (default) and `zh_TW`.
+
 ## 11. Phases
 
 1. **Scaffold** — done. Vite + crxjs + Tailwind + oxc, shadow-root overlay, trigger defaults.
