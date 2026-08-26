@@ -173,6 +173,11 @@ Rules:
 - Three presets, exposed in options as Compact / Normal / Large: tile widths 150 / 220 / 300px,
   panel caps 720 / 900 / 1120px. The panel is additionally capped at the width the tiles actually
   present would occupy, so three open tabs do not stretch across the whole screen.
+- Hiding fades the panel and only tears it down once the fade has finished. Clearing the tiles or
+  flipping visibility in the same frame collapses the panel first, so what fades out is an empty box
+  rather than the grid — it reads as a snap-shrink followed by a fade. The teardown delay must stay
+  in step with the panel's transition duration, and the panel goes `pointer-events: none` for the
+  fade so a stray click cannot land on a tile after the gesture is over.
 - Tiles get `pointer-events: auto`; the overlay host stays `none`. Visibility is toggled with
   `invisible`, never `hidden`: `hidden` and `grid` are both `display` utilities, so which one won
   would come down to CSS source order.

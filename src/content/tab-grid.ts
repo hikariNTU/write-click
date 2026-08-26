@@ -4,6 +4,9 @@ import { FALLBACK_FAVICON } from "../shared/icons";
 
 const PANEL_HIDDEN = ["opacity-0", "scale-95"] as const;
 
+/** Must match the panel's `duration-150`, or the teardown cuts the fade short. */
+const FADE_MS = 150;
+
 /**
  * Tiles are sized, not counted. The track list is auto-fit, so the number per
  * row falls out of the window width and the panel stays balanced whether there
@@ -29,6 +32,7 @@ export class TabGrid {
   readonly #size: { tile: number; panel: number };
   #onSelect: (tabId: number) => void = () => {};
   #visible = false;
+  #teardown = 0;
 
   constructor(root: ShadowRoot, size: GridSize) {
     this.#size = SIZES[size] ?? SIZES.normal;
@@ -61,6 +65,9 @@ export class TabGrid {
 
   show(tabs: readonly TabSummary[]): void {
     if (tabs.length === 0) return;
+    // A fade may still be running from the last gesture.
+    clearTimeout(this.#teardown);
+    this.#panel.classList.remove("pointer-events-none");
     this.#caption.replaceChildren(
       label(`${tabs.length} tab${tabs.length === 1 ? "" : "s"}`),
       label("click to switch"),
@@ -79,8 +86,15 @@ export class TabGrid {
     if (!this.#visible) return;
     this.#visible = false;
     this.#panel.classList.add(...PANEL_HIDDEN);
-    this.#root.classList.add("invisible");
-    this.#grid.replaceChildren();
+    // Nothing may take a click during the fade: the gesture is already over.
+    this.#panel.classList.add("pointer-events-none");
+    // Tearing the panel down has to wait for the fade. Clearing the tiles or
+    // flipping visibility now collapses the panel to nothing first, so what
+    // fades out is an empty box rather than the grid the user was looking at.
+    this.#teardown = window.setTimeout(() => {
+      this.#root.classList.add("invisible");
+      this.#grid.replaceChildren();
+    }, FADE_MS);
   }
 
   #tile(tab: TabSummary): HTMLButtonElement {
