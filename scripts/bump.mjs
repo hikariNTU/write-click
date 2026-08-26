@@ -25,11 +25,23 @@ const next =
       : `${major}.${minor}.${patch + 1}`;
 
 for (const file of files) {
-  const json = JSON.parse(readFileSync(file, "utf8"));
-  json.version = next;
-  // package-lock carries the version twice.
-  if (json.packages?.[""]) json.packages[""].version = next;
-  writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
+  const source = readFileSync(file, "utf8");
+  const json = JSON.parse(source);
+  if (json.version !== current) {
+    console.error(`${file} is at ${json.version}, expected ${current}`);
+    process.exit(1);
+  }
+  // Rewrites the version in place rather than re-serialising the file. A
+  // JSON.stringify round-trip reformats everything it touches — it expanded the
+  // manifest's inline arrays and broke format:check in CI — and package-lock is
+  // far too large to reflow over a three-character change.
+  let out = source.replace(/"version": "[^"]+"/, `"version": "${next}"`);
+  // package-lock carries the version twice: once at the root, once for the
+  // root package entry.
+  if (json.packages?.[""]) {
+    out = out.replace(/("packages": \{\s*"": \{[^}]*?"version": ")[^"]+"/, `$1${next}"`);
+  }
+  writeFileSync(file, out);
 }
 
 console.log(`${current} -> ${next}`);
