@@ -17,7 +17,7 @@ export const CARD =
 
 export const FIELD =
   "rounded-lg border border-white/10 bg-mist-900 px-3 py-2 text-sm text-mist-100 " +
-  "outline-none transition-colors focus:border-emerald-300/50";
+  "outline-none transition-colors focus:border-emerald-300/50 [color-scheme:dark]";
 
 export const BUTTON =
   "rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-mist-300 " +
