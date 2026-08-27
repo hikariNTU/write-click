@@ -1,6 +1,6 @@
 # BUG-05 — The options key capture stays armed after the user walks away
 
-- **Status:** ongoing
+- **Status:** done — fixed 2026-08-27 — one `AbortController` aborted by `render`, plus Escape/Tab/second-click/blur cancel
 - **Severity:** medium
 - **Area:** `src/options.ts`, `triggerCard()`
 - **Found:** 2026-08-27, repo review, by inspection

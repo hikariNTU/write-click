@@ -89,6 +89,14 @@ A button gesture that drifted swallows the `click`/`auxclick` that follows, so a
 link does not also activate it. A middle-button trigger calls `preventDefault` on pointerdown to
 stop Chrome's autoscroll. A key trigger calls `preventDefault` on the `keyup` that ended a gesture.
 
+For as long as a stroke is being drawn, `selectstart` and `dragstart` are cancelled: a held button
+drags, and with a left-button trigger the gesture otherwise paints a text selection across the page
+and can pick up a native link or image drag whose ghost then follows the cursor over the overlay.
+Cancelling those two events rather than the `pointerdown` is deliberate — `preventDefault` on the
+press would stop the drag as well, but it would take focus and caret placement with it, and a plain
+click belongs to the page. The listeners are added when the stroke starts and removed when it ends,
+cancels, or the trigger is detached.
+
 ### 3.5 Escape hatches
 
 Always available, on every platform: `Shift` + right-click forces the native menu (Chrome does this
@@ -750,6 +758,14 @@ the page says out loud rather than silently dropping.
 The trigger section shows what the current choice does to the native context menu, since that is the
 part that surprises people, and the wording follows §3.1 per platform.
 
+Two controls listen on the `window` rather than on themselves — the key capture, which has to read a
+keystroke wherever focus is, and the draw pad, whose Escape cancels. Both hang off one
+`AbortController` that `render` aborts before it rebuilds the page, because `render` replaces the
+DOM underneath them and a listener bound to a button that no longer exists still fires. The key
+capture additionally leaves on Escape or Tab, on a second click of its own button, and on blur; it
+never binds Escape, which is the recognizer's own cancel key and the key anyone who changed their
+mind will press.
+
 The backup section is two buttons and a textarea over §9.1, both paths through the same
 `restore(text)`. The textarea holds the same contents as the file, because moving a backup between
 two computers otherwise means moving a file, and it is the only way to read what an export contains
@@ -848,6 +864,8 @@ The fullscreen gap that stood here — a fullscreen element painting over the ov
 §7.5.
 
 Everything else outstanding lives in [`docs/backlog/`](backlog/README.md), one file per finding,
-from the full-repo review of 2026-08-27. **13 of the 17 are still open.** The four that contradicted
-this spec are fixed and their reasoning has been folded into it: BUG-01 into §6.1, BUG-02 into §7.4,
-BUG-03 into §6, BUG-09 into §5.
+from the full-repo review of 2026-08-27. **8 of the 17 are still open, and none of them is a bug**:
+what is left is features, store assets and interface work. Every fix that contradicted this spec has
+had its reasoning folded in: BUG-01 into §6.1, BUG-02 into §7.4, BUG-03 into §6, BUG-04 into §3.4,
+BUG-05 and BUG-06 into §10.1, BUG-09 into §5. BUG-07 and BUG-08 were internal and changed nothing
+this spec describes.

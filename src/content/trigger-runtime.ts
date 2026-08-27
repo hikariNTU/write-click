@@ -73,16 +73,40 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   let pointer: Point | undefined;
   /** A key trigger held down while `pointer` was still unknown. See `track`. */
   let waiting = false;
+  /**
+   * Live for exactly as long as a stroke is, and holds the listeners that stop
+   * the page reacting to the drag underneath it.
+   *
+   * A held button drags: with a left-button trigger, drawing paints a text
+   * selection across the page and can pick up a native link or image drag whose
+   * ghost then follows the cursor over the overlay. `preventDefault` on the
+   * `pointerdown` would stop both, but it would also take focus and caret
+   * placement with it, and those belong to the page — the trigger owns the
+   * gesture, not the click. Cancelling `selectstart` and `dragstart` costs
+   * nothing a plain click needs.
+   */
+  let drawing: AbortController | undefined;
 
   function start(point: Point): void {
     active = true;
     drifted = false;
     origin = point;
+    drawing?.abort();
+    drawing = new AbortController();
+    for (const type of ["selectstart", "dragstart"]) {
+      window.addEventListener(type, swallow, { capture: true, signal: drawing.signal });
+    }
     handlers.onStart(point);
+  }
+
+  function release(): void {
+    drawing?.abort();
+    drawing = undefined;
   }
 
   function finish(): void {
     waiting = false;
+    release();
     if (!active) return;
     active = false;
     handlers.onEnd(drifted);
@@ -90,6 +114,7 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
 
   function cancel(): void {
     waiting = false;
+    release();
     if (!active) return;
     active = false;
     drifted = false;
@@ -207,5 +232,6 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
     window.removeEventListener("keyup", onKeyUp, options);
     window.removeEventListener("blur", cancel);
     document.removeEventListener("visibilitychange", onVisibility);
+    release();
   };
 }

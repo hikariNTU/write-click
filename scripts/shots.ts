@@ -205,9 +205,9 @@ async function migrated(sw: Worker): Promise<void> {
  * Writes settings the way the options page does — top-level keys in their own
  * area — and waits for the content script to pick them up.
  *
- * `storage.onChanged` re-reads settings on every open tab without a reload, but
- * the grid is built once when the view is created, so anything that turns it on
- * or off only takes effect on the next load. Callers reload after this.
+ * `storage.onChanged` re-reads settings on every open tab without a reload, and
+ * since BUG-03 that includes the grid's own toggle and size. Callers still
+ * reload where a shot depends on more than settings.
  */
 async function settings(
   sw: Worker,

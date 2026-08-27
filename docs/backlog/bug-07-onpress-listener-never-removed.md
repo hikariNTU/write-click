@@ -1,6 +1,6 @@
 # BUG-07 — `onPress` is the one listener `apply()` never tears down
 
-- **Status:** ongoing
+- **Status:** done — fixed 2026-08-27 — `View.destroy()` aborts it
 - **Severity:** low — no user-visible symptom today
 - **Area:** `src/content/view.ts`
 - **Found:** 2026-08-27, repo review, by inspection

@@ -1,6 +1,6 @@
 # BUG-04 — A left-button trigger selects text and drags links
 
-- **Status:** ongoing
+- **Status:** done — fixed 2026-08-27 — `selectstart` and `dragstart` cancelled for the life of the stroke, not the `pointerdown`
 - **Severity:** medium — only bites users who choose button 0
 - **Area:** `src/content/trigger-runtime.ts`
 - **Found:** 2026-08-27, repo review, by inspection

@@ -1,6 +1,6 @@
 # BUG-06 — The draw pad's Escape handler eats the first key, whatever it is
 
-- **Status:** ongoing
+- **Status:** done — fixed 2026-08-27 — `once` dropped, torn down by BUG-05's controller
 - **Severity:** low
 - **Area:** `src/options.ts`, `drawPad()`
 - **Found:** 2026-08-27, repo review, by inspection

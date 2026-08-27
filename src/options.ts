@@ -36,6 +36,23 @@ let local: LocalSettings;
 const saved = document.querySelector<HTMLElement>("#saved");
 let savedTimer = 0;
 
+/**
+ * Window listeners owned by a control that is on the page right now: the key
+ * capture and the draw pad.
+ *
+ * Both used `{ once: true }`, which removes a listener after it fires and never
+ * if it does not. A key capture the user walked away from stayed armed and
+ * rebound the trigger to the next keystroke anywhere on the page; the pad's
+ * Escape handler spent its one shot on whatever key came first. Aborted at the
+ * top of `render`, which replaces the whole DOM under them.
+ */
+let transient = new AbortController();
+
+function endTransient(): void {
+  transient.abort();
+  transient = new AbortController();
+}
+
 function flashSaved(): void {
   if (!saved) return;
   saved.style.opacity = "1";
@@ -131,16 +148,38 @@ function triggerCard(): HTMLElement {
     // control column.
     const capture = el("button", FIELD + " min-w-32 text-left", dynamic(code));
     capture.type = "button";
+    let armed = false;
+    const disarm = (): void => {
+      armed = false;
+      endTransient();
+      capture.textContent = dynamic(code);
+    };
     capture.addEventListener("click", () => {
+      // A second click is the way out for anyone who armed it by accident.
+      if (armed) {
+        disarm();
+        return;
+      }
+      armed = true;
       capture.textContent = t("options_trigger_key_press");
       window.addEventListener(
         "keydown",
         (event) => {
           event.preventDefault();
+          // Escape leaves rather than binds. Binding it would take the
+          // recognizer's own cancel key with it, and it is what anyone who
+          // changed their mind will press; Tab is the same reflex.
+          if (event.key === "Escape" || event.key === "Tab") {
+            disarm();
+            return;
+          }
+          armed = false;
           void patchLocal({ trigger: { kind: "key", code: event.code } });
         },
-        { capture: true, once: true },
+        { capture: true, signal: transient.signal },
       );
+      // Clicking anything else on the page is the third way out.
+      capture.addEventListener("blur", disarm, { signal: transient.signal });
     });
     section.append(row(t("options_trigger_key"), capture, t("options_trigger_key_hint")));
   }
@@ -234,7 +273,7 @@ function drawPad(onDone: (stroke: string) => void, onCancel: () => void): HTMLEl
     (event) => {
       if (event.key === "Escape") onCancel();
     },
-    { once: true },
+    { signal: transient.signal },
   );
   return pad;
 }
@@ -700,6 +739,7 @@ function mount(id: string, content: HTMLElement): void {
 }
 
 function render(): void {
+  endTransient();
   for (const section of SECTIONS) mount(section.id, section.card());
   mount("nav", navList());
   paintNav();

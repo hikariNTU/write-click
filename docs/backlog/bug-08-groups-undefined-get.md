@@ -1,6 +1,6 @@
 # BUG-08 — `groupsOf` can call `tabGroups.get(undefined)`
 
-- **Status:** ongoing
+- **Status:** done — fixed 2026-08-27 — `undefined` filtered the way `summarize` filters it
 - **Severity:** low — swallowed, noise only
 - **Area:** `src/background/service_worker.ts`
 - **Found:** 2026-08-27, repo review, by inspection

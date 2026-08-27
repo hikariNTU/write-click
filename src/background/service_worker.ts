@@ -57,7 +57,16 @@ async function groupsOf(
   const api = chrome.tabGroups as typeof chrome.tabGroups | undefined;
   if (!api) return {};
 
-  const ids = [...new Set(tabs.map((tab) => tab.groupId).filter((id) => id !== NO_GROUP))];
+  // `groupId` is absent, not `-1`, on a browser with no tab groups at all, and
+  // `tabGroups.get(undefined)` is a rejected promise per gesture. Guarded the
+  // same way `summarize` guards it.
+  const ids = [
+    ...new Set(
+      tabs
+        .map((tab) => tab.groupId)
+        .filter((id): id is number => id !== undefined && id !== NO_GROUP),
+    ),
+  ];
   const groups: Record<number, TabGroupSummary> = {};
   await Promise.all(
     ids.map(async (id) => {

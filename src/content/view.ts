@@ -81,6 +81,12 @@ export interface View {
   move(point: Point): void;
   end(): void;
   cancel(): void;
+  /**
+   * Removes the window listeners the view owns. Every other listener here is
+   * torn down when its settings change; this one had no equivalent, which is
+   * harmless only for as long as exactly one view exists per document.
+   */
+  destroy(): void;
 }
 
 /**
@@ -221,7 +227,11 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     pick(tabId);
   };
 
-  window.addEventListener("mousedown", onPress, { capture: true });
+  const listeners = new AbortController();
+  window.addEventListener("mousedown", onPress, {
+    capture: true,
+    signal: listeners.signal,
+  });
 
   /**
    * The tab list is fetched the moment the trigger goes down. Both the grid and
@@ -313,5 +323,8 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       clear();
     },
     cancel: clear,
+    destroy() {
+      listeners.abort();
+    },
   };
 }
