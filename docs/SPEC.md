@@ -291,8 +291,10 @@ Two rules keep it from firing on a tab nobody chose:
 
 - The highlight is only ever set by a **move**. A panel that happens to open under a resting cursor
   therefore has nothing highlighted, and a release there falls through to normal stroke matching.
-- The **active tab's tile is never highlighted**, so releasing over it does nothing rather than
-  re-activating the tab already in front. It carries its own marking instead — a
+- **This window's active tab is never highlighted**, so releasing over it does nothing rather than
+  re-activating the tab already in front. Another window's active tab is not that tab: it is
+  somewhere the user is not, picking it is the point of listing that window at all, so it stays an
+  ordinary target and is only marked. It carries its own marking instead — a
   brighter neutral than a resting tile, plus a dot, since brightness alone carries it for most
   people and not for everyone. It is deliberately not a second accent colour: hover means "release
   here and you land on this tab", so the accent belongs to the tile that does something, and the

@@ -83,7 +83,8 @@ const SIZES: Record<GridSize, { tile: number; panel: number }> = {
 interface Tile {
   tabId: number;
   node: HTMLElement;
-  active: boolean;
+  /** The tab already in front of the user: this window's active tab, and only it. */
+  current: boolean;
 }
 
 /**
@@ -271,10 +272,10 @@ export class TabGrid {
   hoverAt(point: Point): void {
     if (!this.#visible) return;
     const found = this.#tileAt(point);
-    // The active tab's tile already carries these classes; taking them off it
+    // The current tab's tile already carries these classes; taking them off it
     // on the way out would strip its own styling. Leaving it unhoverable also
     // keeps a release over it from re-activating the tab already in front.
-    const next = found && !found.active ? found : undefined;
+    const next = found && !found.current ? found : undefined;
     if (next === this.#hovered) return;
     this.#hovered?.node.classList.remove(...HOVER);
     this.#hovered = next;
@@ -335,7 +336,7 @@ export class TabGrid {
     this.#tiles = tabs.map((tab) => ({
       tabId: tab.id,
       node: this.#tile(tab, groups[tab.groupId ?? -1]),
-      active: tab.active,
+      current: tab.active && tab.ownWindow,
     }));
     this.#hovered = undefined;
     this.#grid.replaceChildren(...this.#rows(tabs, groups));
@@ -411,12 +412,17 @@ export class TabGrid {
   }
 
   #tile(tab: TabSummary, group: TabGroupSummary | undefined): HTMLButtonElement {
+    // Only this window's active tab is the tab you are already on. Another
+    // window's active tab is somewhere you are not, and picking it is the
+    // whole point of listing that window — so it stays an ordinary target and
+    // is marked, not fenced off.
+    const current = tab.active && tab.ownWindow;
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className =
       "group flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left " +
       "transition-colors duration-100 " +
-      (tab.active
+      (current
         ? ACTIVE
         : "border-white/5 bg-white/[0.03] hover:border-emerald-300/40 hover:bg-emerald-400/10");
 
@@ -461,7 +467,7 @@ export class TabGrid {
       // Colour alone would carry this for most people and not for everyone.
       const dot = document.createElement("div");
       dot.className = "ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-mist-300";
-      dot.title = t("grid_current");
+      dot.title = t(current ? "grid_current" : "grid_current_other");
       tile.append(dot);
     }
 

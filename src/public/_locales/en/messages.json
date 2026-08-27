@@ -101,6 +101,9 @@
   "grid_current": {
     "message": "This tab"
   },
+  "grid_current_other": {
+    "message": "That window's current tab"
+  },
   "grid_hint": {
     "message": "Click a tile to switch"
   },

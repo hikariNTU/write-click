@@ -101,6 +101,9 @@
   "grid_current": {
     "message": "目前分頁"
   },
+  "grid_current_other": {
+    "message": "該視窗目前的分頁"
+  },
   "grid_hint": {
     "message": "點選項目即可切換分頁"
   },
