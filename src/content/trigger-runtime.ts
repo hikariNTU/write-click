@@ -117,7 +117,13 @@ export function wheelCounter(): { take(pixels: number): number; reset(): void } 
     take(pixels: number): number {
       if (pixels === 0) return 0;
       if (bank !== 0 && Math.sign(pixels) !== Math.sign(bank)) bank = 0;
-      bank += pixels;
+      // One event is worth at most one step. A mouse wheel reports a whole
+      // notch in a single delta and how large that delta is differs by device
+      // and platform — 100 on one, 120 on another — so an unclamped bank turns
+      // one notch of the same wheel into two steps or three. Clamping makes a
+      // notch a step everywhere, and leaves a trackpad's small deltas to
+      // accumulate as before.
+      bank += Math.sign(pixels) * Math.min(Math.abs(pixels), WHEEL_NOTCH);
       // `|| 0` only to turn the -0 that `Math.trunc` hands back for a delta
       // short of a notch into a plain zero.
       const steps = Math.trunc(bank / WHEEL_NOTCH) || 0;

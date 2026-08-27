@@ -122,7 +122,7 @@ already held. Right held plus left clicked runs `rocker.back`; left held plus ri
 - **While the tab grid is on screen, the grid owns the second button.** That press is how a tile is
   picked (§6.1), and the two are the same event: a rocker firing on a missed tile would make missing
   the tile do something. The content script asks the grid first and leaves the press untouched when
-  the answer is yes, native effects and all. This is the decision FEAT-02 was held for.
+  the answer is yes, native effects and all.
 - The press is swallowed along with the `click` it owes, and so is the context menu: a rocker is
   built out of a right button one way round or the other, and that menu arrives with the press on
   macOS and Linux and with the release on Windows (§3.2). It is suppressed for a second after a
@@ -134,25 +134,42 @@ already held. Right held plus left clicked runs `rocker.back`; left held plus ri
 
 ### 3.7 The wheel
 
-`wheel.enabled`, **off by default**. A wheel notch turned while the trigger is held runs `wheel.up`
-or `wheel.down`, shipping as `tab.prev` and `tab.next`.
+`wheel.enabled`, **off by default**. A notch turned while the trigger is held **moves the tab grid's
+highlight one tab**, and releasing the trigger switches to the tab it landed on (§6.3). Hold, wheel
+up twice, let go: two tabs back, with both of them named on screen on the way past.
+
+This is the whole feature. The wheel is not a second way to run a command, it is how the picker that
+is already on screen is driven without moving the mouse — which is also what settles the conflict
+FEAT-02 was deferred over. The panel does not fight the wheel for it; the panel is what the wheel is
+for.
 
 - Only while a gesture is in progress. With nothing held the wheel is the page's.
+- **A notch opens the grid early.** The hold delay (§6) exists so a quick flick never flashes the
+  panel, and a notch turned under a held trigger is not a flick. Notches turned before the tab list
+  arrives are banked and spent the moment the panel appears, so a fast hand lands where it asked.
+- The highlight is counted from wherever it already is, and from **this window's active tab** when it
+  is nowhere — so the first notch up is the tab before the one in front. It is **clamped at both
+  ends, never wrapped**: a wheel is turned in a hurry, and running off one end to reappear at the
+  other would switch to the far side of the session three notches after asking for the tab next
+  door.
+- Landing back on the current tab's tile clears the highlight rather than setting it, which is the
+  same rule the pointer follows (§6.3) and makes a notch up followed by a notch down mean no switch.
+- A landing scrolled past the panel's clip is scrolled into view. That clip is what `#tileAt`
+  rejects points outside of (§6.1); a highlight beyond it would be a tab the user cannot see and is
+  about to switch to.
+- **`wheel.up` and `wheel.down` run only when the tab grid is switched off**, shipping as `tab.prev`
+  and `tab.next`. With no picker on screen there is nothing to highlight, and a wheel that did
+  nothing at all would be a switched-on feature with no effect. A step taken that way voids the
+  stroke, the way a rocker does.
 - The wheel event is cancelled for as long as the trigger is held, whether or not the notch
   completes a step: the page must not scroll out from under a stroke. The listener is registered
   `passive: false`, since a wheel listener on `window` is passive by default in Chrome and a passive
   listener cannot cancel anything.
-- **Deltas are banked and spent in whole notches.** A mouse wheel reports one large delta per notch
-  and a trackpad reports dozens of small ones for the same flick; firing per event steps one tab on
-  the wheel and thirty on the trackpad. Reversing direction drops the bank rather than paying it
-  back.
-- **While the tab grid is on screen, the wheel scrolls the panel** and runs nothing — every notch,
-  wherever the pointer is. The panel is the only thing on screen that can scroll while a gesture is
-  held, and reaching a tile past its clip is what a wheel is for at that moment. The highlight is
-  moved by hand afterwards, for the same reason `hoverAt` exists at all (§6.1): the tile under the
-  cursor changed without the cursor moving, and a release would otherwise pick the tab that used to
-  be there.
-- A step voids the stroke, the same way a rocker does, and for the same reason.
+- **Deltas are banked, and one event is worth at most one step.** A mouse wheel reports a whole notch
+  in a single delta, but how large that delta is differs by device and platform — 100 on one, 120 on
+  another — so an unbounded bank turns one notch of the same wheel into three steps. Clamping each
+  event to a notch makes a notch a step everywhere, while a trackpad's dozens of small deltas for
+  one flick still accumulate. Reversing direction drops the bank rather than paying it back.
 
 ### 3.8 Both live in the top frame
 
@@ -363,9 +380,9 @@ ownWindow, groupId }` per tab, plus the groups those tabs belong to. Which windo
   of the window for nothing. It never takes pointer events.
 - **Releasing the trigger over a tile switches to it**, without a click. On by default; §6.3.
 - The panel is **docked to the top edge**, and holds one size at every page zoom level; §6.4.
-- **While it is on screen it owns the second mouse button and the wheel.** Both are how the grid is
-  worked — the button picks a tile, the wheel reaches one past the clip — so neither reaches the
-  rocker or the wheel command while the panel is up. §3.6, §3.7.
+- **The second mouse button and the wheel are how it is worked.** The button picks a tile, and a
+  wheel notch moves the highlight one tab; neither reaches a rocker or a wheel command while the
+  panel is up. §3.6, §3.7.
 - `Escape` closes the grid and cancels the gesture.
 
 ### 6.1 Picking a tile under mouse capture
@@ -432,8 +449,9 @@ Hover and release, and nothing is left over.
 
 Two rules keep it from firing on a tab nobody chose:
 
-- The highlight is only ever set by a **move**. A panel that happens to open under a resting cursor
-  therefore has nothing highlighted, and a release there falls through to normal stroke matching.
+- The highlight is only ever set by a **move**, or by a **wheel notch** (§3.7) — both deliberate. A
+  panel that happens to open under a resting cursor therefore has nothing highlighted, and a release
+  there falls through to normal stroke matching.
 - **This window's active tab is never highlighted**, so releasing over it does nothing rather than
   re-activating the tab already in front. Another window's active tab is not that tab: it is
   somewhere the user is not, picking it is the point of listing that window at all, so it stays an
@@ -747,7 +765,8 @@ interface SyncSettings {
     allWindows: boolean; // §6.5
   };
   rocker: { enabled: boolean; back: CommandId; forward: CommandId }; // §3.6
-  wheel: { enabled: boolean; up: CommandId; down: CommandId }; // §3.7
+  // up/down run only when the grid is off; with it on, the wheel steers the grid. §3.7
+  wheel: { enabled: boolean; up: CommandId; down: CommandId };
   trail: { show: boolean; color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }

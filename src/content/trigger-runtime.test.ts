@@ -41,9 +41,12 @@ test("a delta is read in the unit it was reported in", () => {
   assert.equal(wheelPixels({ deltaY: -1, deltaMode: 2 }), -400);
 });
 
-test("one notch of a mouse wheel is one step", () => {
-  const notches = wheelCounter();
-  assert.equal(notches.take(120), 3);
+test("one notch of a mouse wheel is one step, whatever the delta it reports", () => {
+  // Chrome reports 100 for a notch on one platform and 120 on another, and a
+  // high-resolution wheel reports more again. All of them are one notch.
+  assert.equal(wheelCounter().take(120), 1);
+  assert.equal(wheelCounter().take(100), 1);
+  assert.equal(wheelCounter().take(-240), -1);
 });
 
 test("a trackpad's dozen small deltas add up to the steps a wheel would give", () => {
@@ -60,9 +63,9 @@ test("a change of direction drops the bank rather than paying it back", () => {
   assert.equal(notches.take(-10), -1);
 });
 
-test("steps are signed, and the remainder is carried", () => {
+test("the remainder of a partial notch is carried", () => {
   const notches = wheelCounter();
-  assert.equal(notches.take(-50), -1);
+  assert.equal(notches.take(-30), 0);
   assert.equal(notches.take(-30), -1);
 });
 

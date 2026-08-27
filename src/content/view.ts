@@ -87,8 +87,10 @@ export interface View {
    */
   gridUp(): boolean;
   /**
-   * One wheel notch. True when the grid took it and scrolled instead, which is
-   * what it does for as long as it is on screen. docs/SPEC.md §3.7.
+   * One wheel notch. True when the grid took it — which it does whenever the
+   * grid is switched on at all, opening early if the panel is not up yet.
+   * False only when there is no grid to steer, and the caller runs a command
+   * instead. docs/SPEC.md §3.7.
    */
   wheelStep(step: number): boolean;
   /**
@@ -142,6 +144,8 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
   let tabs: readonly TabSummary[] = [];
   let tabsPending: Promise<TabList> = Promise.resolve(EMPTY_TABS);
   let gridTimer = 0;
+  /** Wheel notches turned before the panel was on screen to receive them. */
+  let pendingWheel = 0;
   /** The tab's page zoom, which the overlay cancels out so it holds its size. */
   let zoom = 1;
 
@@ -184,6 +188,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     points = [];
     stroke = "";
     holding = false;
+    pendingWheel = 0;
     clearTimeout(gridTimer);
     trail.clear();
     hud.hide();
@@ -272,6 +277,32 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
   };
 
   /**
+   * Shows the panel as soon as the tab list is in, whatever asked for it.
+   *
+   * Two things ask: the hold timer below, and a wheel notch — which skips the
+   * timer outright. The delay exists so a quick flick never flashes the panel,
+   * and a notch turned under a held trigger is not a flick: it is somebody
+   * asking for the picker by name.
+   */
+  const openGrid = (): void => {
+    void tabsPending.then((list) => {
+      if (!holding || list.tabs.length === 0) {
+        console.debug("[write-click] grid skipped", { holding, count: list.tabs.length });
+        return;
+      }
+      if (grid.visible) return;
+      grid.show(list.tabs, list.groups);
+      settle();
+      // Notches turned while the list was still in flight. Spent now, so a
+      // wheel that beat the panel to the screen still lands where it asked.
+      if (pendingWheel !== 0) {
+        grid.stepHighlight(pendingWheel);
+        pendingWheel = 0;
+      }
+    });
+  };
+
+  /**
    * The panel appears a beat after the trigger goes down, so a quick flick
    * gesture never flashes it. Movement does not dismiss it — picking a tile
    * means moving onto the tile, so anything that treats movement as "the user
@@ -281,16 +312,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     // Read here rather than at construction, so switching the grid on reaches
     // tabs that are already open.
     if (!sync.grid.enabled) return;
-    gridTimer = window.setTimeout(() => {
-      void tabsPending.then((list) => {
-        if (holding && list.tabs.length > 0) {
-          grid.show(list.tabs, list.groups);
-          settle();
-          return;
-        }
-        console.debug("[write-click] grid skipped", { holding, count: list.tabs.length });
-      });
-    }, sync.grid.holdMs);
+    gridTimer = window.setTimeout(openGrid, sync.grid.holdMs);
   };
 
   const refresh = (): void => {
@@ -335,13 +357,19 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     cancel: clear,
     gridUp: () => grid.visible,
     wheelStep(step) {
-      if (!grid.visible) return false;
-      grid.scrollStep(step);
-      // The tile under the cursor has changed without the cursor moving, and
-      // `:hover` is frozen by the capture, so the highlight has to be moved by
-      // hand — or a release would pick the tab that used to be under it.
-      const at = points.at(-1);
-      if (at) grid.hoverAt(at);
+      // With no grid there is nothing to steer, and the notch goes back to the
+      // caller to run as a command.
+      if (!sync.grid.enabled) return false;
+      if (grid.visible) {
+        grid.stepHighlight(step);
+        return true;
+      }
+      // The notch arrived first. Bring the panel forward rather than dropping
+      // it: the hold timer is there to keep a flick from flashing the grid, and
+      // a wheel under a held trigger is not a flick.
+      pendingWheel += step;
+      clearTimeout(gridTimer);
+      openGrid();
       return true;
     },
     destroy() {

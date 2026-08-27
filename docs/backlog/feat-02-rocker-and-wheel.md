@@ -39,10 +39,12 @@ the same wheel, and either answer being a design decision rather than a patch. T
 - **The grid takes the second button while it is up.** That press is how a tile is picked, and the
   two are the same event. A rocker that fired when the press missed a tile would make missing the
   tile do something, which is worse than not having the rocker.
-- **The grid takes the wheel while it is up**, wherever the pointer is. The panel is the only thing
-  on screen that can scroll during a gesture, and reaching a tile past its clip is what a wheel is
-  for at that moment. The highlight is moved by hand after a scroll, or a release would pick the tab
-  that used to be under the cursor.
+- **The wheel drives the grid rather than competing with it.** A notch moves the highlight one tab
+  and the release switches to it, so the wheel is how the picker already on screen is worked without
+  moving the mouse. The first shape of this scrolled the panel instead, which was the wrong answer
+  twice over: the panel usually fits without overflow, so the wheel looked dead, and stepping tabs
+  by command duplicated a picker that was already open. The wheel's two commands survive only for
+  the case where the grid is switched off.
 
 ## What it took
 

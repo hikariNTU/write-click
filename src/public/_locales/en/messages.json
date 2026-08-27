@@ -322,7 +322,7 @@
     "message": "Two shortcuts that need no stroke. Both are off until switched on here: each one changes what an ordinary click or an ordinary scroll does."
   },
   "options_chords_grid_note": {
-    "message": "While the tab grid is on screen it takes both: the second button picks a tile, and the wheel scrolls the panel. Neither runs a command until the grid is gone."
+    "message": "While the tab grid is on screen it takes both: the second mouse button picks a tile, and the wheel moves the highlight from tile to tile. The two wheel commands above run only when the tab grid is switched off."
   },
   "options_chords_rocker": {
     "message": "Rocker"
@@ -343,13 +343,13 @@
     "message": "Wheel"
   },
   "options_chords_wheel_down": {
-    "message": "Wheel down"
+    "message": "Wheel down, without the tab grid"
   },
   "options_chords_wheel_hint": {
-    "message": "Turn the wheel while the trigger is held. The page underneath stays where it is."
+    "message": "Turn the wheel while the trigger is held: the tab grid moves its highlight one tab per notch, and releasing the trigger switches to it. The page underneath stays where it is."
   },
   "options_chords_wheel_up": {
-    "message": "Wheel up"
+    "message": "Wheel up, without the tab grid"
   },
   "options_gestures_clear": {
     "message": "Clear"

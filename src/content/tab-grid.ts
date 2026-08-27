@@ -30,6 +30,13 @@ const CHEATSHEET_SHARE = 0.28;
  */
 const PANEL_RADIUS = 24;
 
+/**
+ * The panel's own padding, as `p-4` sets it. Named here because scrolling a
+ * tile into view has to clear it in numbers: a tile flush against the padding
+ * edge reads as clipped even though every pixel of it is on screen.
+ */
+const PANEL_PADDING = 16;
+
 const PANEL_CHROME =
   "overflow-y-auto rounded-3xl border border-white/10 bg-mist-950/70 text-mist-50 " +
   "backdrop-blur-[6px] shadow-[0_32px_80px_-24px_rgba(0,0,0,0.8)] " +
@@ -283,34 +290,71 @@ export class TabGrid {
   }
 
   /**
-   * One wheel notch over the open grid scrolls the tile panel.
+   * Moves the highlight by whole tiles, in strip order. One wheel notch, one
+   * tab. docs/SPEC.md §3.7.
    *
-   * The panel is the only thing on screen that can scroll while the trigger is
-   * held — the page underneath is held still for the gesture — so a wheel notch
-   * belongs to it for as long as it is up (docs/SPEC.md §3.7). Half a panel per
-   * notch: the tiles are large, and a line's worth would not clear a row.
+   * Counted from wherever the highlight already is, and from **this window's
+   * active tab** when it is nowhere — so the first notch upwards lands on the
+   * tab before the one in front, which is what a wheel through a tab strip is
+   * expected to do.
    *
-   * `scrollTop` is in the panel's own layout pixels, which the overlay scale
-   * does not touch, so the same notch moves the same number of tiles at every
-   * overlay size.
+   * Clamped at both ends rather than wrapped. A wheel is turned in a hurry and
+   * the panel is a picture of the strip: running off the end and reappearing at
+   * the other would be a switch to the far side of the session, three notches
+   * after asking for the tab next door.
    */
-  scrollStep(step: number): void {
-    if (!this.#visible) return;
-    this.#panel.scrollTop += (step * this.#panel.clientHeight) / 2;
+  stepHighlight(steps: number): void {
+    if (!this.#visible || this.#tiles.length === 0 || steps === 0) return;
+    const from = this.#hovered
+      ? this.#tiles.indexOf(this.#hovered)
+      : this.#tiles.findIndex((tile) => tile.current);
+    const start = from === -1 ? 0 : from;
+    const landing = Math.min(this.#tiles.length - 1, Math.max(0, start + steps));
+    const tile = this.#tiles[landing];
+    this.#highlight(tile);
+    if (tile) this.#scrollIntoPanel(tile.node);
   }
 
   /** Moves the highlight, since `:hover` is frozen by the same capture. */
   hoverAt(point: Point): void {
     if (!this.#visible) return;
-    const found = this.#tileAt(point);
-    // The current tab's tile already carries these classes; taking them off it
-    // on the way out would strip its own styling. Leaving it unhoverable also
-    // keeps a release over it from re-activating the tab already in front.
-    const next = found && !found.current ? found : undefined;
+    this.#highlight(this.#tileAt(point));
+  }
+
+  /**
+   * The one place the highlight moves, whether a pointer or a wheel moved it.
+   *
+   * The current tab's tile already carries these classes; taking them off it on
+   * the way out would strip its own styling. Leaving it unhighlightable also
+   * keeps a release over it from re-activating the tab already in front — and a
+   * wheel that lands back on it says "no switch", which is the right answer for
+   * a notch up followed by a notch down.
+   */
+  #highlight(tile: Tile | undefined): void {
+    const next = tile && !tile.current ? tile : undefined;
     if (next === this.#hovered) return;
     this.#hovered?.node.classList.remove(...HOVER);
     this.#hovered = next;
     next?.node.classList.add(...HOVER);
+  }
+
+  /**
+   * Brings a tile inside the panel's own clip, which is the same clip `#tileAt`
+   * rejects points outside of (§6.1) — a highlight scrolled past it would be a
+   * tab the user cannot see and is about to switch to.
+   *
+   * The rects come back multiplied by the overlay scale, since the panel is
+   * scaled by a transform, while `scrollTop` is in the panel's own layout
+   * pixels. Hence the division: without it the panel over-scrolls by exactly
+   * the user's size preference.
+   */
+  #scrollIntoPanel(node: HTMLElement): void {
+    const panel = this.#panel.getBoundingClientRect();
+    const tile = node.getBoundingClientRect();
+    const above = panel.top + PANEL_PADDING * this.#scale - tile.top;
+    const below = tile.bottom - (panel.bottom - PANEL_PADDING * this.#scale);
+    if (above > 0) this.#panel.scrollTop -= above / this.#scale;
+    else if (below > 0) this.#panel.scrollTop += below / this.#scale;
   }
 
   /**

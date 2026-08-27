@@ -100,11 +100,14 @@ held plus right clicked goes forward, and either slot takes any command in the c
 is swallowed, and so is the context menu that would follow it. Keep holding and click again to walk
 further back.
 
-**Wheel** — turn the wheel while the trigger is held to step through tabs. The page underneath stays
-where it is.
+**Wheel** — turn the wheel while the trigger is held and the tab grid moves its highlight one tab per
+notch. Hold, wheel up twice, let go: two tabs back, with both of them named on screen on the way
+past. The page underneath stays where it is, and a notch brings the panel up early rather than
+waiting out the hold delay. With the tab grid switched off there is nothing to highlight, so the
+wheel steps through tabs directly instead — those two commands are the ones in settings.
 
-While the tab grid is on screen it takes both: the second button is how a tile is picked, and the
-wheel is how you reach a tile past the panel's edge. Neither runs a command until the grid is gone.
+The grid takes the second mouse button too: that press is how a tile is picked, so no rocker fires
+while the panel is up.
 
 ## Settings
 
