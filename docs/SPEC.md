@@ -515,6 +515,43 @@ Applied three different ways, because the three layers are different kinds of th
   coordinates because it has to follow the cursor, so scaling the canvas would move the line off the
   pointer.
 
+## 7.5 The top layer
+
+**The overlay host is a manual popover, and that is what keeps it above a fullscreen element.**
+
+`element.requestFullscreen()` promotes its element into the browser's **top layer**, which paints
+above every stacking context the document has. `z-index: 2147483647` does not compete with it: the
+number is only meaningful among siblings in the document, and the fullscreen element is no longer
+being ordered against them. Before this the overlay was still in the DOM and the canvas was still
+being drawn — underneath a surface the page has no say over. What the user saw was a gesture that
+did nothing on a fullscreen video.
+
+- `popover="manual"` is the way into the top layer without side effects. `<dialog>.showModal()`
+  reaches it too, and takes focus and makes the rest of the page inert, which would break the page
+  under a passive overlay. A manual popover does neither, and never light-dismisses.
+- **The top layer is a stack in insertion order.** An element that enters it later paints above one
+  already there — so a page going fullscreen after the overlay was shown covers it again. Hiding the
+  popover and showing it straight back re-inserts it at the top, which is why `promote()` runs on
+  every `fullscreenchange` rather than once at startup. The same call covers leaving fullscreen,
+  where the element that was promoted may have been an ancestor of the host.
+- The UA stylesheet gives a popover a border, padding, a background, `width: fit-content` and
+  `overflow: auto`. Every one of them is overridden in the host's inline style, which beats the UA
+  sheet, rather than being left to chance.
+- `pointer-events: none` on the host still holds in the top layer, so the page underneath keeps
+  every click that is not on a tile — and a tile in the top layer takes its press ahead of the
+  fullscreen element, which is what makes picking a tab work there at all.
+- **Feature-detected.** Chrome has had the popover API since 114; without `showPopover` the overlay
+  is an ordinary fixed element, exactly as it was, and a fullscreen element covers it. Nothing else
+  in the extension depends on it, so this raises no floor.
+- Only fullscreen is handled. A page that shows its own popover or modal dialog after the overlay
+  went up is above it in the same stack, by the same rule. Nobody has asked for that and re-promoting
+  on every top-layer change is not something the platform reports.
+
+Measured, both ways: with the popover the grid, readout and trail all draw over a fullscreen element
+and a tile click switches tabs there; with it stashed out, the same gesture on the same page paints
+nothing. Pointer events reached the content script identically in both runs — the events were never
+the problem, the paint order was.
+
 ## 8. Frames
 
 The content script runs in all frames at `document_start`. **Every frame runs its own trigger and
@@ -774,26 +811,5 @@ phase's behaviour verified in a loaded unpacked build.
 
 ## 12. Known gaps
 
-**A fullscreen element hides the overlay, and swallows the gesture with it.** Reported against a
-fullscreen `<video>`, and it is not specific to video or to the current tab.
-
-`element.requestFullscreen()` promotes that element into the browser's top layer. The top layer sits
-above everything the document paints, `z-index` included — 2147483647 on our host does not compete,
-because the host is not in the top layer at all. The overlay is still in the DOM and the canvas is
-still being drawn; it is simply painted underneath a surface the page has no say over. Chrome also
-routes pointer events at the fullscreen element rather than the document in some paths, so the
-trail can be missing _and_ the stroke never start.
-
-What to check when this is picked up:
-
-- `document.fullscreenElement` is the handle. It is non-null exactly when the top layer is in play,
-  and `fullscreenchange` fires on both entry and exit.
-- Moving the overlay host under `document.fullscreenElement` puts it inside the promoted subtree,
-  which is the one place it paints above. It has to move back on exit, and the element may be
-  anything, including one that clips or transforms its children.
-- A `<dialog>` opened with `showModal()` and any `popover` reach the top layer the same way, so a
-  fix aimed only at fullscreen leaves those two behind.
-- Whether the listeners need to move too, or whether capture-phase listeners on `document` still
-  see the events, has to be measured in a loaded build rather than assumed.
-
-Nothing here is fixed yet. Filed so the cause is not re-derived from scratch.
+Nothing outstanding. The fullscreen gap that stood here — a fullscreen element painting over the
+overlay — is fixed in §7.5.

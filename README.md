@@ -5,7 +5,8 @@ tab or page command. While the trigger is held, a grid of open tabs appears — 
 groups and all: release the trigger over a tile to jump straight to that tab.
 
 Everything the extension draws lives in a closed shadow root above the page, so the host page's CSS
-and scripts cannot see it, restyle it, or reach into it.
+and scripts cannot see it, restyle it, or reach into it. It sits in the browser's top layer, so
+gestures work over a fullscreen video too.
 
 ## Status
 
