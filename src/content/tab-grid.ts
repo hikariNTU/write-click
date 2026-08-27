@@ -60,8 +60,19 @@ function bar(edge: "top" | "bottom"): HTMLDivElement {
  * Applied by hand rather than by `:hover`. While a mouse button is held, Blink
  * captures events to the node that received the press, and hover stops
  * following the cursor with it.
+ *
+ * Loud on purpose. A tinted border and a 10% wash read fine on the display this
+ * was designed on and were reported as no highlight at all on another — and the
+ * one thing this mark has to do is say "let go here and you land on this tab",
+ * across every panel, every backdrop blur and every screen. The outer ring is a
+ * shadow rather than a border so the tile keeps its metrics and nothing on the
+ * row shifts as the highlight moves.
  */
-const HOVER = ["border-emerald-300/40", "bg-emerald-400/10"] as const;
+const HOVER = [
+  "border-emerald-300",
+  "bg-emerald-400/25",
+  "shadow-[0_0_0_2px_rgba(110,231,183,0.55)]",
+] as const;
 
 /**
  * The tile for the tab already in front.

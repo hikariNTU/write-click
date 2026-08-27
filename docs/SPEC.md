@@ -454,6 +454,13 @@ This is what makes §6.2 stop mattering. The menu only follows a pick because th
 mid-gesture, with the button still down; a release that _is_ the pick has no button left to open one.
 Hover and release, and nothing is left over.
 
+**The highlight is drawn loud** — a solid accent border, a quarter-strength wash and a two-pixel
+ring outside it — because it is the only thing on screen saying "let go here and you land on this
+tab". The first build tinted the border at 40% and washed the tile at 10%, which reads on the
+display it was designed on and was reported as no highlight at all on another. The ring is a shadow
+rather than a border so the tile keeps its metrics and the row does not shift as the highlight
+moves.
+
 Two rules keep it from firing on a tab nobody chose:
 
 - The highlight is only ever set by a **move**, or by a **wheel notch** (§3.7) — both deliberate, and
