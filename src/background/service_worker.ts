@@ -50,12 +50,19 @@ async function listTabs(sender: chrome.tabs.Tab, allWindows: boolean): Promise<c
 async function groupsOf(
   tabs: readonly chrome.tabs.Tab[],
 ): Promise<Record<number, TabGroupSummary>> {
+  // Absent whenever the running extension does not carry the `tabGroups`
+  // permission — most often a build loaded from before it was added. The tab
+  // list is the feature and the group colours are decoration on top of it, so
+  // losing them must not take the list down with them.
+  const api = chrome.tabGroups as typeof chrome.tabGroups | undefined;
+  if (!api) return {};
+
   const ids = [...new Set(tabs.map((tab) => tab.groupId).filter((id) => id !== NO_GROUP))];
   const groups: Record<number, TabGroupSummary> = {};
   await Promise.all(
     ids.map(async (id) => {
       // A group can be dissolved between the tab query and this one.
-      const group = await chrome.tabGroups.get(id).catch(() => undefined);
+      const group = await api.get(id).catch(() => undefined);
       if (!group) return;
       groups[id] = {
         id,
