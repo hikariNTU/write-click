@@ -467,9 +467,6 @@
   "options_subtitle": {
     "message": "分頁與頁面的滑鼠手勢。"
   },
-  "options_trigger_advanced": {
-    "message": "進階"
-  },
   "options_trigger_button": {
     "message": "按鍵"
   },
@@ -483,7 +480,7 @@
     "message": "滑鼠右鍵"
   },
   "options_trigger_custom": {
-    "message": "觸發鍵已於進階設定中指定：$TRIGGER$",
+    "message": "已於下方設定：$TRIGGER$",
     "placeholders": {
       "trigger": {
         "content": "$1"
@@ -516,6 +513,9 @@
   },
   "options_trigger_modifier_hint": {
     "message": "與滑鼠按鍵同時按住。"
+  },
+  "options_trigger_other": {
+    "message": "其他按鍵"
   },
   "options_trigger_pad_idle": {
     "message": "按住 $TRIGGER$ 並於此區域繪製。",
@@ -578,6 +578,9 @@
   },
   "options_trigger_try": {
     "message": "立即試用"
+  },
+  "options_trigger_welcome": {
+    "message": "開啟歡迎頁面"
   },
   "options_warn_menu_modified": {
     "message": "單獨按下右鍵仍會開啟系統右鍵選單，僅有搭配輔助鍵的組合會被接管。"

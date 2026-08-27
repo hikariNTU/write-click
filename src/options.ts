@@ -276,32 +276,42 @@ function triggerCard(): HTMLElement {
   }
   // The glyph sits beside the choice rather than under it: it is a picture of
   // whichever row is selected, and reading the two together is the point.
-  choice.append(tiles, mouseGlyph(local.trigger, "h-20 w-28"));
+  choice.append(tiles, mouseGlyph(local.trigger, "h-28 w-28"));
   section.append(choice);
 
-  section.append(
-    el("p", "mt-5 text-[11px] font-medium text-mist-400", t("options_trigger_try")),
-    triggerPad(local.trigger, sync.gestures, transient.signal),
+  // The welcome page is opened once, on install, and is the only place the
+  // trigger is taught from cold — so there has to be a way back to it.
+  const tryHead = el("div", "mt-5 flex items-center justify-between gap-4");
+  tryHead.append(
+    el("p", "text-[11px] font-medium text-mist-400", t("options_trigger_try")),
+    iconButton(UI_ICONS.openInNew, t("options_trigger_welcome"), () => {
+      void chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
+    }),
   );
+  section.append(tryHead, triggerPad(local.trigger, sync.gestures, transient.signal));
 
-  const advanced = el("details", "mt-5 border-t border-white/5 pt-3");
+  // Not "Advanced": a middle button or a keyboard key is nobody's expert
+  // setting, it is the third answer to the question above, and a fold that
+  // calls it advanced tells the reader they are doing something unusual. It is
+  // folded because it is rarer, and named for what is inside it.
+  const other = el("details", "mt-5 border-t border-white/5 pt-3");
   // Open for a trigger neither preset can name, because the controls that set
   // it are the only place it is visible.
-  advanced.open = chosen === undefined;
-  advanced.append(
+  other.open = chosen === undefined;
+  other.append(
     el(
       "summary",
       "cursor-pointer text-[11px] font-medium text-mist-400 transition-colors hover:text-mist-200",
-      t("options_trigger_advanced"),
+      t("options_trigger_other"),
     ),
     ...triggerControls(),
   );
 
   const warning = chosen === undefined ? triggerWarning(local.trigger) : undefined;
   if (warning) {
-    advanced.append(el("p", "mt-2 text-[11px] leading-relaxed text-mist-500", warning));
+    other.append(el("p", "mt-2 text-[11px] leading-relaxed text-mist-500", warning));
   }
-  section.append(advanced);
+  section.append(other);
   return section;
 }
 

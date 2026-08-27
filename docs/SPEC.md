@@ -811,13 +811,19 @@ The trigger section asks **one question rather than three**. Hold / Button / Mod
 controls for a single decision — keep the native context menu or not — so the card leads with that
 decision as two rows, `Right button` and `Alt + right button`, and the sentence that used to be an
 amber warning becomes the description of the row the reader picked. Both rows write a whole
-`Trigger`; nothing about them is a separate setting. The raw three move behind a closed `Advanced`
-fold, which opens by itself for a trigger neither row can name — a middle button, a key — because
-the controls that set it are then the only place it is visible. The per-platform wording still
-follows §3.1, and the modifier is named as the keyboard prints it: Option and Command on macOS.
+`Trigger`; nothing about them is a separate setting. The raw three move behind a closed fold named
+**Another button or key** — not "Advanced": a middle button or a keyboard key is nobody's expert
+setting, it is the third answer to the same question, and a fold that calls it advanced tells the
+reader they are doing something unusual. It is folded because it is rarer, and named for what is
+inside it. It opens by itself for a trigger neither row can name, because the controls that set it
+are then the only place it is visible. The per-platform wording still follows §3.1, and the modifier
+is named as the keyboard prints it: Option and Command on macOS.
 
-Beside the rows is the **trigger glyph**: a mouse with the chosen button lit and the stroke it
-draws, looping. It is artwork, so it lives in `src/icons/` and never in `src/icons/material/`, which
+Beside the rows is the **trigger glyph**: the key held above, a mouse with the chosen button lit,
+and the stroke both of them draw, looping. The keycap carries the modifier under the name the
+keyboard prints on it, or the key code for a key trigger, and goes down on the same beat as the
+button, because the two are held together and that is the fact three separate dropdowns hid. A
+trigger with no key has no cap rather than an empty one. It is artwork, so it lives in `src/icons/` and never in `src/icons/material/`, which
 `scripts/sync-icons.mjs` empties on every build; the clipPath id inside it is rewritten per instance,
 since two glyphs on one page would otherwise both be clipped by whichever shape came first. The loop
 stops under `prefers-reduced-motion`, keeping the lit button and the finished stroke.
@@ -830,7 +836,9 @@ failure this card exists for, and on a real page that failure is silent. A hit s
 arrows and names the command it matched, or says the stroke is unassigned. `attachTrigger` listens
 on the window, so strokes begun elsewhere on the page are dropped by geometry; its context-menu
 suppression is window-wide while the pad is mounted, which is the same behaviour the trigger has on
-a page and the point of trying it.
+a page and the point of trying it. Beside the pad's heading is a link back to the welcome page
+(§10.3), which otherwise opens exactly once in the life of the extension and is the only place the
+trigger is taught from cold.
 
 Two controls listen on the `window` rather than on themselves — the key capture, which has to read a
 keystroke wherever focus is, and the draw pad, whose Escape cancels. Both hang off one
@@ -926,6 +934,9 @@ the popup prints it as a line, and neither is read before the first gesture fail
 because it opens itself. Three beats: what the trigger is **on this machine**, computed rather than
 described; the glyph from §10.1; and the same try-it pad, so the first successful gesture happens
 here instead of on a page where failure is silent.
+
+It is reachable afterwards from the Trigger card in settings, which is the section it teaches;
+without that link a page that opens itself once can never be read twice.
 
 Nothing in the manifest points at it, so Vite would not emit it — it is named in
 `build.rollupOptions.input`. `options.html` and `popup.html` need no such entry, because

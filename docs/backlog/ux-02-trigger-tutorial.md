@@ -25,7 +25,9 @@ context menu?** Lead the Trigger card with that, as a two-way choice:
 
 The raw Hold / Button / Modifier controls move behind the Advanced fold
 (`ux-01-advanced-fold.md`) — shipped here as a closed `<details>` in the Trigger card alone, since
-UX-01's own knobs need a storage change this did not. The fold opens by itself for a trigger neither
+UX-01's own knobs need a storage change this did not. It is **not** labelled "Advanced": a middle
+button or a keyboard key is nobody's expert setting, so the summary reads "Another button or key",
+which is what is inside it. UX-01's own folds are advanced and can say so. The fold opens by itself for a trigger neither
 row can name, because the controls that set it are then the only place it is visible. The warning paragraph stops being a warning and becomes the description
 of the option the user picked.
 
@@ -47,7 +49,9 @@ Mostly existing code. This _is_ the tutorial; everything else is decoration on i
 
 **2. An animated mouse glyph** beside the trigger rows. Inline SVG mouse, the selected button lit,
 a looping CSS animation: press, drag an `L`, release, with the path revealed through
-`stroke-dasharray`. Redrawn when the trigger changes. Static under `prefers-reduced-motion`. It ties
+`stroke-dasharray`. The key is drawn too — a cap above the mouse carrying the modifier's name, or
+the key code for a key trigger, pressed on the same beat as the button, since being held together
+is the whole of what the three dropdowns failed to say. Redrawn when the trigger changes. Static under `prefers-reduced-motion`. It ties
 three abstract dropdowns to one picture, which is what a first-time reader needs.
 
 **3. The welcome page** — see `feat-01-onboarding.md`, which reuses both of the above rather than

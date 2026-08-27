@@ -76,7 +76,7 @@ let glyphSeq = 0;
  * needs. A key trigger lights no button — there is none to light — and keeps
  * the stroke.
  */
-export function mouseGlyph(trigger: Trigger, className = "h-24 w-32"): HTMLElement {
+export function mouseGlyph(trigger: Trigger, className = "h-32 w-32"): HTMLElement {
   const id = `wc-mouse-body-${++glyphSeq}`;
   const holder = el("div", `shrink-0 text-emerald-300 [&>svg]:h-full [&>svg]:w-full ${className}`);
   holder.innerHTML = mouseArt.replaceAll("wc-mouse-body", id);
@@ -87,6 +87,28 @@ export function mouseGlyph(trigger: Trigger, className = "h-24 w-32"): HTMLEleme
     svg.querySelector(`[data-button="${trigger.button}"]`)?.classList.add("wc-press");
   }
   svg.querySelector("[data-trail]")?.classList.add("wc-trail");
+
+  // The key is held down with the button, so it is drawn being held: a cap
+  // above the mouse that goes down on the same beat. A trigger with no key —
+  // a bare button — has no cap rather than an empty one.
+  const cap = svg.querySelector("[data-key]");
+  const label: Localized | undefined =
+    trigger.kind === "key"
+      ? dynamic(trigger.code)
+      : trigger.modifier && modifierName(trigger.modifier);
+  if (!cap) return holder;
+  if (!label) {
+    cap.remove();
+    return holder;
+  }
+  const text = cap.querySelector("[data-key-label]");
+  if (text) {
+    text.textContent = label;
+    // 52 units of cap is about six characters at the design size, and a key
+    // code — ArrowLeft, ControlLeft — runs longer than any modifier name.
+    if (label.length > 6) text.setAttribute("font-size", label.length > 9 ? "7" : "9");
+  }
+  cap.classList.add("wc-key");
   return holder;
 }
 

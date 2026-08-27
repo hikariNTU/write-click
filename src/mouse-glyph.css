@@ -42,6 +42,30 @@
   }
 }
 
+/* The keycap goes down with the button and comes back up with it: the whole
+   point of drawing it is that the two are held together. */
+@keyframes wc-key {
+  0%,
+  6% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  14%,
+  88% {
+    opacity: 1;
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+}
+
+.wc-key {
+  opacity: 0.35;
+  animation: wc-key 3s ease-in-out infinite;
+}
+
 .wc-trail {
   stroke-dasharray: 84;
   animation: wc-trail 3s ease-in-out infinite;
@@ -54,9 +78,13 @@
 /* Reduced motion keeps the picture and drops the loop: the lit button and the
    finished stroke are the whole message, and the movement is decoration. */
 @media (prefers-reduced-motion: reduce) {
+  .wc-key,
   .wc-trail,
   .wc-press {
     animation: none;
+  }
+  .wc-key {
+    opacity: 1;
   }
   .wc-trail {
     stroke-dashoffset: 0;

@@ -467,9 +467,6 @@
   "options_subtitle": {
     "message": "Mouse gestures for tabs and pages."
   },
-  "options_trigger_advanced": {
-    "message": "Advanced"
-  },
   "options_trigger_button": {
     "message": "Button"
   },
@@ -483,7 +480,7 @@
     "message": "Right button"
   },
   "options_trigger_custom": {
-    "message": "The trigger is set under Advanced: $TRIGGER$",
+    "message": "Set below: $TRIGGER$",
     "placeholders": {
       "trigger": {
         "content": "$1"
@@ -516,6 +513,9 @@
   },
   "options_trigger_modifier_hint": {
     "message": "Held together with the button."
+  },
+  "options_trigger_other": {
+    "message": "Another button or key"
   },
   "options_trigger_pad_idle": {
     "message": "Hold $TRIGGER$ and draw here.",
@@ -578,6 +578,9 @@
   },
   "options_trigger_try": {
     "message": "Try it"
+  },
+  "options_trigger_welcome": {
+    "message": "Open the welcome page"
   },
   "options_warn_menu_modified": {
     "message": "A plain right-click keeps the native context menu. Only the modified combination is taken over."

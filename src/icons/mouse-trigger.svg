@@ -1,26 +1,50 @@
 <!--
-  The trigger, drawn rather than described: a mouse with one button lit and the
-  stroke it draws. Artwork, so it lives here and not in icons/material/, which
-  scripts/sync-icons.mjs empties on every run.
+  The trigger, drawn rather than described: the key held above, the mouse with
+  one button lit, and the stroke both of them draw. Artwork, so it lives here
+  and not in icons/material/, which scripts/sync-icons.mjs empties on every run.
 
-  Two contracts with mouse-glyph.ts: every button carries data-button with its
-  event index, and the clipPath id is rewritten per instance so two glyphs on
-  one page cannot collide.
+  Three contracts with mouse-glyph.ts: every button carries data-button with its
+  event index, the keycap is data-key with its label in data-key-label, and the
+  clipPath id is rewritten per instance so two glyphs on one page cannot
+  collide.
 -->
-<svg viewBox="0 0 132 96" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
+<svg viewBox="0 0 132 128" xmlns="http://www.w3.org/2000/svg" fill="none" aria-hidden="true">
   <defs>
     <clipPath id="wc-mouse-body">
-      <rect x="6" y="6" width="52" height="84" rx="26" />
+      <rect x="6" y="38" width="52" height="84" rx="26" />
     </clipPath>
   </defs>
+  <g data-key="true" opacity="0">
+    <rect x="6" y="0" width="52" height="26" rx="8" stroke="currentColor" stroke-width="3" />
+    <text
+      data-key-label="true"
+      x="32"
+      y="13.5"
+      fill="currentColor"
+      font-family="system-ui, -apple-system, sans-serif"
+      font-size="13"
+      font-weight="600"
+      text-anchor="middle"
+      dominant-baseline="central"
+    ></text>
+  </g>
   <g clip-path="url(#wc-mouse-body)">
-    <rect data-button="0" x="6" y="6" width="26" height="34" fill="currentColor" opacity="0" />
-    <rect data-button="2" x="32" y="6" width="26" height="34" fill="currentColor" opacity="0" />
-    <rect data-button="1" x="27" y="12" width="10" height="22" rx="5" fill="currentColor" opacity="0" />
+    <rect data-button="0" x="6" y="38" width="26" height="34" fill="currentColor" opacity="0" />
+    <rect data-button="2" x="32" y="38" width="26" height="34" fill="currentColor" opacity="0" />
+    <rect
+      data-button="1"
+      x="27"
+      y="44"
+      width="10"
+      height="22"
+      rx="5"
+      fill="currentColor"
+      opacity="0"
+    />
   </g>
   <rect
     x="6"
-    y="6"
+    y="38"
     width="52"
     height="84"
     rx="26"
@@ -28,10 +52,10 @@
     stroke-width="3"
     opacity="0.45"
   />
-  <path d="M32 6V40M6 40H58" stroke="currentColor" stroke-width="3" opacity="0.45" />
+  <path d="M32 38V72M6 72H58" stroke="currentColor" stroke-width="3" opacity="0.45" />
   <path
     data-trail="true"
-    d="M78 22V60H120"
+    d="M78 54V92H120"
     stroke="currentColor"
     stroke-width="4"
     stroke-linecap="round"
