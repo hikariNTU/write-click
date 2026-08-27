@@ -467,6 +467,9 @@
   "options_subtitle": {
     "message": "Mouse gestures for tabs and pages."
   },
+  "options_trigger_advanced": {
+    "message": "Advanced"
+  },
   "options_trigger_button": {
     "message": "Button"
   },
@@ -478,6 +481,14 @@
   },
   "options_trigger_button_right": {
     "message": "Right button"
+  },
+  "options_trigger_custom": {
+    "message": "The trigger is set under Advanced: $TRIGGER$",
+    "placeholders": {
+      "trigger": {
+        "content": "$1"
+      }
+    }
   },
   "options_trigger_desc": {
     "message": "The button or key held while drawing. Stored for this device only, because context menu timing differs by platform."
@@ -506,8 +517,67 @@
   "options_trigger_modifier_hint": {
     "message": "Held together with the button."
   },
+  "options_trigger_pad_idle": {
+    "message": "Hold $TRIGGER$ and draw here.",
+    "placeholders": {
+      "trigger": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_pad_matched": {
+    "message": "Matched $COMMAND$.",
+    "placeholders": {
+      "command": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_pad_none": {
+    "message": "No stroke was drawn."
+  },
+  "options_trigger_pad_unassigned": {
+    "message": "That stroke is unassigned."
+  },
+  "options_trigger_pad_wrong": {
+    "message": "$INPUT$ is not the trigger. Hold $TRIGGER$.",
+    "placeholders": {
+      "input": {
+        "content": "$1"
+      },
+      "trigger": {
+        "content": "$2"
+      }
+    }
+  },
+  "options_trigger_preset_modified": {
+    "message": "$MODIFIER$ + right button",
+    "placeholders": {
+      "modifier": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_preset_modified_desc": {
+    "message": "The context menu is left untouched."
+  },
+  "options_trigger_preset_plain": {
+    "message": "Right button"
+  },
+  "options_trigger_preset_plain_desc": {
+    "message": "The context menu is suppressed. Shift+right-click still opens it."
+  },
+  "options_trigger_preset_plain_desc_mouseup": {
+    "message": "The context menu is suppressed once a stroke has been drawn. A plain right-click still opens it."
+  },
+  "options_trigger_preset_question": {
+    "message": "Keep the native context menu?"
+  },
   "options_trigger_title": {
     "message": "Trigger"
+  },
+  "options_trigger_try": {
+    "message": "Try it"
   },
   "options_warn_menu_modified": {
     "message": "A plain right-click keeps the native context menu. Only the modified combination is taken over."
@@ -560,5 +630,40 @@
         "content": "$2"
       }
     }
+  },
+  "welcome_next_body": {
+    "message": "Common commands are assigned already. The rest, and the trigger itself, are in settings."
+  },
+  "welcome_next_title": {
+    "message": "From here"
+  },
+  "welcome_open_settings": {
+    "message": "Open settings"
+  },
+  "welcome_subtitle": {
+    "message": "What to hold on this device, and a place to try it."
+  },
+  "welcome_title": {
+    "message": "Write Click is installed"
+  },
+  "welcome_trigger_body": {
+    "message": "Hold $TRIGGER$, then move the mouse to draw a stroke. Release to run the command it matched.",
+    "placeholders": {
+      "trigger": {
+        "content": "$1"
+      }
+    }
+  },
+  "welcome_trigger_device": {
+    "message": "Stored for this device only, because context menu timing differs by platform."
+  },
+  "welcome_trigger_title": {
+    "message": "The trigger on this device"
+  },
+  "welcome_try_body": {
+    "message": "This pad responds to the trigger only, so a stroke drawn with the wrong button is named rather than silent."
+  },
+  "welcome_try_title": {
+    "message": "Draw the first one here"
   }
 }

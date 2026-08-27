@@ -25,11 +25,11 @@ import {
   unbind,
 } from "./shared/settings";
 import type { LocalSettings, SyncSettings } from "./shared/settings";
-import { detectPlatform, menuFiresOnMouseDown } from "./shared/trigger";
+import { menuFiresOnMouseDown } from "./shared/trigger";
+import { modifierName, mouseGlyph, triggerName, triggerPad } from "./trigger-ui";
 import type { Modifier, Trigger } from "./shared/trigger";
 import { BUTTON, FIELD, card, el, icon, iconButton, paintIcon, row, select, toggle } from "./ui";
 
-const platform = detectPlatform();
 let sync: SyncSettings;
 let local: LocalSettings;
 
@@ -84,15 +84,18 @@ const BUTTONS = [
 
 const MODIFIERS = [
   { value: "", label: t("modifier_none") },
-  { value: "Alt", label: t(platform === "macos" ? "modifier_option" : "modifier_alt") },
-  { value: "Shift", label: t("modifier_shift") },
-  { value: "Control", label: t("modifier_control") },
-  { value: "Meta", label: t(platform === "macos" ? "modifier_command" : "modifier_meta") },
+  { value: "Alt", label: modifierName("Alt") },
+  { value: "Shift", label: modifierName("Shift") },
+  { value: "Control", label: modifierName("Control") },
+  { value: "Meta", label: modifierName("Meta") },
 ] as const;
 
 /**
  * Explains what the current trigger does to the native context menu, which is
  * the one thing about this setting that surprises people. See docs/SPEC.md §3.
+ * Only shown for a trigger the two-way choice cannot name: the presets carry
+ * the same fact as their own description, where it is a statement of what was
+ * picked rather than a warning about it.
  */
 function triggerWarning(trigger: Trigger): Localized | undefined {
   if (trigger.kind === "key") return undefined;
@@ -102,9 +105,61 @@ function triggerWarning(trigger: Trigger): Localized | undefined {
   return t("options_warn_menu_suppressed");
 }
 
-function triggerCard(): HTMLElement {
-  const section = card(t("options_trigger_title"), t("options_trigger_desc"), UI_ICONS.trigger);
+/**
+ * The decision behind the three raw controls is one question — keep the native
+ * context menu or not — and these are its two answers. Everything else is a
+ * trigger someone went looking for, and lives under Advanced.
+ *
+ * `Alt` is the modifier both presets use: it is the platform default already,
+ * and `Control` is right-click emulation on macOS.
+ */
+type Preset = "plain" | "modified";
 
+const PRESET_MODIFIER: Modifier = "Alt";
+
+function presetOf(trigger: Trigger): Preset | undefined {
+  if (trigger.kind !== "button" || trigger.button !== 2) return undefined;
+  if (!trigger.modifier) return "plain";
+  return trigger.modifier === PRESET_MODIFIER ? "modified" : undefined;
+}
+
+function presetTile(
+  preset: Preset,
+  chosen: Preset | undefined,
+  title: Localized,
+  description: Localized,
+): HTMLElement {
+  const on = preset === chosen;
+  const tile = el(
+    "label",
+    "flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors " +
+      (on
+        ? "border-emerald-300/40 bg-emerald-400/10"
+        : "border-white/10 bg-white/[0.02] hover:border-white/20"),
+  );
+
+  const radio = el("input", "mt-0.5 h-3.5 w-3.5 shrink-0 accent-emerald-400");
+  radio.type = "radio";
+  radio.name = "trigger-preset";
+  radio.checked = on;
+  radio.addEventListener("change", () => {
+    const trigger: Trigger = { kind: "button", button: 2 };
+    if (preset === "modified") trigger.modifier = PRESET_MODIFIER;
+    void patchLocal({ trigger });
+  });
+
+  const text = el("div", "min-w-0");
+  text.append(
+    el("div", "text-[13px] font-medium text-mist-200", title),
+    el("div", "mt-0.5 text-[11px] leading-relaxed text-mist-400", description),
+  );
+  tile.append(radio, text);
+  return tile;
+}
+
+/** The raw Hold / Button / Modifier controls, which live behind the fold. */
+function triggerControls(): HTMLElement[] {
+  const rows: HTMLElement[] = [];
   const kind = select(
     [
       { value: "button", label: t("options_trigger_kind_button") },
@@ -118,11 +173,11 @@ function triggerCard(): HTMLElement {
       });
     },
   );
-  section.append(row(t("options_trigger_hold"), kind));
+  rows.push(row(t("options_trigger_hold"), kind));
 
   if (local.trigger.kind === "button") {
     const trigger = local.trigger;
-    section.append(
+    rows.push(
       row(
         t("options_trigger_button"),
         select(BUTTONS, String(trigger.button) as "0" | "1" | "2", (value) => {
@@ -141,59 +196,112 @@ function triggerCard(): HTMLElement {
         t("options_trigger_modifier_hint"),
       ),
     );
-  } else {
-    const code = local.trigger.code;
-    // The button carries the key code alone. Any label around it would have to
-    // grow with the translation, and this row already sits beside a fixed-width
-    // control column.
-    const capture = el("button", FIELD + " min-w-32 text-left", dynamic(code));
-    capture.type = "button";
-    let armed = false;
-    const disarm = (): void => {
-      armed = false;
-      endTransient();
-      capture.textContent = dynamic(code);
-    };
-    capture.addEventListener("click", () => {
-      // A second click is the way out for anyone who armed it by accident.
-      if (armed) {
-        disarm();
-        return;
-      }
-      armed = true;
-      capture.textContent = t("options_trigger_key_press");
-      window.addEventListener(
-        "keydown",
-        (event) => {
-          event.preventDefault();
-          // Escape leaves rather than binds. Binding it would take the
-          // recognizer's own cancel key with it, and it is what anyone who
-          // changed their mind will press; Tab is the same reflex.
-          if (event.key === "Escape" || event.key === "Tab") {
-            disarm();
-            return;
-          }
-          armed = false;
-          void patchLocal({ trigger: { kind: "key", code: event.code } });
-        },
-        { capture: true, signal: transient.signal },
-      );
-      // Clicking anything else on the page is the third way out.
-      capture.addEventListener("blur", disarm, { signal: transient.signal });
-    });
-    section.append(row(t("options_trigger_key"), capture, t("options_trigger_key_hint")));
+    return rows;
   }
 
-  const warning = triggerWarning(local.trigger);
-  if (warning) {
-    section.append(
+  const code = local.trigger.code;
+  // The button carries the key code alone. Any label around it would have to
+  // grow with the translation, and this row already sits beside a fixed-width
+  // control column.
+  const capture = el("button", FIELD + " min-w-32 text-left", dynamic(code));
+  capture.type = "button";
+  let armed = false;
+  const disarm = (): void => {
+    armed = false;
+    endTransient();
+    capture.textContent = dynamic(code);
+  };
+  capture.addEventListener("click", () => {
+    // A second click is the way out for anyone who armed it by accident.
+    if (armed) {
+      disarm();
+      return;
+    }
+    armed = true;
+    capture.textContent = t("options_trigger_key_press");
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        event.preventDefault();
+        // Escape leaves rather than binds. Binding it would take the
+        // recognizer's own cancel key with it, and it is what anyone who
+        // changed their mind will press; Tab is the same reflex.
+        if (event.key === "Escape" || event.key === "Tab") {
+          disarm();
+          return;
+        }
+        armed = false;
+        void patchLocal({ trigger: { kind: "key", code: event.code } });
+      },
+      { capture: true, signal: transient.signal },
+    );
+    // Clicking anything else on the page is the third way out.
+    capture.addEventListener("blur", disarm, { signal: transient.signal });
+  });
+  rows.push(row(t("options_trigger_key"), capture, t("options_trigger_key_hint")));
+  return rows;
+}
+
+function triggerCard(): HTMLElement {
+  const section = card(t("options_trigger_title"), t("options_trigger_desc"), UI_ICONS.trigger);
+  const chosen = presetOf(local.trigger);
+
+  const choice = el("div", "flex items-center gap-5");
+  const tiles = el("div", "min-w-0 flex-1 space-y-2");
+  tiles.append(
+    el("p", "text-[11px] font-medium text-mist-400", t("options_trigger_preset_question")),
+    presetTile(
+      "plain",
+      chosen,
+      t("options_trigger_preset_plain"),
+      menuFiresOnMouseDown()
+        ? t("options_trigger_preset_plain_desc")
+        : t("options_trigger_preset_plain_desc_mouseup"),
+    ),
+    presetTile(
+      "modified",
+      chosen,
+      t("options_trigger_preset_modified", modifierName(PRESET_MODIFIER)),
+      t("options_trigger_preset_modified_desc"),
+    ),
+  );
+  if (chosen === undefined) {
+    tiles.append(
       el(
         "p",
-        "mt-4 rounded-lg border border-amber-300/20 bg-amber-400/10 px-3 py-2 text-[11px] leading-relaxed text-amber-200",
-        warning,
+        "text-[11px] leading-relaxed text-mist-500",
+        t("options_trigger_custom", triggerName(local.trigger)),
       ),
     );
   }
+  // The glyph sits beside the choice rather than under it: it is a picture of
+  // whichever row is selected, and reading the two together is the point.
+  choice.append(tiles, mouseGlyph(local.trigger, "h-20 w-28"));
+  section.append(choice);
+
+  section.append(
+    el("p", "mt-5 text-[11px] font-medium text-mist-400", t("options_trigger_try")),
+    triggerPad(local.trigger, sync.gestures, transient.signal),
+  );
+
+  const advanced = el("details", "mt-5 border-t border-white/5 pt-3");
+  // Open for a trigger neither preset can name, because the controls that set
+  // it are the only place it is visible.
+  advanced.open = chosen === undefined;
+  advanced.append(
+    el(
+      "summary",
+      "cursor-pointer text-[11px] font-medium text-mist-400 transition-colors hover:text-mist-200",
+      t("options_trigger_advanced"),
+    ),
+    ...triggerControls(),
+  );
+
+  const warning = chosen === undefined ? triggerWarning(local.trigger) : undefined;
+  if (warning) {
+    advanced.append(el("p", "mt-2 text-[11px] leading-relaxed text-mist-500", warning));
+  }
+  section.append(advanced);
   return section;
 }
 

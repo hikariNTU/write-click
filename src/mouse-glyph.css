@@ -1,0 +1,68 @@
+/*
+ * The trigger glyph's one loop: the button goes down, the stroke is drawn, both
+ * let go. Written by hand because Tailwind has no dasharray utilities and the
+ * two animations have to stay in phase — the stroke starts after the press and
+ * ends before the release.
+ *
+ * 84 is the length of the L path in mouse-trigger.svg, 38 down plus 42 across,
+ * rounded up so no dash edge is left visible at rest.
+ */
+@keyframes wc-trail {
+  0%,
+  12% {
+    stroke-dashoffset: 84;
+    opacity: 0;
+  }
+  20% {
+    stroke-dashoffset: 84;
+    opacity: 1;
+  }
+  60%,
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes wc-press {
+  0%,
+  6% {
+    opacity: 0;
+  }
+  14%,
+  88% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.wc-trail {
+  stroke-dasharray: 84;
+  animation: wc-trail 3s ease-in-out infinite;
+}
+
+.wc-press {
+  animation: wc-press 3s ease-in-out infinite;
+}
+
+/* Reduced motion keeps the picture and drops the loop: the lit button and the
+   finished stroke are the whole message, and the movement is decoration. */
+@media (prefers-reduced-motion: reduce) {
+  .wc-trail,
+  .wc-press {
+    animation: none;
+  }
+  .wc-trail {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  .wc-press {
+    opacity: 0.85;
+  }
+}

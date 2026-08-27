@@ -26,5 +26,10 @@ export default defineConfig(({ command }) => ({
     // folder Chrome has loaded makes the extension vanish mid-session.
     outDir: fileURLToPath(new URL(command === "serve" ? "./dist-dev" : "./dist", import.meta.url)),
     emptyOutDir: command !== "serve",
+    // The welcome page is opened by the service worker rather than named in
+    // the manifest, so nothing in the graph reaches it and crx would not emit
+    // it. options.html and popup.html need no entry here: the manifest points
+    // at them.
+    rollupOptions: { input: { welcome: "welcome.html" } },
   },
 }));

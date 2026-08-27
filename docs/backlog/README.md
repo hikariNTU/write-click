@@ -1,10 +1,12 @@
 # Backlog — open findings
 
-> **STATUS: ONGOING — 7 of 17 open.** The list came out of a full-repo review on **2026-08-27**,
+> **STATUS: ONGOING — 5 of 17 open.** The list came out of a full-repo review on **2026-08-27**,
 > against `8da32d3`. **Every bug is done.** BUG-01, BUG-02, BUG-03 and BUG-09 went first, then
 > BUG-04 through BUG-08; each was verified against a real loaded `dist/` where it had a visible
 > symptom — 7 of 7 checks on the first pass, 6 of 6 on the second, BUG-04 with a negative control.
-> What is left is the nine features, store items and interface items: no bug among them.
+> What is left is features, store items and interface items: no bug among them. FEAT-04 filled in
+> the command catalogue; FEAT-01 and UX-02 replaced the trigger's three dropdowns with one question,
+> a glyph and a try-it pad, and put a welcome page behind them.
 >
 > Read this index before starting new work on write-click.
 >
@@ -32,8 +34,8 @@ cold — the evidence, the cause, and the shape of the fix.
 
 | ID                                      | Status   | Finding                                                                                     |
 | --------------------------------------- | -------- | ------------------------------------------------------------------------------------------- |
-| [FEAT-01](feat-01-onboarding.md)        | ongoing  | Nothing tells a new user what their trigger is. Highest-value gap on this page.             |
-| [FEAT-02](feat-02-rocker-and-wheel.md)  | ongoing  | Rocker and wheel gestures — a declared v1 non-goal, worth revisiting now v1 has shipped.    |
+| [FEAT-01](feat-01-onboarding.md)        | **done** | Nothing tells a new user what their trigger is. Highest-value gap on this page.             |
+| [FEAT-02](feat-02-rocker-and-wheel.md)  | deferred | Rocker and wheel gestures. Both fight the tab grid; see the file before restarting it.      |
 | [FEAT-03](feat-03-context-targets.md)   | ongoing  | No command knows what is under the cursor: links, images, selections.                       |
 | [FEAT-04](feat-04-command-catalogue.md) | **done** | Catalogue gaps — clipboard, Chrome pages, tab-group writes, moving tabs, print, `commands`. |
 
@@ -46,15 +48,26 @@ cold — the evidence, the cause, and the shape of the fix.
 
 ## Interface
 
-| ID                                 | Status  | Finding                                                                                              |
-| ---------------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| [UX-01](ux-01-advanced-fold.md)    | ongoing | An Advanced fold for the dozen knobs that are constants today.                                       |
-| [UX-02](ux-02-trigger-tutorial.md) | ongoing | Teach the trigger instead of describing it: reframe the question, add a try-it pad and an animation. |
+| ID                                 | Status   | Finding                                                                                              |
+| ---------------------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| [UX-01](ux-01-advanced-fold.md)    | ongoing  | An Advanced fold for the dozen knobs that are constants today.                                       |
+| [UX-02](ux-02-trigger-tutorial.md) | **done** | Teach the trigger instead of describing it: reframe the question, add a try-it pad and an animation. |
 
 ## Suggested order
 
-~~1. **BUG-01, BUG-02** — silent wrong behaviour, both confirmed, both small.~~ done
+~~1. **BUG-01, BUG-02** — silent wrong behaviour, both confirmed, both small.~~ done.
+
 ~~2. **BUG-03** — a setting that looks dead.~~ done.
+
 ~~3. **BUG-04 – BUG-08** — the rest of the bugs.~~ done.
-~~4. **FEAT-04** — the catalogue gaps, each one small.~~ done. 5. **FEAT-01 + UX-02** — the trigger confusion, which is the one thing costing first-run users. 6. **STORE-01 + STORE-02** — needed before the listing can be finished; the promo tiles are still
-outstanding in `docs/store-assets.md` too. 7. Everything else, in whatever order the appetite runs.
+
+~~4. **FEAT-04** — the catalogue gaps, each one small.~~ done.
+
+~~5. **FEAT-01 + UX-02** — the trigger confusion, which is the one thing costing first-run users.~~
+done.
+
+6. **STORE-01 + STORE-02** — needed before the listing can be finished; the promo tiles are still
+   outstanding in `docs/store-assets.md` too.
+
+7. Everything else, in whatever order the appetite runs. FEAT-02 needs a design decision in SPEC §6
+   before it can start at all.

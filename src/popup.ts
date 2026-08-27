@@ -1,21 +1,8 @@
 import { loadSettings, saveLocal, saveSync } from "./shared/settings";
-import type { Modifier, Trigger } from "./shared/trigger";
 import { applyStaticMessages, dynamic, setLocale, t } from "./shared/i18n";
 import { BRAND_ICON, UI_ICONS } from "./shared/icons";
+import { describeTrigger } from "./trigger-ui";
 import { el, paintIcon, row, toggle } from "./ui";
-
-const BUTTON_KEYS = [
-  "trigger_button_left",
-  "trigger_button_middle",
-  "trigger_button_right",
-] as const;
-
-function describeTrigger(trigger: Trigger): string {
-  if (trigger.kind === "key") return t("trigger_hold_key", trigger.code);
-  const button = t(BUTTON_KEYS[trigger.button]);
-  const modifier: Modifier | undefined = trigger.modifier;
-  return modifier ? t("trigger_with_modifier", modifier, button) : button;
-}
 
 async function originOfActiveTab(): Promise<string | undefined> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });

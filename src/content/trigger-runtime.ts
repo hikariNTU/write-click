@@ -36,6 +36,17 @@ function modifiersMatch(event: ModifierState, required: Modifier | undefined): b
   return true;
 }
 
+/**
+ * True when a press is the trigger itself. Exported for the options page, which
+ * has to tell a near miss — the right button with no modifier, when the trigger
+ * wants one — from the real thing, and must decide that against the same rule
+ * the page uses rather than a second copy of it.
+ */
+export function triggerMatches(trigger: Trigger, event: MouseEvent): boolean {
+  if (trigger.kind !== "button") return false;
+  return event.button === trigger.button && modifiersMatch(event, trigger.modifier);
+}
+
 /** The `buttons` bitmask for a `button` index: 0 -> 1, 1 -> 4, 2 -> 2. */
 const BUTTON_MASK: Record<0 | 1 | 2, number> = { 0: 1, 1: 4, 2: 2 };
 
@@ -152,11 +163,10 @@ export function attachTrigger(trigger: Trigger, handlers: TriggerHandlers): () =
   }
 
   function onPointerDown(event: PointerEvent): void {
-    if (trigger.kind !== "button" || event.pointerType !== "mouse") return;
-    if (event.button !== trigger.button) return;
-    if (!modifiersMatch(event, trigger.modifier)) return;
+    if (event.pointerType !== "mouse") return;
+    if (!triggerMatches(trigger, event)) return;
     // The middle button would otherwise start Chrome's autoscroll.
-    if (trigger.button === 1) event.preventDefault();
+    if (event.button === 1) event.preventDefault();
     start({ x: event.clientX, y: event.clientY });
   }
 

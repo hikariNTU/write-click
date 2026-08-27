@@ -807,8 +807,30 @@ what you draw in the pad is by construction what will match on a page. A stroke 
 command, so drawing one that is already taken moves it and leaves the previous owner unbound, which
 the page says out loud rather than silently dropping.
 
-The trigger section shows what the current choice does to the native context menu, since that is the
-part that surprises people, and the wording follows §3.1 per platform.
+The trigger section asks **one question rather than three**. Hold / Button / Modifier are three
+controls for a single decision — keep the native context menu or not — so the card leads with that
+decision as two rows, `Right button` and `Alt + right button`, and the sentence that used to be an
+amber warning becomes the description of the row the reader picked. Both rows write a whole
+`Trigger`; nothing about them is a separate setting. The raw three move behind a closed `Advanced`
+fold, which opens by itself for a trigger neither row can name — a middle button, a key — because
+the controls that set it are then the only place it is visible. The per-platform wording still
+follows §3.1, and the modifier is named as the keyboard prints it: Option and Command on macOS.
+
+Beside the rows is the **trigger glyph**: a mouse with the chosen button lit and the stroke it
+draws, looping. It is artwork, so it lives in `src/icons/` and never in `src/icons/material/`, which
+`scripts/sync-icons.mjs` empties on every build; the clipPath id inside it is rewritten per instance,
+since two glyphs on one page would otherwise both be clipped by whichever shape came first. The loop
+stops under `prefers-reduced-motion`, keeping the lit button and the finished stroke.
+
+Under them is a **try-it pad** wired through the real `attachTrigger`. The gestures pad records a
+stroke from any pointer press, which teaches nothing about the trigger; this one answers the
+configured trigger and nothing else, and names a near miss — "right button is not the trigger. Hold
+Option + right button." — because a first gesture drawn with the wrong thing held is exactly the
+failure this card exists for, and on a real page that failure is silent. A hit shows the stroke as
+arrows and names the command it matched, or says the stroke is unassigned. `attachTrigger` listens
+on the window, so strokes begun elsewhere on the page are dropped by geometry; its context-menu
+suppression is window-wide while the pad is mounted, which is the same behaviour the trigger has on
+a page and the point of trying it.
 
 Two controls listen on the `window` rather than on themselves — the key capture, which has to read a
 keystroke wherever focus is, and the draw pad, whose Escape cancels. Both hang off one
@@ -890,6 +912,25 @@ Every entry point calls `setLocale()` right after loading settings, and content 
 `storage.onChanged`, which also rebuilds the cheatsheet so a language change reaches open tabs
 without a reload.
 
+## 10.3 Welcome page
+
+`src/welcome.html` + `src/welcome.ts`, opened by the service worker from `chrome.runtime.onInstalled`
+on `reason === "install"` and never on `"update"`: an update that opens a tab under someone who did
+not ask for one is what extensions are disliked for, and there is nothing on the page an existing
+user has not seen.
+
+It exists because the trigger is per device and platform-dependent, and on macOS and Linux the
+default pairs the right button with a modifier (§3.1). A new user's first instinct is a bare
+right-drag, which does nothing and says nothing. The options page explains that in a paragraph and
+the popup prints it as a line, and neither is read before the first gesture fails; this page is read,
+because it opens itself. Three beats: what the trigger is **on this machine**, computed rather than
+described; the glyph from §10.1; and the same try-it pad, so the first successful gesture happens
+here instead of on a page where failure is silent.
+
+Nothing in the manifest points at it, so Vite would not emit it — it is named in
+`build.rollupOptions.input`. `options.html` and `popup.html` need no such entry, because
+`options_ui` and `default_popup` reach them.
+
 ## 11. Phases
 
 1. **Scaffold** — done. Vite + crxjs + Tailwind + oxc, shadow-root overlay, trigger defaults.
@@ -916,9 +957,10 @@ The fullscreen gap that stood here — a fullscreen element painting over the ov
 §7.5.
 
 Everything else outstanding lives in [`docs/backlog/`](backlog/README.md), one file per finding,
-from the full-repo review of 2026-08-27. **7 of the 17 are still open, and none of them is a bug**:
+from the full-repo review of 2026-08-27. **5 of the 17 are still open, and none of them is a bug**:
 what is left is features, store assets and interface work. FEAT-04 folded the catalogue additions
-into §5 and the manifest shortcut with them. Every fix that contradicted this spec has
+into §5 and the manifest shortcut with them; FEAT-01 and UX-02 added §10.3 and rewrote the trigger
+section of §10.1. Every fix that contradicted this spec has
 had its reasoning folded in: BUG-01 into §6.1, BUG-02 into §7.4, BUG-03 into §6, BUG-04 into §3.4,
 BUG-05 and BUG-06 into §10.1, BUG-09 into §5. BUG-07 and BUG-08 were internal and changed nothing
 this spec describes.

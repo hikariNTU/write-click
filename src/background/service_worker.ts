@@ -156,6 +156,12 @@ chrome.windows.onRemoved.addListener((windowId) => {
 chrome.runtime.onInstalled.addListener((details) => {
   console.info("[write-click] installed", details.reason);
   void migrate();
+  // A first install only. An update opening a tab under someone who did not
+  // ask for one is the behaviour every extension is disliked for, and there is
+  // nothing on this page an existing user has not already seen.
+  if (details.reason === "install") {
+    void chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
+  }
 });
 
 /**

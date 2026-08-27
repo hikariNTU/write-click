@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Write Click</title>
+    <link rel="stylesheet" href="./welcome.css" />
+  </head>
+  <body class="min-h-screen bg-mist-950 text-mist-100 antialiased">
+    <main class="mx-auto w-full max-w-2xl px-6 py-16">
+      <header class="mb-10 flex items-center gap-4">
+        <span id="brand" class="block h-14 w-14 shrink-0 [&>svg]:h-full [&>svg]:w-full"></span>
+        <div class="min-w-0">
+          <h1 class="text-2xl font-semibold tracking-tight" data-i18n="welcome_title">
+            Write Click is installed
+          </h1>
+          <p class="mt-1 text-sm text-mist-400" data-i18n="welcome_subtitle">
+            What to hold on this device, and a place to try it.
+          </p>
+        </div>
+      </header>
+
+      <!-- Filled in by welcome.ts: the trigger sentence is computed from this
+           device's platform, and the pad is the real trigger runtime. -->
+      <section id="trigger" class="mb-6"></section>
+      <section id="try" class="mb-6"></section>
+      <section id="next"></section>
+    </main>
+    <script type="module" src="./welcome.ts"></script>
+  </body>
+</html>

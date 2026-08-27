@@ -467,6 +467,9 @@
   "options_subtitle": {
     "message": "分頁與頁面的滑鼠手勢。"
   },
+  "options_trigger_advanced": {
+    "message": "進階"
+  },
   "options_trigger_button": {
     "message": "按鍵"
   },
@@ -478,6 +481,14 @@
   },
   "options_trigger_button_right": {
     "message": "滑鼠右鍵"
+  },
+  "options_trigger_custom": {
+    "message": "觸發鍵已於進階設定中指定：$TRIGGER$",
+    "placeholders": {
+      "trigger": {
+        "content": "$1"
+      }
+    }
   },
   "options_trigger_desc": {
     "message": "繪製手勢時按住的按鍵。各平台的右鍵選單觸發時機不同，因此僅儲存於本裝置。"
@@ -506,8 +517,67 @@
   "options_trigger_modifier_hint": {
     "message": "與滑鼠按鍵同時按住。"
   },
+  "options_trigger_pad_idle": {
+    "message": "按住 $TRIGGER$ 並於此區域繪製。",
+    "placeholders": {
+      "trigger": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_pad_matched": {
+    "message": "已對應「$COMMAND$」。",
+    "placeholders": {
+      "command": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_pad_none": {
+    "message": "未繪製任何筆畫。"
+  },
+  "options_trigger_pad_unassigned": {
+    "message": "此筆畫為未指派。"
+  },
+  "options_trigger_pad_wrong": {
+    "message": "$INPUT$ 並非觸發鍵，請按住 $TRIGGER$。",
+    "placeholders": {
+      "input": {
+        "content": "$1"
+      },
+      "trigger": {
+        "content": "$2"
+      }
+    }
+  },
+  "options_trigger_preset_modified": {
+    "message": "$MODIFIER$ + 滑鼠右鍵",
+    "placeholders": {
+      "modifier": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_trigger_preset_modified_desc": {
+    "message": "不影響右鍵選單。"
+  },
+  "options_trigger_preset_plain": {
+    "message": "滑鼠右鍵"
+  },
+  "options_trigger_preset_plain_desc": {
+    "message": "右鍵選單將被攔截。Shift 加右鍵仍可開啟選單。"
+  },
+  "options_trigger_preset_plain_desc_mouseup": {
+    "message": "完成筆畫後才會攔截右鍵選單。單獨按下右鍵仍會開啟選單。"
+  },
+  "options_trigger_preset_question": {
+    "message": "是否保留系統右鍵選單？"
+  },
   "options_trigger_title": {
     "message": "觸發鍵"
+  },
+  "options_trigger_try": {
+    "message": "立即試用"
   },
   "options_warn_menu_modified": {
     "message": "單獨按下右鍵仍會開啟系統右鍵選單，僅有搭配輔助鍵的組合會被接管。"
@@ -560,5 +630,40 @@
         "content": "$2"
       }
     }
+  },
+  "welcome_next_body": {
+    "message": "常用指令已預先指派。其餘指令與觸發鍵可於設定中調整。"
+  },
+  "welcome_next_title": {
+    "message": "後續設定"
+  },
+  "welcome_open_settings": {
+    "message": "開啟設定"
+  },
+  "welcome_subtitle": {
+    "message": "本裝置需按住的按鍵，以及試用的區域。"
+  },
+  "welcome_title": {
+    "message": "Write Click 已安裝"
+  },
+  "welcome_trigger_body": {
+    "message": "按住 $TRIGGER$ 並移動滑鼠即可繪製筆畫，放開後執行對應的指令。",
+    "placeholders": {
+      "trigger": {
+        "content": "$1"
+      }
+    }
+  },
+  "welcome_trigger_device": {
+    "message": "各平台的右鍵選單觸發時機不同，因此僅儲存於本裝置。"
+  },
+  "welcome_trigger_title": {
+    "message": "本裝置的觸發鍵"
+  },
+  "welcome_try_body": {
+    "message": "此區域僅回應觸發鍵；若按下其他按鍵，將直接顯示所按下的按鍵。"
+  },
+  "welcome_try_title": {
+    "message": "於此繪製第一個手勢"
   }
 }
