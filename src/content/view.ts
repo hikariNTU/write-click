@@ -82,6 +82,16 @@ export interface View {
   end(): void;
   cancel(): void;
   /**
+   * True while the tab grid is on screen, and therefore owns the second mouse
+   * button: that press is how a tile is picked. docs/SPEC.md §3.6.
+   */
+  gridUp(): boolean;
+  /**
+   * One wheel notch. True when the grid took it and scrolled instead, which is
+   * what it does for as long as it is on screen. docs/SPEC.md §3.7.
+   */
+  wheelStep(step: number): boolean;
+  /**
    * Removes the window listeners the view owns. Every other listener here is
    * torn down when its settings change; this one had no equivalent, which is
    * harmless only for as long as exactly one view exists per document.
@@ -323,6 +333,17 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       clear();
     },
     cancel: clear,
+    gridUp: () => grid.visible,
+    wheelStep(step) {
+      if (!grid.visible) return false;
+      grid.scrollStep(step);
+      // The tile under the cursor has changed without the cursor moving, and
+      // `:hover` is frozen by the capture, so the highlight has to be moved by
+      // hand — or a release would pick the tab that used to be under it.
+      const at = points.at(-1);
+      if (at) grid.hoverAt(at);
+      return true;
+    },
     destroy() {
       listeners.abort();
     },

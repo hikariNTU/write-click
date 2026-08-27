@@ -94,6 +94,28 @@ test("values outside what a control can produce fall back or clamp", () => {
   assert.deepEqual(result.local.trigger, defaultLocalSettings().trigger);
 });
 
+test("a rocker or wheel slot holding an unknown command falls back to the default", () => {
+  const result = parseBackup(
+    JSON.stringify({
+      app: "write-click",
+      sync: {
+        rocker: { enabled: true, back: "tab.close", forward: "tab.explode" },
+        wheel: { enabled: "sure", up: 7, down: "zoom.in" },
+      },
+    }),
+  );
+  assert.ok(result.ok);
+  const defaults = defaultSyncSettings();
+  // A slot always holds one command, so a bad one cannot be dropped the way a
+  // gesture binding is: it falls back, and the switch above it is untouched.
+  assert.equal(result.sync.rocker.enabled, true);
+  assert.equal(result.sync.rocker.back, "tab.close");
+  assert.equal(result.sync.rocker.forward, defaults.rocker.forward);
+  assert.equal(result.sync.wheel.enabled, defaults.wheel.enabled);
+  assert.equal(result.sync.wheel.up, defaults.wheel.up);
+  assert.equal(result.sync.wheel.down, "zoom.in");
+});
+
 test("a cleared modifier survives the round trip", () => {
   // The whole reason `trigger` replaces its default instead of merging into it:
   // a bare right button must not come back carrying a modifier.

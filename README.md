@@ -89,6 +89,23 @@ Move onto a tile and **release the trigger** to switch to that tab. Nothing is c
 menu follows the switch. Clicking a tile with the trigger still held works too. Either way, whatever
 stroke was underway is thrown away.
 
+## Rocker and wheel
+
+Two shortcuts that need no stroke, both off until you switch them on in settings. Each changes what
+an ordinary click or an ordinary scroll does, which is not something to do to somebody's mouse
+without being asked.
+
+**Rocker** — hold one mouse button and click the other. Right held plus left clicked goes back, left
+held plus right clicked goes forward, and either slot takes any command in the catalogue. The click
+is swallowed, and so is the context menu that would follow it. Keep holding and click again to walk
+further back.
+
+**Wheel** — turn the wheel while the trigger is held to step through tabs. The page underneath stays
+where it is.
+
+While the tab grid is on screen it takes both: the second button is how a tile is picked, and the
+wheel is how you reach a tile past the panel's edge. Neither runs a command until the grid is gone.
+
 ## Settings
 
 Right-click the toolbar icon → Settings, or open it from the popup. Rebinding is done by drawing the

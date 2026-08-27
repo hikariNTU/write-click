@@ -7,9 +7,27 @@ import type { Trigger } from "./trigger";
 /** How wide the tab grid's tiles are, and therefore how many fit per row. */
 export type GridSize = "compact" | "normal" | "large";
 
+/**
+ * A chorded mouse press: one button clicked while another is already held.
+ * Right held plus left clicked is `back`, left held plus right clicked is
+ * `forward` — the classic rocker, in both directions. See docs/SPEC.md §3.6.
+ */
+export interface RockerSettings {
+  enabled: boolean;
+  back: CommandId;
+  forward: CommandId;
+}
+
+/** Wheel notches turned while the trigger is held. docs/SPEC.md §3.7. */
+export interface WheelSettings {
+  enabled: boolean;
+  up: CommandId;
+  down: CommandId;
+}
+
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 6;
+  version: 7;
   language: LanguageSetting;
   gestures: Record<string, CommandId>;
   grid: {
@@ -25,6 +43,14 @@ export interface SyncSettings {
      */
     allWindows: boolean;
   };
+  /**
+   * Both ship off. Each changes what an ordinary click or an ordinary scroll
+   * does, and that is the one thing a gesture extension must not do by
+   * surprise — someone who never opens the settings page keeps the mouse they
+   * already had.
+   */
+  rocker: RockerSettings;
+  wheel: WheelSettings;
   trail: {
     /** Draw the stroke at all. Off leaves the recognizer and every command running. */
     show: boolean;
@@ -50,7 +76,7 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 6,
+    version: 7,
     language: "auto",
     gestures: { ...DEFAULT_GESTURES },
     grid: {
@@ -61,6 +87,13 @@ export function defaultSyncSettings(): SyncSettings {
       pickOnRelease: true,
       allWindows: true,
     },
+    // Back and forward, because a rocker travels through history in every other
+    // product that has one, and because those are the two commands whose
+    // strokes (`DL`, `DR`) are the ones people draw most often.
+    rocker: { enabled: false, back: "nav.back", forward: "nav.forward" },
+    // Up is the previous tab: the wheel steps through the strip the way it
+    // steps through a list, first at the top.
+    wheel: { enabled: false, up: "tab.prev", down: "tab.next" },
     trail: { show: true, color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };
@@ -181,12 +214,17 @@ export async function migrate(): Promise<void> {
   const local = (await chrome.storage.local.get(null)) as { version?: number };
   const defaults = defaultSyncSettings();
 
-  if (stored.version !== 6) {
+  if (stored.version !== 7) {
     // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
     // v3 added the language override, which defaults to following the browser.
     // v4 added picking on release.
     // v6 added listing every window, which existing profiles get switched on:
     // it is the same picker with more in it, and it is a toggle away.
+    // v7 added the rocker and the wheel. Both arrive switched off, whatever
+    // else the profile carries: they change what a plain click and a plain
+    // scroll do, and an update is not a moment to change that for somebody.
+    const rocker = { ...defaults.rocker, ...stored.rocker };
+    const wheel = { ...defaults.wheel, ...stored.wheel };
     const grid = { ...defaults.grid, ...stored.grid };
     delete (grid as { columns?: number }).columns;
 
@@ -198,7 +236,15 @@ export async function migrate(): Promise<void> {
     const spoken = Object.values(gestures).includes("app.options");
     if (!spoken && !gestures.DLUR) gestures.DLUR = "app.options";
 
-    await chrome.storage.sync.set({ ...defaults, ...stored, gestures, grid, version: 6 });
+    await chrome.storage.sync.set({
+      ...defaults,
+      ...stored,
+      gestures,
+      grid,
+      rocker,
+      wheel,
+      version: 7,
+    });
   }
 
   // v2 added the overlay scale.

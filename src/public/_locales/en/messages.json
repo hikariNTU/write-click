@@ -318,6 +318,39 @@
   "options_backup_title": {
     "message": "Backup"
   },
+  "options_chords_desc": {
+    "message": "Two shortcuts that need no stroke. Both are off until switched on here: each one changes what an ordinary click or an ordinary scroll does."
+  },
+  "options_chords_grid_note": {
+    "message": "While the tab grid is on screen it takes both: the second button picks a tile, and the wheel scrolls the panel. Neither runs a command until the grid is gone."
+  },
+  "options_chords_rocker": {
+    "message": "Rocker"
+  },
+  "options_chords_rocker_back": {
+    "message": "Right held, left clicked"
+  },
+  "options_chords_rocker_forward": {
+    "message": "Left held, right clicked"
+  },
+  "options_chords_rocker_hint": {
+    "message": "Hold one mouse button and click the other. The click is swallowed, and so is the context menu that would follow it."
+  },
+  "options_chords_title": {
+    "message": "Rocker and wheel"
+  },
+  "options_chords_wheel": {
+    "message": "Wheel"
+  },
+  "options_chords_wheel_down": {
+    "message": "Wheel down"
+  },
+  "options_chords_wheel_hint": {
+    "message": "Turn the wheel while the trigger is held. The page underneath stays where it is."
+  },
+  "options_chords_wheel_up": {
+    "message": "Wheel up"
+  },
   "options_gestures_clear": {
     "message": "Clear"
   },

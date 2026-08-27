@@ -55,6 +55,7 @@ const ICONS = [
   "restore_from_trash",
   "settings",
   "swipe",
+  "swap_horiz",
   "tab_close",
   "tab_close_right",
   "translate",

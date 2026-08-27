@@ -282,6 +282,23 @@ export class TabGrid {
     return this.#visible ? this.#hovered?.tabId : undefined;
   }
 
+  /**
+   * One wheel notch over the open grid scrolls the tile panel.
+   *
+   * The panel is the only thing on screen that can scroll while the trigger is
+   * held — the page underneath is held still for the gesture — so a wheel notch
+   * belongs to it for as long as it is up (docs/SPEC.md §3.7). Half a panel per
+   * notch: the tiles are large, and a line's worth would not clear a row.
+   *
+   * `scrollTop` is in the panel's own layout pixels, which the overlay scale
+   * does not touch, so the same notch moves the same number of tiles at every
+   * overlay size.
+   */
+  scrollStep(step: number): void {
+    if (!this.#visible) return;
+    this.#panel.scrollTop += (step * this.#panel.clientHeight) / 2;
+  }
+
   /** Moves the highlight, since `:hover` is frozen by the same capture. */
   hoverAt(point: Point): void {
     if (!this.#visible) return;

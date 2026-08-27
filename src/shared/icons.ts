@@ -38,6 +38,7 @@ import restartAlt from "../icons/material/restart_alt.svg?raw";
 import refresh from "../icons/material/refresh.svg?raw";
 import settings from "../icons/material/settings.svg?raw";
 import swipe from "../icons/material/swipe.svg?raw";
+import swapHoriz from "../icons/material/swap_horiz.svg?raw";
 import restore from "../icons/material/restore_from_trash.svg?raw";
 import tabCloseRight from "../icons/material/tab_close_right.svg?raw";
 import translate from "../icons/material/translate.svg?raw";
@@ -149,6 +150,7 @@ export const BRAND_ICON = brand;
 export const UI_ICONS = {
   trigger: prepare(mouse),
   gestures: prepare(swipe),
+  chords: prepare(swapHoriz),
   overlay: prepare(palette),
   sites: prepare(language),
   language: prepare(translate),

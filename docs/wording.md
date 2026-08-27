@@ -34,6 +34,8 @@ happen; it does not comment on it.
   | The label naming the matched command | readout      |
   | The gesture list under the grid      | cheatsheet   |
   | A command with no stroke             | unassigned   |
+  | A chorded pair of mouse buttons      | rocker       |
+  | The mouse wheel, as a gesture        | wheel        |
   | Everything drawn above the page      | overlay      |
   | How large the overlay is drawn       | overlay size |
   | The browser's own per-site zoom      | page zoom    |
@@ -58,6 +60,8 @@ happen; it does not comment on it.
   | tab grid   | 分頁格線 |
   | readout    | 指令提示 |
   | cheatsheet | 手勢清單 |
+  | rocker     | 搖桿     |
+  | wheel      | 滾輪     |
   | unassigned | 未指派   |
   | window     | 視窗     |
   | pinned     | 釘選     |

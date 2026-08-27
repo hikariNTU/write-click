@@ -8,6 +8,7 @@ import { createBridge } from "./frame-bridge";
 import type { Bridge } from "./frame-bridge";
 import { runPageCommand } from "./page-commands";
 import { attachTrigger } from "./trigger-runtime";
+import type { Rocker } from "./trigger-runtime";
 import { createView } from "./view";
 import type { View } from "./view";
 
@@ -26,6 +27,9 @@ async function run(command: CommandId, at: Point): Promise<void> {
  * frames, short enough to pass for instant.
  */
 const ANSWER_TIMEOUT_MS = 300;
+
+/** Where a content command lands when no pointer sample has been taken yet. */
+const ORIGIN: Point = { x: 0, y: 0 };
 
 async function main(): Promise<void> {
   const { sync, local } = await loadSettings();
@@ -59,12 +63,18 @@ async function main(): Promise<void> {
   // Drawing lives in the top frame; every frame runs its own recognizer and
   // executes its own commands, so a page command scrolls the frame the gesture
   // was actually drawn in.
-  const view: View | undefined = isTop
-    ? createView(sync, local, () => {
-        cancelled = true;
-        bridge?.cancelRemote();
-      })
-    : undefined;
+  /**
+   * The stroke drawn under something that has already acted — a tab picked from
+   * the grid, a rocker, a wheel step — is void. The trigger stays held, so the
+   * gesture is not cancelled: it is the command at the end of it that is
+   * dropped, and a rocker can fire again without letting go.
+   */
+  const voidStroke = (): void => {
+    cancelled = true;
+    bridge?.cancelRemote();
+  };
+
+  const view: View | undefined = isTop ? createView(sync, local, voidStroke) : undefined;
 
   bridge = createBridge({
     isTop,
@@ -126,6 +136,23 @@ async function main(): Promise<void> {
       if (pending) pendingTimer = window.setTimeout(flush, ANSWER_TIMEOUT_MS);
       bridge?.forwardEnd();
     },
+    onRocker(rocker: Rocker): boolean {
+      // While the tab grid is on screen the second button belongs to it: that
+      // press is how a tile is picked, and a rocker firing on a missed tile
+      // would make missing do something. docs/SPEC.md §3.6.
+      if (view?.gridUp()) return false;
+      voidStroke();
+      void run(rocker === "back" ? sync.rocker.back : sync.rocker.forward, points.at(-1) ?? ORIGIN);
+      return true;
+    },
+    onWheel(step: 1 | -1) {
+      // The grid takes every notch while it is up: it is the only thing on
+      // screen that scrolls, and reaching a tile past its clip is what the
+      // wheel is for at that moment. docs/SPEC.md §3.7.
+      if (view?.wheelStep(step)) return;
+      voidStroke();
+      void run(step > 0 ? sync.wheel.down : sync.wheel.up, points.at(-1) ?? ORIGIN);
+    },
     onCancel() {
       points = [];
       stroke = "";
@@ -148,7 +175,14 @@ async function main(): Promise<void> {
     detach = undefined;
     view?.cancel();
     view?.refresh();
-    if (on) detach = attachTrigger(local.trigger, handlers);
+    if (!on) return;
+    detach = attachTrigger(local.trigger, handlers, {
+      // Top frame only. Both are answered against the tab grid, and the grid
+      // lives in the top frame — a sub-frame has no way to ask whether it is on
+      // screen, and one that guessed would fire a rocker over an open panel.
+      rocker: isTop && sync.rocker.enabled,
+      wheel: isTop && sync.wheel.enabled,
+    });
   };
 
   apply();

@@ -9,8 +9,10 @@ A Chrome MV3 extension. The user holds a trigger, moves the mouse, releases; the
 to a command and the command runs. While the trigger is held, a grid of open tabs is shown and can
 be clicked to switch directly.
 
-Non-goals for v1: Firefox, gesture recording by example, rocker/wheel gestures, per-site gesture
-maps, syncing the trigger across devices, replacing the native context menu.
+Non-goals for v1: Firefox, gesture recording by example, per-site gesture maps, syncing the trigger
+across devices, replacing the native context menu. Rocker and wheel gestures were a v1 non-goal too;
+they ship since §3.6 and §3.7, off by default, and the reason they waited is the tab grid holding the
+same button and the same wheel.
 
 ## 2. Terminology
 
@@ -101,6 +103,64 @@ cancels, or the trigger is detached.
 
 Always available, on every platform: `Shift` + right-click forces the native menu (Chrome does this
 itself, no code needed); a per-origin disable toggle; a global off switch.
+
+### 3.6 The rocker
+
+`rocker.enabled`, **off by default**. A chorded mouse press — one button clicked while another is
+already held. Right held plus left clicked runs `rocker.back`; left held plus right clicked runs
+`rocker.forward`. Both slots hold any command in the catalogue; they ship as `nav.back` and
+`nav.forward`, which is where every other product in the category puts them.
+
+- **The pair is what fires it, not the trigger.** A rocker is defined against the two buttons
+  themselves, so both directions work whatever the trigger is set to — including a key trigger,
+  where no button is held and no chord is possible, so nothing fires at all.
+- **Listened for on `mousedown`, never `pointerdown`.** A chorded press fires `pointermove` rather
+  than `pointerdown`: the pointer is already in the active buttons state. This is the same
+  constraint the tab grid hit in §6.1.
+- Only the two classic pairs count. The middle button is left out — holding it means autoscroll on
+  Windows and paste on Linux — and a third button held alongside is a thumb resting on the mouse.
+- **While the tab grid is on screen, the grid owns the second button.** That press is how a tile is
+  picked (§6.1), and the two are the same event: a rocker firing on a missed tile would make missing
+  the tile do something. The content script asks the grid first and leaves the press untouched when
+  the answer is yes, native effects and all. This is the decision FEAT-02 was held for.
+- The press is swallowed along with the `click` it owes, and so is the context menu: a rocker is
+  built out of a right button one way round or the other, and that menu arrives with the press on
+  macOS and Linux and with the release on Windows (§3.2). It is suppressed for a second after a
+  rocker fires, which is a window rather than a flag because the events in between differ by
+  platform.
+- A rocker **voids the stroke** drawn under it without ending the gesture. The trigger is still held,
+  so a second rocker can fire without letting go — which is how anyone walks back through history —
+  and the release runs no command.
+
+### 3.7 The wheel
+
+`wheel.enabled`, **off by default**. A wheel notch turned while the trigger is held runs `wheel.up`
+or `wheel.down`, shipping as `tab.prev` and `tab.next`.
+
+- Only while a gesture is in progress. With nothing held the wheel is the page's.
+- The wheel event is cancelled for as long as the trigger is held, whether or not the notch
+  completes a step: the page must not scroll out from under a stroke. The listener is registered
+  `passive: false`, since a wheel listener on `window` is passive by default in Chrome and a passive
+  listener cannot cancel anything.
+- **Deltas are banked and spent in whole notches.** A mouse wheel reports one large delta per notch
+  and a trackpad reports dozens of small ones for the same flick; firing per event steps one tab on
+  the wheel and thirty on the trackpad. Reversing direction drops the bank rather than paying it
+  back.
+- **While the tab grid is on screen, the wheel scrolls the panel** and runs nothing — every notch,
+  wherever the pointer is. The panel is the only thing on screen that can scroll while a gesture is
+  held, and reaching a tile past its clip is what a wheel is for at that moment. The highlight is
+  moved by hand afterwards, for the same reason `hoverAt` exists at all (§6.1): the tile under the
+  cursor changed without the cursor moving, and a release would otherwise pick the tab that used to
+  be there.
+- A step voids the stroke, the same way a rocker does, and for the same reason.
+
+### 3.8 Both live in the top frame
+
+`attachTrigger` runs in every frame, but the rocker and the wheel are handed to it only in the top
+one. Both are answered against the tab grid, and the grid lives in the top frame: a sub-frame has no
+way to ask whether the panel is on screen, and one that guessed would fire a rocker over an open
+grid. A gesture drawn inside an iframe still draws, still matches and still runs its command
+(§8) — it simply has no rocker.
 
 ## 4. Recognition
 
@@ -303,6 +363,9 @@ ownWindow, groupId }` per tab, plus the groups those tabs belong to. Which windo
   of the window for nothing. It never takes pointer events.
 - **Releasing the trigger over a tile switches to it**, without a click. On by default; §6.3.
 - The panel is **docked to the top edge**, and holds one size at every page zoom level; §6.4.
+- **While it is on screen it owns the second mouse button and the wheel.** Both are how the grid is
+  worked — the button picks a tile, the wheel reaches one past the clip — so neither reaches the
+  rocker or the wheel command while the panel is up. §3.6, §3.7.
 - `Escape` closes the grid and cancels the gesture.
 
 ### 6.1 Picking a tile under mouse capture
@@ -672,7 +735,7 @@ not a bug to fix.
 ```ts
 interface SyncSettings {
   // chrome.storage.sync
-  version: 6;
+  version: 7;
   language: "auto" | Locale; // §10.2
   gestures: Record<string, CommandId>; // stroke -> command
   grid: {
@@ -683,6 +746,8 @@ interface SyncSettings {
     pickOnRelease: boolean; // §6.3
     allWindows: boolean; // §6.5
   };
+  rocker: { enabled: boolean; back: CommandId; forward: CommandId }; // §3.6
+  wheel: { enabled: boolean; up: CommandId; down: CommandId }; // §3.7
   trail: { show: boolean; color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
 }
@@ -698,7 +763,10 @@ interface LocalSettings {
 
 `version` is bumped whenever a shape changes, with a migration in the service worker's
 `onInstalled`, which runs on both install and update. v2 replaced the grid's `columns` with `size`;
-v3 added the language override; v4 added `pickOnRelease`. Local v2 added `uiScale`.
+v3 added the language override; v4 added `pickOnRelease`; v5 added `app.options` to the default map;
+v6 added `allWindows`; v7 added the rocker and the wheel. Local v2 added `uiScale`. Both of v7's
+additions arrive switched off whatever else a profile carries: an update is not a moment to change
+what somebody's plain click does.
 
 Reads merge defaults **one level deep**. Storage is written per top-level key, so a stored `grid`
 written before a field existed would otherwise replace the whole default object and leave that field
@@ -789,7 +857,8 @@ Every handler is exhaustive over the union; adding a member must break the build
 ## 10.1 Options page
 
 `src/options.html` + `src/options.ts`, opened in a tab. Every control writes on change; there is no
-save button. Sections: language, trigger, gestures, overlay, disabled sites, backup, reset.
+save button. Sections: language, trigger, gestures, rocker and wheel, overlay, disabled sites,
+backup, reset.
 
 Icons are bundled with the module, which runs after the first paint, so every glyph the static
 shell shows has an empty box of its final size waiting for it in the markup — `paintIcon` fills the
@@ -979,8 +1048,10 @@ The fullscreen gap that stood here — a fullscreen element painting over the ov
 §7.5.
 
 Everything else outstanding lives in [`docs/backlog/`](backlog/README.md), one file per finding,
-from the full-repo review of 2026-08-27. **3 of the 17 are still open, and none of them is a bug**:
-what is left is two features and one interface item. FEAT-04 folded the catalogue additions into §5
+from the full-repo review of 2026-08-27. **2 of the 17 are still open, and neither is a bug**: what
+is left is one feature and one interface item. FEAT-02 is done — the rocker and the wheel are §3.6
+and §3.7, and the design decision it was held for is the grid owning the second button and the wheel
+while it is on screen. FEAT-04 folded the catalogue additions into §5
 and the manifest shortcut with them; FEAT-01 and UX-02 added §10.3 and rewrote the trigger section
 of §10.1; STORE-01 and STORE-02 are store assets and live in `docs/store-assets.md`, not here. Every fix that contradicted this spec has
 had its reasoning folded in: BUG-01 into §6.1, BUG-02 into §7.4, BUG-03 into §6, BUG-04 into §3.4,

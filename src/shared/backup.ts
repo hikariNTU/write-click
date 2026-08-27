@@ -123,6 +123,16 @@ function gestures(value: unknown): { gestures: Record<string, CommandId>; droppe
   return { gestures: kept, dropped };
 }
 
+/**
+ * One command id, for a slot that holds exactly one — the rocker's two
+ * directions and the wheel's. Unlike the gesture map these cannot be dropped:
+ * the slot always holds something, so an unreadable one falls back to the
+ * default rather than leaving a control with nothing selected.
+ */
+function commandId(value: unknown, fallback: CommandId): CommandId {
+  return typeof value === "string" && value in COMMANDS ? (value as CommandId) : fallback;
+}
+
 const MODIFIERS = new Set<string>(["Alt", "Control", "Meta", "Shift"]);
 
 /**
@@ -200,6 +210,8 @@ export function parseBackup(text: string): BackupResult {
   const storedSync = isPlainObject(raw.sync) ? raw.sync : {};
   const storedLocal = isPlainObject(raw.local) ? raw.local : {};
   const grid = isPlainObject(storedSync.grid) ? storedSync.grid : {};
+  const rocker = isPlainObject(storedSync.rocker) ? storedSync.rocker : {};
+  const wheel = isPlainObject(storedSync.wheel) ? storedSync.wheel : {};
   const trail = isPlainObject(storedSync.trail) ? storedSync.trail : {};
   const bindings = gestures(storedSync.gestures);
 
@@ -217,6 +229,16 @@ export function parseBackup(text: string): BackupResult {
         cheatsheet: bool(grid.cheatsheet, syncDefaults.grid.cheatsheet),
         pickOnRelease: bool(grid.pickOnRelease, syncDefaults.grid.pickOnRelease),
         allWindows: bool(grid.allWindows, syncDefaults.grid.allWindows),
+      },
+      rocker: {
+        enabled: bool(rocker.enabled, syncDefaults.rocker.enabled),
+        back: commandId(rocker.back, syncDefaults.rocker.back),
+        forward: commandId(rocker.forward, syncDefaults.rocker.forward),
+      },
+      wheel: {
+        enabled: bool(wheel.enabled, syncDefaults.wheel.enabled),
+        up: commandId(wheel.up, syncDefaults.wheel.up),
+        down: commandId(wheel.down, syncDefaults.wheel.down),
       },
       trail: {
         show: bool(trail.show, syncDefaults.trail.show),
