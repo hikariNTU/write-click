@@ -4,7 +4,7 @@ import { formatNumber, t } from "../shared/i18n";
 import { COMMAND_ICONS, UNKNOWN_ICON } from "../shared/icons";
 import { send } from "../shared/messages";
 import type { TabGroupSummary, TabSummary } from "../shared/messages";
-import { quantize } from "../shared/recognizer";
+import { distanceSquared, quantize } from "../shared/recognizer";
 import type { Point } from "../shared/recognizer";
 import type { LocalSettings, SyncSettings } from "../shared/settings";
 import { tabsOnSide } from "../shared/tabs";
@@ -112,6 +112,23 @@ export interface View {
  */
 const PANEL_SETTLE_MS = 200;
 
+/**
+ * How far the pointer has to travel before it takes the highlight back from the
+ * wheel.
+ *
+ * Turning a wheel moves the mouse. Every one of those tiny movements is a
+ * `pointermove`, and `hoverAt` reads a pointer sitting in the middle of the
+ * window — which is where a stroke is drawn, and nowhere near a tile — as "over
+ * no tile at all" and clears the highlight the notch has just set. On a
+ * synthetic wheel there is no jitter and the highlight stands; on a real mouse
+ * it never survived a single notch, which is what made the first build of this
+ * look completely dead.
+ *
+ * Small enough that a deliberate move onto a tile takes the highlight straight
+ * back, large enough to cover the hand of somebody turning a wheel.
+ */
+const WHEEL_HOLD_PX = 24;
+
 function swallow(event: Event): void {
   event.preventDefault();
   event.stopPropagation();
@@ -146,6 +163,11 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
   let gridTimer = 0;
   /** Wheel notches turned before the panel was on screen to receive them. */
   let pendingWheel = 0;
+  /**
+   * Where the pointer was when the wheel last set the highlight, or undefined
+   * when the pointer owns it.
+   */
+  let wheelAnchor: Point | undefined;
   /** The tab's page zoom, which the overlay cancels out so it holds its size. */
   let zoom = 1;
 
@@ -189,6 +211,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     stroke = "";
     holding = false;
     pendingWheel = 0;
+    wheelAnchor = undefined;
     clearTimeout(gridTimer);
     trail.clear();
     hud.hide();
@@ -335,8 +358,12 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     move(point) {
       points.push(point);
       trail.render(points);
-      // :hover is frozen by the same capture, so the highlight is moved by hand.
-      grid.hoverAt(point);
+      // :hover is frozen by the same capture, so the highlight is moved by hand
+      // — but not while the wheel is still holding it. See WHEEL_HOLD_PX.
+      if (!wheelAnchor || distanceSquared(point, wheelAnchor) >= WHEEL_HOLD_PX ** 2) {
+        wheelAnchor = undefined;
+        grid.hoverAt(point);
+      }
       const next = quantize(points);
       if (next === stroke) return;
       stroke = next;
@@ -360,6 +387,9 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       // With no grid there is nothing to steer, and the notch goes back to the
       // caller to run as a command.
       if (!sync.grid.enabled) return false;
+      // The wheel now owns the highlight, and holds it against the jitter its
+      // own notches produce.
+      wheelAnchor = points.at(-1);
       if (grid.visible) {
         grid.stepHighlight(step);
         return true;

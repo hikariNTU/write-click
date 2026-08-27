@@ -70,3 +70,16 @@ the same wheel, and either answer being a design decision rather than a patch. T
 In a loaded unpacked build, headless, six checks on the first pass: the rocker fires from either
 pair with the grid off, stays quiet while switched off, the wheel steps tabs with the grid off, and
 with the grid on screen neither the wheel nor the second button runs anything.
+
+## What the first two builds got wrong
+
+Both were found by using it rather than by testing it, and both are recorded because the synthetic
+checks passed in each case.
+
+1. **One notch was three steps.** `deltaY` for a physical notch is 100 on one platform and 120 on
+   another, and a flat 40px bank spent all of it. The highlight jumped to the end of the strip.
+2. **The highlight never survived a notch on a real mouse.** Turning a wheel moves the mouse, each
+   movement is a `pointermove`, and `hoverAt` reads a pointer in the middle of the window as "over
+   no tile" and clears the highlight. A synthetic wheel moves no pointer, so every check passed
+   while the feature was invisible in the hand. The wheel now holds the highlight within 24px of
+   where it claimed it.

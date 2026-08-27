@@ -206,6 +206,13 @@ export function attachTrigger(
    * afterwards.
    */
   let rockedAt = 0;
+  /**
+   * Whether a wheel event has been seen during this gesture. Only to log the
+   * first one: a wheel that does nothing looks identical whether the event
+   * never arrived or the step was banked, and those have nothing in common to
+   * fix.
+   */
+  let wheelSeen = false;
 
   /**
    * Swallows the `click`/`auxclick` a press has coming, and only that one: a
@@ -225,6 +232,7 @@ export function attachTrigger(
     drifted = false;
     origin = point;
     notches.reset();
+    wheelSeen = false;
     drawing?.abort();
     drawing = new AbortController();
     for (const type of ["selectstart", "dragstart"]) {
@@ -331,6 +339,10 @@ export function attachTrigger(
     // The page must not scroll under a held gesture, whether or not this delta
     // completes a step.
     swallow(event);
+    if (!wheelSeen) {
+      wheelSeen = true;
+      console.debug("[write-click] wheel under the trigger", event.deltaY, event.deltaMode);
+    }
     const steps = notches.take(wheelPixels(event));
     const step = steps > 0 ? 1 : -1;
     for (let spent = 0; spent < Math.abs(steps); spent += 1) handlers.onWheel(step);

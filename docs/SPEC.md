@@ -152,6 +152,13 @@ for.
   ends, never wrapped**: a wheel is turned in a hurry, and running off one end to reappear at the
   other would switch to the far side of the session three notches after asking for the tab next
   door.
+- **The wheel holds the highlight against the jitter it causes.** Turning a wheel moves the mouse,
+  every one of those movements is a `pointermove`, and `hoverAt` reads a pointer in the middle of the
+  window — where the stroke is drawn, nowhere near a tile — as "over no tile" and clears what the
+  notch just set. The highlight therefore survives pointer movement within 24px of where the wheel
+  last claimed it, and a deliberate move beyond that hands it back. Without this the feature looked
+  completely dead on a real mouse while passing every synthetic test, which move a pointer only when
+  told to.
 - Landing back on the current tab's tile clears the highlight rather than setting it, which is the
   same rule the pointer follows (§6.3) and makes a notch up followed by a notch down mean no switch.
 - A landing scrolled past the panel's clip is scrolled into view. That clip is what `#tileAt`
@@ -449,7 +456,8 @@ Hover and release, and nothing is left over.
 
 Two rules keep it from firing on a tab nobody chose:
 
-- The highlight is only ever set by a **move**, or by a **wheel notch** (§3.7) — both deliberate. A
+- The highlight is only ever set by a **move**, or by a **wheel notch** (§3.7) — both deliberate, and
+  a notch holds it against the small movements turning a wheel produces. A
   panel that happens to open under a resting cursor therefore has nothing highlighted, and a release
   there falls through to normal stroke matching.
 - **This window's active tab is never highlighted**, so releasing over it does nothing rather than
