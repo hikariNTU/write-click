@@ -420,7 +420,7 @@ export class TabGrid {
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className =
-      "group flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left " +
+      "group relative flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left " +
       "transition-colors duration-100 " +
       (current
         ? ACTIVE
@@ -428,11 +428,20 @@ export class TabGrid {
 
     const color = groupColor(group);
     if (color) {
-      // The group's colour runs down the left edge of every tile in it, which
-      // is where Chrome puts it in the strip. Set on the element rather than
-      // through a class: the palette is nine colours the build never sees.
-      tile.style.borderLeftColor = color;
-      tile.style.borderLeftWidth = "3px";
+      // The group's colour marks the left edge of every tile in it, which is
+      // where Chrome puts it in the strip. A thick left *border* would be
+      // mitred into the thin top and bottom ones and dragged around the corner
+      // radius, which reads as a wedge rather than a bar — so it is a rounded
+      // pill laid inside the tile instead, with the border left uniform.
+      const stripe = document.createElement("span");
+      stripe.className =
+        "pointer-events-none absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full";
+      // Set on the element rather than through a class: the palette is nine
+      // colours the build never sees.
+      stripe.style.backgroundColor = color;
+      tile.append(stripe);
+      // Room for the stripe, so it never sits under the favicon.
+      tile.style.paddingLeft = "0.875rem";
       // A collapsed group is not on screen in the strip. Picking one of its
       // tabs still works and expands it, so it is dimmed rather than dropped.
       if (group?.collapsed) tile.style.opacity = "0.65";

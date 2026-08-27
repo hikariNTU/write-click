@@ -358,7 +358,9 @@ headings, and someone working in four gets the whole session in one picker.
   has an active tab of its own, and those commands only ever touch this window's strip.
 
 Tab groups need the `tabGroups` permission, which adds no install warning of its own on top of
-`tabs`. A group's colour runs down the left edge of every tile in it, and a heading carries the
+`tabs`. A group's colour runs down the left edge of every tile in it — a rounded pill inset in the
+tile rather than a thick left border, which the corner radius would have dragged into a wedge and
+mitred against the thin top and bottom borders — and a heading carries the
 colour and the group's name at the start of each run — Chrome allows an untitled group, which reads
 as its colour alone in the strip and does the same here. Group runs are contiguous by construction:
 a group is contiguous in the strip, and the sort keeps strip order. The nine colours are set as
