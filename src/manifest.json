@@ -3,7 +3,7 @@
   "name": "__MSG_extName__",
   "version": "1.0.0",
   "description": "__MSG_extDescription__",
-  "permissions": ["tabs", "sessions", "storage"],
+  "permissions": ["tabs", "tabGroups", "sessions", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",

@@ -398,6 +398,13 @@ function overlayCard(): HTMLElement {
       t("options_overlay_grid_hint"),
     ),
     row(
+      t("options_overlay_allWindows"),
+      toggle(sync.grid.allWindows, (value) => {
+        void patchSync({ grid: { ...sync.grid, allWindows: value } });
+      }),
+      t("options_overlay_allWindows_hint"),
+    ),
+    row(
       t("options_overlay_release"),
       toggle(sync.grid.pickOnRelease, (value) => {
         void patchSync({ grid: { ...sync.grid, pickOnRelease: value } });

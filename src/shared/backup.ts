@@ -216,6 +216,7 @@ export function parseBackup(text: string): BackupResult {
         size: pick(grid.size, SIZES, syncDefaults.grid.size),
         cheatsheet: bool(grid.cheatsheet, syncDefaults.grid.cheatsheet),
         pickOnRelease: bool(grid.pickOnRelease, syncDefaults.grid.pickOnRelease),
+        allWindows: bool(grid.allWindows, syncDefaults.grid.allWindows),
       },
       trail: {
         show: bool(trail.show, syncDefaults.trail.show),

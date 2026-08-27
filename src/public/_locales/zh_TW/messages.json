@@ -120,6 +120,12 @@
       }
     }
   },
+  "grid_window_other": {
+    "message": "其他視窗"
+  },
+  "grid_window_this": {
+    "message": "這個視窗"
+  },
   "hud_closeLeft_none": {
     "message": "左側沒有可關閉的分頁"
   },
@@ -295,6 +301,12 @@
   },
   "options_nav_label": {
     "message": "設定章節"
+  },
+  "options_overlay_allWindows": {
+    "message": "列出所有視窗"
+  },
+  "options_overlay_allWindows_hint": {
+    "message": "其他視窗的分頁也會一起出現。選取後會把該視窗帶到最前面。無痕視窗分開處理。"
   },
   "options_overlay_cheatsheet": {
     "message": "手勢清單"

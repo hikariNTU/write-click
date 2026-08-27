@@ -15,17 +15,34 @@ export interface TabSummary {
   favIconUrl?: string;
   active: boolean;
   pinned: boolean;
+  windowId: number;
+  /** The window the gesture is being drawn in, which the grid lists first. */
+  ownWindow: boolean;
+  /** Absent for an ungrouped tab. Keys into the `groups` map of the response. */
+  groupId?: number;
+}
+
+/**
+ * A tab group, as much of one as a picker needs. Chrome allows an untitled
+ * group, which shows as its colour alone in the tab strip and does the same
+ * here.
+ */
+export interface TabGroupSummary {
+  id: number;
+  title?: string;
+  color: string;
+  collapsed: boolean;
 }
 
 export type Request =
   | { type: "command"; id: BackgroundCommandId }
-  | { type: "tabs.list" }
+  | { type: "tabs.list"; allWindows: boolean }
   | { type: "tabs.activate"; tabId: number }
   | { type: "tabs.zoom" };
 
 export type Response =
   | { ok: true }
-  | { ok: true; tabs: TabSummary[] }
+  | { ok: true; tabs: TabSummary[]; groups: Record<number, TabGroupSummary> }
   | { ok: true; zoom: number }
   | { ok: false; error: string };
 

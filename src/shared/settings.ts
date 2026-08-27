@@ -9,7 +9,7 @@ export type GridSize = "compact" | "normal" | "large";
 
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 5;
+  version: 6;
   language: LanguageSetting;
   gestures: Record<string, CommandId>;
   grid: {
@@ -19,6 +19,11 @@ export interface SyncSettings {
     cheatsheet: boolean;
     /** Release the trigger over a tile to switch to it, without clicking. */
     pickOnRelease: boolean;
+    /**
+     * List every window's tabs, not only the one the gesture is in. Picking a
+     * tab in another window focuses that window too.
+     */
+    allWindows: boolean;
   };
   trail: {
     /** Draw the stroke at all. Off leaves the recognizer and every command running. */
@@ -45,10 +50,17 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 5,
+    version: 6,
     language: "auto",
     gestures: { ...DEFAULT_GESTURES },
-    grid: { enabled: true, holdMs: 180, size: "normal", cheatsheet: true, pickOnRelease: true },
+    grid: {
+      enabled: true,
+      holdMs: 180,
+      size: "normal",
+      cheatsheet: true,
+      pickOnRelease: true,
+      allWindows: true,
+    },
     trail: { show: true, color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };
@@ -169,10 +181,12 @@ export async function migrate(): Promise<void> {
   const local = (await chrome.storage.local.get(null)) as { version?: number };
   const defaults = defaultSyncSettings();
 
-  if (stored.version !== 5) {
+  if (stored.version !== 6) {
     // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
     // v3 added the language override, which defaults to following the browser.
     // v4 added picking on release.
+    // v6 added listing every window, which existing profiles get switched on:
+    // it is the same picker with more in it, and it is a toggle away.
     const grid = { ...defaults.grid, ...stored.grid };
     delete (grid as { columns?: number }).columns;
 
@@ -184,7 +198,7 @@ export async function migrate(): Promise<void> {
     const spoken = Object.values(gestures).includes("app.options");
     if (!spoken && !gestures.DLUR) gestures.DLUR = "app.options";
 
-    await chrome.storage.sync.set({ ...defaults, ...stored, gestures, grid, version: 5 });
+    await chrome.storage.sync.set({ ...defaults, ...stored, gestures, grid, version: 6 });
   }
 
   // v2 added the overlay scale.

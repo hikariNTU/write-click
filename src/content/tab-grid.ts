@@ -2,7 +2,7 @@ import { COMMANDS } from "../shared/commands";
 import type { CommandId } from "../shared/commands";
 import { formatNumber, t } from "../shared/i18n";
 import { FALLBACK_FAVICON, strokeChipsHtml } from "../shared/icons";
-import type { TabSummary } from "../shared/messages";
+import type { TabGroupSummary, TabSummary } from "../shared/messages";
 import { containsPoint } from "../shared/geometry";
 import type { Point } from "../shared/recognizer";
 import type { GridSize } from "../shared/settings";
@@ -84,6 +84,38 @@ interface Tile {
   tabId: number;
   node: HTMLElement;
   active: boolean;
+}
+
+/**
+ * Chrome's tab group palette, in the tones it uses on a dark background. The
+ * colour is the whole identity of an untitled group, so it has to be the one
+ * the user already sees in the tab strip rather than something approximate.
+ */
+const GROUP_COLORS: Record<string, string> = {
+  grey: "#9aa0a6",
+  blue: "#8ab4f8",
+  red: "#f28b82",
+  yellow: "#fdd663",
+  green: "#81c995",
+  pink: "#ff8bcb",
+  purple: "#d7aefb",
+  cyan: "#78d9ec",
+  orange: "#fcad70",
+};
+
+function groupColor(group: TabGroupSummary | undefined): string | undefined {
+  if (!group) return undefined;
+  return GROUP_COLORS[group.color] ?? GROUP_COLORS.grey;
+}
+
+/** A full-width row between tiles. The grid's tracks are auto-fit, so a header
+ * has to be told to span them all or it would sit in the first column as a
+ * tile-sized box. */
+function headerRow(className: string): HTMLDivElement {
+  const node = document.createElement("div");
+  node.className = className;
+  node.style.gridColumn = "1 / -1";
+  return node;
 }
 
 /**
@@ -291,7 +323,7 @@ export class TabGrid {
     };
   }
 
-  show(tabs: readonly TabSummary[]): void {
+  show(tabs: readonly TabSummary[], groups: Record<number, TabGroupSummary> = {}): void {
     if (tabs.length === 0) return;
     // A fade may still be running from the last gesture.
     clearTimeout(this.#teardown);
@@ -302,11 +334,11 @@ export class TabGrid {
     );
     this.#tiles = tabs.map((tab) => ({
       tabId: tab.id,
-      node: this.#tile(tab),
+      node: this.#tile(tab, groups[tab.groupId ?? -1]),
       active: tab.active,
     }));
     this.#hovered = undefined;
-    this.#grid.replaceChildren(...this.#tiles.map(({ node }) => node));
+    this.#grid.replaceChildren(...this.#rows(tabs, groups));
     const room = this.#room();
     // Never stretch a handful of tabs across the full panel: cap it at the
     // width the tiles actually present would occupy.
@@ -341,7 +373,44 @@ export class TabGrid {
     }, FADE_MS);
   }
 
-  #tile(tab: TabSummary): HTMLButtonElement {
+  /**
+   * Tiles with their headings folded in, in the order the background sorted
+   * them: this window first, then each other window, and each window's tabs in
+   * strip order. A window heading only appears once there is more than one
+   * window on screen — with a single one it would be a label for everything.
+   *
+   * Group runs are contiguous by construction, since a group is contiguous in
+   * the strip and the sort keeps the strip order.
+   */
+  #rows(tabs: readonly TabSummary[], groups: Record<number, TabGroupSummary>): HTMLElement[] {
+    const manyWindows = new Set(tabs.map((tab) => tab.windowId)).size > 1;
+    const rows: HTMLElement[] = [];
+    let windowId: number | undefined;
+    let groupId: number | undefined;
+
+    tabs.forEach((tab, index) => {
+      if (manyWindows && tab.windowId !== windowId) {
+        rows.push(windowHeader(tab.ownWindow, rows.length > 0));
+        // A window boundary restarts the group run: two windows can hold
+        // groups that happen to sit next to each other in this list.
+        groupId = undefined;
+      }
+      windowId = tab.windowId;
+
+      if (tab.groupId !== groupId) {
+        groupId = tab.groupId;
+        const summary = groupId === undefined ? undefined : groups[groupId];
+        if (summary) rows.push(groupHeader(summary));
+      }
+
+      const tile = this.#tiles[index];
+      if (tile) rows.push(tile.node);
+    });
+
+    return rows;
+  }
+
+  #tile(tab: TabSummary, group: TabGroupSummary | undefined): HTMLButtonElement {
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className =
@@ -350,6 +419,18 @@ export class TabGrid {
       (tab.active
         ? ACTIVE
         : "border-white/5 bg-white/[0.03] hover:border-emerald-300/40 hover:bg-emerald-400/10");
+
+    const color = groupColor(group);
+    if (color) {
+      // The group's colour runs down the left edge of every tile in it, which
+      // is where Chrome puts it in the strip. Set on the element rather than
+      // through a class: the palette is nine colours the build never sees.
+      tile.style.borderLeftColor = color;
+      tile.style.borderLeftWidth = "3px";
+      // A collapsed group is not on screen in the strip. Picking one of its
+      // tabs still works and expands it, so it is dimmed rather than dropped.
+      if (group?.collapsed) tile.style.opacity = "0.65";
+    }
 
     const icon = document.createElement("div");
     icon.className =
@@ -392,6 +473,36 @@ function label(text: string): HTMLSpanElement {
   const span = document.createElement("span");
   span.textContent = text;
   return span;
+}
+
+/** A heading for the run of tabs belonging to one window. */
+function windowHeader(own: boolean, spaced: boolean): HTMLElement {
+  const node = headerRow(
+    "px-1 text-[10px] font-medium uppercase tracking-wider text-mist-500 " +
+      (spaced ? "mt-3 border-t border-white/5 pt-3" : ""),
+  );
+  node.textContent = t(own ? "grid_window_this" : "grid_window_other");
+  return node;
+}
+
+/**
+ * A heading for the run of tabs in one group: the group's colour, and its name
+ * when it has one. Chrome allows a group with no name, which reads as its
+ * colour alone in the strip and does the same here.
+ */
+function groupHeader(group: TabGroupSummary): HTMLElement {
+  const node = headerRow("flex items-center gap-2 px-1 pt-1");
+  const swatch = document.createElement("span");
+  swatch.className = "h-1.5 w-6 shrink-0 rounded-full";
+  swatch.style.backgroundColor = groupColor(group) ?? "";
+  node.append(swatch);
+  if (group.title) {
+    const name = document.createElement("span");
+    name.className = "truncate text-[10px] font-medium tracking-wide text-mist-300";
+    name.textContent = group.title;
+    node.append(name);
+  }
+  return node;
 }
 
 function hostOf(url: string): string {

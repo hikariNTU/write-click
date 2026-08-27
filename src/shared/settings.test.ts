@@ -76,25 +76,25 @@ test("a key trigger does not keep the default's button fields", async () => {
 test("nothing stored gives the defaults, both areas", async () => {
   stub({}, {});
   const { sync, local }: { sync: SyncSettings; local: LocalSettings } = await loadSettings();
-  assert.equal(sync.version, 5);
+  assert.equal(sync.version, 6);
   assert.equal(local.version, 2);
   assert.equal(local.uiScale, 1);
 });
 
-test("v5 binds app.options without resurrecting a cleared gesture", async () => {
+test("migrating binds app.options without resurrecting a cleared gesture", async () => {
   // A v4 profile where the user has spent DL on something else and cleared R.
   const sync: Record<string, unknown> = { version: 4, gestures: { L: "tab.prev", DL: "nav.back" } };
   stub(sync, { version: 2 });
   await migrate();
 
   const gestures = sync.gestures as Record<string, string>;
-  assert.equal(sync.version, 5);
+  assert.equal(sync.version, 6);
   assert.equal(gestures.DLUR, "app.options");
   // The whole point: a default map merged back in would have returned R here.
   assert.equal(gestures.R, undefined);
 });
 
-test("v5 leaves a stroke the user already spent alone", async () => {
+test("migrating leaves a stroke the user already spent alone", async () => {
   const sync: Record<string, unknown> = { version: 4, gestures: { DLUR: "tab.close" } };
   stub(sync, { version: 2 });
   await migrate();

@@ -1,8 +1,8 @@
 # Write Click
 
 Chrome extension for mouse gestures. Hold the trigger, draw a stroke, release — the stroke runs a
-tab or page command. While the trigger is held, a grid of open tabs appears: release the trigger
-over a tile to jump straight to that tab.
+tab or page command. While the trigger is held, a grid of open tabs appears — every window, tab
+groups and all: release the trigger over a tile to jump straight to that tab.
 
 Everything the extension draws lives in a closed shadow root above the page, so the host page's CSS
 and scripts cannot see it, restyle it, or reach into it.
@@ -11,8 +11,8 @@ and scripts cannot see it, restyle it, or reach into it.
 
 **Feature complete.** Gestures are captured, quantized and drawn as a glowing trail, the
 matched command is named in a glass readout, and releasing the trigger runs it. Holding the trigger
-opens a grid of the window's tabs: release over a tile to jump straight to it and discard the
-stroke. Everything is configurable from the settings page, including how large the overlay is drawn.
+opens a grid of your tabs across every window: release over a tile to jump straight to it and
+discard the stroke. Everything is configurable from the settings page, including how large the overlay is drawn.
 Gestures work inside iframes, scrolling the frame they were drawn in.
 
 Full design is frozen in [`docs/SPEC.md`](docs/SPEC.md). Read that before changing behaviour.
@@ -71,9 +71,14 @@ settings page, and `page.end` ships unbound waiting for a stroke you like.
 
 ## Tab grid
 
-Hold the trigger without moving and a panel of the current window's tabs fades in at the top of the
-window, with every bound gesture listed as a cheatsheet along the bottom. Flick straight into a
-gesture and neither appears.
+Hold the trigger without moving and a panel of your open tabs fades in at the top of the window,
+with every bound gesture listed as a cheatsheet along the bottom. Flick straight into a gesture and
+neither appears.
+
+Every window is listed, under a heading each, and picking a tab in another window brings that window
+to the front. Turn it off in settings for this window only. Tab groups carry their colour down the
+left edge of each tile, with the group's name above the run. Incognito is kept to itself: a gesture
+in an ordinary window never lists private tabs, and a gesture in a private window lists only those.
 
 The two panels are docked to the edges on purpose: the middle of the window is where the stroke gets
 drawn, so nothing that takes pointer events is allowed to sit there. The readout naming the matched

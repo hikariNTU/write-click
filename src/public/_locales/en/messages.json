@@ -120,6 +120,12 @@
       }
     }
   },
+  "grid_window_other": {
+    "message": "Another window"
+  },
+  "grid_window_this": {
+    "message": "This window"
+  },
   "hud_closeLeft_none": {
     "message": "No tabs to close to the left"
   },
@@ -295,6 +301,12 @@
   },
   "options_nav_label": {
     "message": "Settings sections"
+  },
+  "options_overlay_allWindows": {
+    "message": "List every window"
+  },
+  "options_overlay_allWindows_hint": {
+    "message": "Tabs from your other windows appear too. Picking one brings that window to the front. Private windows are kept separate."
   },
   "options_overlay_cheatsheet": {
     "message": "Cheatsheet"

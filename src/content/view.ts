@@ -3,7 +3,7 @@ import type { CommandId } from "../shared/commands";
 import { formatNumber, t } from "../shared/i18n";
 import { COMMAND_ICONS, UNKNOWN_ICON } from "../shared/icons";
 import { send } from "../shared/messages";
-import type { TabSummary } from "../shared/messages";
+import type { TabGroupSummary, TabSummary } from "../shared/messages";
 import { quantize } from "../shared/recognizer";
 import type { Point } from "../shared/recognizer";
 import type { LocalSettings, SyncSettings } from "../shared/settings";
@@ -14,6 +14,14 @@ import { createOverlay } from "./overlay";
 import { TabGrid } from "./tab-grid";
 import { Trail } from "./trail";
 
+/** One tab list, and the groups the tabs in it belong to. */
+interface TabList {
+  tabs: readonly TabSummary[];
+  groups: Record<number, TabGroupSummary>;
+}
+
+const EMPTY_TABS: TabList = { tabs: [], groups: {} };
+
 /**
  * How many tabs a close-to-the-side command would take, using the same filter
  * the background uses, so the number shown and the number closed agree.
@@ -21,10 +29,13 @@ import { Trail } from "./trail";
  */
 function closingCount(command: CommandId, tabs: readonly TabSummary[]): number | undefined {
   if (command !== "tab.closeRight" && command !== "tab.closeLeft") return undefined;
-  const active = tabs.find((tab) => tab.active);
+  // Every window in the list has an active tab of its own, and the command only
+  // ever touches this one's strip.
+  const own = tabs.filter((tab) => tab.ownWindow);
+  const active = own.find((tab) => tab.active);
   if (!active) return undefined;
   const side = command === "tab.closeRight" ? "right" : "left";
-  return tabsOnSide(tabs, active.index, side).length;
+  return tabsOnSide(own, active.index, side).length;
 }
 
 function describe(
@@ -107,7 +118,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
   let stroke = "";
   let holding = false;
   let tabs: readonly TabSummary[] = [];
-  let tabsPending: Promise<readonly TabSummary[]> = Promise.resolve([]);
+  let tabsPending: Promise<TabList> = Promise.resolve(EMPTY_TABS);
   let gridTimer = 0;
   /** The tab's page zoom, which the overlay cancels out so it holds its size. */
   let zoom = 1;
@@ -220,14 +231,15 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       zoom = response.zoom;
       applyScale();
     });
-    tabsPending = send({ type: "tabs.list" }).then((response) => {
-      if (response.ok && "tabs" in response) return response.tabs;
+    tabsPending = send({ type: "tabs.list", allWindows: sync.grid.allWindows }).then((response) => {
+      if (response.ok && "tabs" in response)
+        return { tabs: response.tabs, groups: response.groups };
       console.debug("[write-click] tab list failed", response);
-      return [];
+      return EMPTY_TABS;
     });
     void tabsPending.then((list) => {
       if (!holding) return;
-      tabs = list;
+      tabs = list.tabs;
       // The stroke may already be drawn and labelled without a count.
       paint();
     });
@@ -243,12 +255,12 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     if (!grid) return;
     gridTimer = window.setTimeout(() => {
       void tabsPending.then((list) => {
-        if (holding && list.length > 0) {
-          grid.show(list);
+        if (holding && list.tabs.length > 0) {
+          grid.show(list.tabs, list.groups);
           settle();
           return;
         }
-        console.debug("[write-click] grid skipped", { holding, count: list.length });
+        console.debug("[write-click] grid skipped", { holding, count: list.tabs.length });
       });
     }, sync.grid.holdMs);
   };

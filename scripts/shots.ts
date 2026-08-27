@@ -90,6 +90,10 @@ const GRID = {
   size: "normal",
   cheatsheet: true,
   pickOnRelease: true,
+  // Off, unlike the shipped default: the capture run drives a browser of its
+  // own and a stray second window would put a heading and someone else's tabs
+  // in the store screenshot.
+  allWindows: false,
 } as const;
 
 /** One folder per locale the extension ships, since the listing takes a set per language. */

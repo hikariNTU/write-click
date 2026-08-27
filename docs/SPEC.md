@@ -196,7 +196,9 @@ Rules:
   release with no tile picked runs that stroke as usual. So holding still opens it; flicking straight into a stroke never does.
 - The tab list is requested the instant the trigger goes down, in parallel with that timer, so the
   panel has no fetch latency when it appears.
-- Data comes from the background: `{ id, title, favIconUrl, active, index }` for the current window.
+- Data comes from the background: `{ id, title, favIconUrl, active, index, pinned, windowId,
+ownWindow, groupId }` per tab, plus the groups those tabs belong to. Which windows it covers is
+  §6.5.
 - Layout is a **grid** of tiles — favicon plus truncated title, active tab marked. A radial or
   pie layout was considered and dropped: it stops scaling past roughly eight tabs.
 - Tiles are **sized, not counted**: the track list is `repeat(auto-fit, minmax(<tile>px, 1fr))`, so
@@ -330,6 +332,37 @@ somewhere the eye can go before the panel is even there. Do not reintroduce it.
 
 Only `opacity` and `transform` transition. `transition-all` animates the box metrics too, and the
 panel visibly reflows as the tab count lands.
+
+## 6.5 Every window, and tab groups
+
+`grid.allWindows` lists the tabs of every window in the profile, not only the one the gesture is in.
+On by default, and a toggle in settings: someone working in one window gains nothing from the
+headings, and someone working in four gets the whole session in one picker.
+
+- **Incognito never mixes with the rest, in either direction.** A gesture drawn in an ordinary
+  window must not put private tabs on screen — the extension can only see them at all if the user
+  has allowed it in incognito — and a gesture drawn in a private window listing every ordinary tab
+  is the same surprise the other way round. The background filters to tabs whose `incognito` matches
+  the sender's, so each side sees its own and the toggle changes nothing about that.
+- `windowType: "normal"` on the query: devtools windows and app popups have no tab strip worth
+  switching through.
+- Order is the layout. The background sorts own window first, then the other windows in a stable
+  order, each window's tabs in strip order, and the grid renders exactly that. A window heading is
+  drawn at each boundary, and only when more than one window is on screen — with a single one it
+  would be a label for everything.
+- **Picking a tab in another window raises that window.** `tabs.update` alone changes something the
+  user cannot see; `windows.update({ focused: true })` is the other half of the pick.
+- The close-to-the-side count in the readout filters to `ownWindow` first. Every window in the list
+  has an active tab of its own, and those commands only ever touch this window's strip.
+
+Tab groups need the `tabGroups` permission, which adds no install warning of its own on top of
+`tabs`. A group's colour runs down the left edge of every tile in it, and a heading carries the
+colour and the group's name at the start of each run — Chrome allows an untitled group, which reads
+as its colour alone in the strip and does the same here. Group runs are contiguous by construction:
+a group is contiguous in the strip, and the sort keeps strip order. The nine colours are set as
+inline styles from a palette in `tab-grid.ts`, since the build never sees those class names, and
+they are Chrome's own dark-background tones so a group looks like itself. A collapsed group's tabs
+are dimmed rather than dropped: picking one still works, and expands the group.
 
 ## 7. Overlay
 
@@ -507,7 +540,7 @@ not a bug to fix.
 ```ts
 interface SyncSettings {
   // chrome.storage.sync
-  version: 5;
+  version: 6;
   language: "auto" | Locale; // §10.2
   gestures: Record<string, CommandId>; // stroke -> command
   grid: {
@@ -516,6 +549,7 @@ interface SyncSettings {
     size: "compact" | "normal" | "large";
     cheatsheet: boolean;
     pickOnRelease: boolean; // §6.3
+    allWindows: boolean; // §6.5
   };
   trail: { show: boolean; color: string; width: number; showLabel: boolean };
   disabledOrigins: string[];
@@ -735,3 +769,29 @@ without a reload.
 
 Done criteria per phase: `npm run build`, `npm run typecheck`, and `npm run lint` all clean, and the
 phase's behaviour verified in a loaded unpacked build.
+
+## 12. Known gaps
+
+**A fullscreen element hides the overlay, and swallows the gesture with it.** Reported against a
+fullscreen `<video>`, and it is not specific to video or to the current tab.
+
+`element.requestFullscreen()` promotes that element into the browser's top layer. The top layer sits
+above everything the document paints, `z-index` included — 2147483647 on our host does not compete,
+because the host is not in the top layer at all. The overlay is still in the DOM and the canvas is
+still being drawn; it is simply painted underneath a surface the page has no say over. Chrome also
+routes pointer events at the fullscreen element rather than the document in some paths, so the
+trail can be missing _and_ the stroke never start.
+
+What to check when this is picked up:
+
+- `document.fullscreenElement` is the handle. It is non-null exactly when the top layer is in play,
+  and `fullscreenchange` fires on both entry and exit.
+- Moving the overlay host under `document.fullscreenElement` puts it inside the promoted subtree,
+  which is the one place it paints above. It has to move back on exit, and the element may be
+  anything, including one that clips or transforms its children.
+- A `<dialog>` opened with `showModal()` and any `popover` reach the top layer the same way, so a
+  fix aimed only at fullscreen leaves those two behind.
+- Whether the listeners need to move too, or whether capture-phase listeners on `document` still
+  see the events, has to be measured in a loaded build rather than assumed.
+
+Nothing here is fixed yet. Filed so the cause is not re-derived from scratch.
