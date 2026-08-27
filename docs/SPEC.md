@@ -832,8 +832,17 @@ Under them is a **try-it pad** wired through the real `attachTrigger`. The gestu
 stroke from any pointer press, which teaches nothing about the trigger; this one answers the
 configured trigger and nothing else, and names a near miss — "right button is not the trigger. Hold
 Option + right button." — because a first gesture drawn with the wrong thing held is exactly the
-failure this card exists for, and on a real page that failure is silent. A hit shows the stroke as
-arrows and names the command it matched, or says the stroke is unassigned. `attachTrigger` listens
+failure this card exists for, and on a real page that failure is silent.
+
+The pad draws **while the stroke is being drawn**: the line on its own canvas in the trail's
+configured colour and width, the arrows, and the name of the command the stroke would run right now,
+all per sample. A pad that only answered on release would teach the wrong model of the thing — on a
+page the readout names the command before the button comes up, and bending the stroke changes the
+answer. The line stays up after the release, as the answer to what was just drawn, and is cleared
+when the next stroke starts. The overlay's `Trail` is deliberately not reused: it owns a
+viewport-sized canvas inside the content script's shadow root and decimates and smooths for a line
+that runs across a whole page, none of which applies to a box 160 pixels tall. What has to agree is
+the colour and the width, and those come from the same settings. `attachTrigger` listens
 on the window, so strokes begun elsewhere on the page are dropped by geometry; its context-menu
 suppression is window-wide while the pad is mounted, which is the same behaviour the trigger has on
 a page and the point of trying it. Beside the pad's heading is a link back to the welcome page
@@ -931,9 +940,11 @@ It exists because the trigger is per device and platform-dependent, and on macOS
 default pairs the right button with a modifier (§3.1). A new user's first instinct is a bare
 right-drag, which does nothing and says nothing. The options page explains that in a paragraph and
 the popup prints it as a line, and neither is read before the first gesture fails; this page is read,
-because it opens itself. Three beats: what the trigger is **on this machine**, computed rather than
-described; the glyph from §10.1; and the same try-it pad, so the first successful gesture happens
-here instead of on a page where failure is silent.
+because it opens itself. Four beats: what the trigger is **on this machine**, computed rather than
+described; the glyph from §10.1; **the strokes that are already assigned**, as arrows and names, in
+the same order the overlay's cheatsheet uses — a page that teaches the trigger and stops there
+leaves someone holding the right key with nothing to draw; and the same try-it pad, so the first
+successful gesture happens here instead of on a page where failure is silent.
 
 It is reachable afterwards from the Trigger card in settings, which is the section it teaches;
 without that link a page that opens itself once can never be read twice.

@@ -2,7 +2,7 @@ import { applyStaticMessages, setLocale, t } from "./shared/i18n";
 import { BRAND_ICON, UI_ICONS } from "./shared/icons";
 import { loadSettings } from "./shared/settings";
 import { menuFiresOnMouseDown } from "./shared/trigger";
-import { mouseGlyph, triggerName, triggerPad } from "./trigger-ui";
+import { gestureList, mouseGlyph, triggerName, triggerPad } from "./trigger-ui";
 import { BUTTON, card, el, icon } from "./ui";
 
 /**
@@ -47,9 +47,15 @@ void (async () => {
 
   // The page is torn down only with the tab, so the pad's listeners live as
   // long as it does; the controller exists because triggerPad takes one.
+  // What to draw, before the place to draw it: a page that teaches the trigger
+  // and stops there leaves someone holding the right key with nothing to do.
+  const known = card(t("welcome_gestures_title"), t("welcome_gestures_body"), UI_ICONS.gestures);
+  known.append(gestureList(sync.gestures));
+  document.querySelector("#gestures")?.replaceChildren(known);
+
   const life = new AbortController();
   const tryIt = card(t("welcome_try_title"), t("welcome_try_body"), UI_ICONS.draw);
-  tryIt.append(triggerPad(local.trigger, sync.gestures, life.signal));
+  tryIt.append(triggerPad(local.trigger, sync.gestures, sync.trail, life.signal));
   document.querySelector("#try")?.replaceChildren(tryIt);
 
   const next = card(t("welcome_next_title"), t("welcome_next_body"), UI_ICONS.settings);

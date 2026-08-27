@@ -634,8 +634,14 @@
       }
     }
   },
+  "welcome_gestures_body": {
+    "message": "Drawn with the trigger held. Every one of them can be changed, and more assigned, in settings."
+  },
+  "welcome_gestures_title": {
+    "message": "The gestures you have"
+  },
   "welcome_next_body": {
-    "message": "Common commands are assigned already. The rest, and the trigger itself, are in settings."
+    "message": "Every stroke above can be reassigned, and the commands with no stroke yet are there too, along with the trigger."
   },
   "welcome_next_title": {
     "message": "From here"

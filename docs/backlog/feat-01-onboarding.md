@@ -43,6 +43,9 @@ built once for the options page, the popup and this one.
 A way back. A page that opens once on install and never again cannot be re-read, so the Trigger card
 in settings carries a link to it, beside the try-it pad.
 
+A fourth beat. The three above teach what to hold and leave the reader with nothing to draw, so the
+page also lists the strokes that are already assigned, as arrows and names.
+
 Nothing in the manifest points at `welcome.html`, so nothing in the build graph reaches it and Vite
 emitted no such file: it is named in `build.rollupOptions.input`. `options.html` and `popup.html`
 need no entry, because `options_ui` and `default_popup` reach them.

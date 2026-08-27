@@ -47,6 +47,11 @@ three states:
 
 Mostly existing code. This _is_ the tutorial; everything else is decoration on it.
 
+Shipped with the stroke drawn live on the pad's own canvas, in the trail's colour and width, and
+with the arrows and the matched command updating per sample rather than on release: the readout on
+a real page names the command while the button is still down, and a pad that waits for the release
+teaches a different thing from the one being taught.
+
 **2. An animated mouse glyph** beside the trigger rows. Inline SVG mouse, the selected button lit,
 a looping CSS animation: press, drag an `L`, release, with the path revealed through
 `stroke-dasharray`. The key is drawn too — a cap above the mouse carrying the modifier's name, or

@@ -288,7 +288,7 @@ function triggerCard(): HTMLElement {
       void chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
     }),
   );
-  section.append(tryHead, triggerPad(local.trigger, sync.gestures, transient.signal));
+  section.append(tryHead, triggerPad(local.trigger, sync.gestures, sync.trail, transient.signal));
 
   // Not "Advanced": a middle button or a keyboard key is nobody's expert
   // setting, it is the third answer to the question above, and a fold that

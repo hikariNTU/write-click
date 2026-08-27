@@ -634,8 +634,14 @@
       }
     }
   },
+  "welcome_gestures_body": {
+    "message": "按住觸發鍵即可繪製。所有手勢皆可於設定中變更，亦可指派更多指令。"
+  },
+  "welcome_gestures_title": {
+    "message": "目前的手勢"
+  },
   "welcome_next_body": {
-    "message": "常用指令已預先指派。其餘指令與觸發鍵可於設定中調整。"
+    "message": "上列手勢皆可重新指派，尚未指派筆畫的指令與觸發鍵亦一併於設定中調整。"
   },
   "welcome_next_title": {
     "message": "後續設定"
