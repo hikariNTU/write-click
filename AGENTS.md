@@ -4,6 +4,11 @@
 stroke table, tab grid behaviour, storage shape, phase plan. If code and spec disagree, one is a
 bug. Behaviour changes update the spec in the same commit.
 
+**Then read [`docs/backlog/README.md`](docs/backlog/README.md).** It is the findings list from the
+full-repo review of 2026-08-27, and **13 of its 17 items are still `ongoing`**. Check it before
+starting new work, and before assuming something is a fresh discovery. Fixing an item means flipping
+its `Status` line to `done` and ticking the index in the same commit.
+
 ## Stack
 
 Vite + `@crxjs/vite-plugin` (MV3), TypeScript strict, Tailwind v4 via `@tailwindcss/vite`,
@@ -72,6 +77,11 @@ recognizer was wrong for months of edits and only a test caught it — keep the 
   `pointerdown` at all.
 - The overlay is sized by `uiScale / pageZoom` and nothing else (spec §7.4). Anything new the
   overlay draws goes through that number, or it grows with the page.
+- The layout viewport comes from `viewport()` in `src/content/viewport.ts`. Never read
+  `window.innerWidth` or `documentElement.clientWidth` for it directly: the first counts a scrollbar
+  the overlay does not span, and the second is the whole document on a quirks-mode page (spec §7.4).
+- The grid hit-tests inside its panel, not just inside each tile. A tile scrolled out of the panel's
+  overflow clip still has a rect, in the middle of the window where the stroke is drawn (spec §6.1).
 - The middle of the window stays free of anything that takes pointer events. The tab tiles dock to
   the top edge and the gesture list to the bottom; the centre belongs to the stroke and the readout
   (spec §6.4). Anchoring the tab panel to the cursor was tried and removed for being clanky.

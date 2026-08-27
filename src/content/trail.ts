@@ -1,5 +1,6 @@
 import { distanceSquared } from "../shared/recognizer";
 import type { Point } from "../shared/recognizer";
+import { viewport } from "./viewport";
 
 export interface TrailOptions {
   /** Draw the stroke at all. Everything else keeps running when this is off. */
@@ -105,12 +106,12 @@ export class Trail {
   /**
    * Sizes the backing stores to the canvas's own CSS box.
    *
-   * `clientWidth`, not `window.innerWidth`: the two differ by the width of a
-   * classic scrollbar, and the canvas is `fixed inset-0 h-full w-full`, so its
-   * CSS box is the layout viewport. Sizing the bitmap from `innerWidth` makes
-   * it wider than the box it is displayed in, and the browser squeezes it to
-   * fit — so everything drawn drifts left of the cursor, by nothing at the left
-   * edge and by the whole scrollbar at the right.
+   * The canvas is `fixed inset-0 h-full w-full`, so its CSS box is the layout
+   * viewport, and `viewport()` is the only thing that reports that in both
+   * rendering modes — hence not `window.innerWidth` and not
+   * `documentElement.clientWidth` directly. Either one makes the bitmap a
+   * different size from the box it is displayed in, the browser squeezes it to
+   * fit, and everything drawn drifts away from the cursor.
    *
    * Re-checked per frame rather than only on `resize`, because a page that
    * grows tall enough to need a scrollbar changes the layout viewport without
@@ -118,8 +119,9 @@ export class Trail {
    */
   #resize(): void {
     const ratio = window.devicePixelRatio || 1;
-    const width = Math.round(document.documentElement.clientWidth * ratio);
-    const height = Math.round(document.documentElement.clientHeight * ratio);
+    const box = viewport();
+    const width = Math.round(box.width * ratio);
+    const height = Math.round(box.height * ratio);
     if (this.#canvas.width === width && this.#canvas.height === height) return;
     for (const canvas of [this.#canvas, this.#buffer]) {
       canvas.width = width;

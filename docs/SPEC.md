@@ -174,6 +174,13 @@ Rules:
 
 - Tab commands never touch pinned tabs in the bulk closers.
 - `window.minimize` uses `chrome.windows.update`, which needs no extra permission.
+- `window.fullscreen` remembers what the window was before, in `chrome.storage.session`, and puts it
+  back. `"normal"` is not a safe guess on the way out: a maximized window that went fullscreen came
+  back un-maximized. Two things about the exit are platform behaviour rather than choices — leaving
+  fullscreen and asking for a state in one `windows.update` drops the state, and a second call issued
+  immediately is dropped too, because the exit is animated and the window is still fullscreen when
+  the first call returns. So the exit is its own call, and the restore waits for the reported state
+  to stop being `"fullscreen"` (56–110ms, measured) before it is applied.
 - `tab.reloadHard` is `chrome.tabs.reload` with `bypassCache: true`.
 - The tabs a bulk closer removes come from `tabsOnSide()` in `src/shared/tabs.ts`, which the readout
   also counts with. Both sides must keep using it: a count that disagrees with what actually closes
@@ -188,6 +195,11 @@ Rules:
 
 - Shown while the trigger is held, after `GRID_HOLD_MS = 180`. The delay is only there so a quick
   flick gesture, which is over before the timer fires, never flashes it.
+- **The grid is built whether or not it is switched on, and asked at the moment it would be shown.**
+  Constructing it from `grid.enabled` meant the toggle did nothing on a tab that was already open,
+  and neither did the size, which was fixed at construction — while every other setting took effect
+  immediately through `chrome.storage.onChanged`. An unused grid is a handful of nodes in a closed
+  shadow root that nothing ever reveals; a setting that looks dead is worse.
 - **Movement must not dismiss it.** Picking a tile means moving the pointer onto the tile, so any
   rule that reads movement as "the user is drawing instead" cancels the feature at exactly the
   moment it is being used. This was tried with an 8px threshold and again with 32px; both made the
@@ -248,6 +260,14 @@ So the top frame listens on `window` in the capture phase, and `TabGrid.pickAt()
 whose box contains the pointer. The press is then cancelled and the following `click` and `mouseup`
 are swallowed: the capture node underneath is a page element, and picking a tab that happens to sit
 over a link must not also follow it.
+
+**Hit testing is clipped to the panel first.** The panel scrolls its own overflow, so a tile
+scrolled past that clip keeps a viewport rect — one that lands in the middle of the window, which is
+exactly where the stroke is drawn. Testing tiles alone therefore picked tabs that were never on
+screen: a release over blank page, with no highlight anywhere to warn of it, switched to whatever
+tile happened to have been scrolled under the pointer. `#tileAt()` rejects any point outside
+`#panel.getBoundingClientRect()` before it looks at a tile, and both `pickAt()` and `hoverAt()` go
+through it.
 
 `:hover` is frozen by the same capture, so the highlight is moved by hand in `hoverAt()`.
 
@@ -505,9 +525,20 @@ together with the display's scale factor and the two cannot be separated.
 scale before it lands on screen, so a layout width of 900 is 900 screen pixels whatever the zoom —
 the constant is written as-is and the transform does the work. Dividing it by the scale as well
 double-counts the zoom and was a bug. The conversion runs the other way for anything measured _from_
-the page: `window.innerWidth` and `window.innerHeight` are in the page's own pixels, so they are
-divided by the scale before being compared with a design size. `TabGrid.#room()` is that conversion,
-and every fit decision goes through it.
+the page: the layout viewport is in the page's own pixels, so it is divided by the scale before
+being compared with a design size. `TabGrid.#room()` is that conversion, and every fit decision goes
+through it.
+
+**The layout viewport comes from `viewport()` in `src/content/viewport.ts`, never from a property
+read directly.** Neither obvious choice is that number in every case. `window.innerWidth` counts a
+classic scrollbar the overlay's fixed boxes do not reach across, which drifts everything the trail
+draws to the left of the cursor. `documentElement.clientWidth/clientHeight` is the layout viewport
+only in standards mode; in quirks mode — any page served without a doctype — it is the root element's
+own box, so on a long page it reports the whole document. Measured at 3016 against an `innerHeight`
+of 739, which let the tab grid budget itself several times the height of the window and slide under
+the gesture list, and made the trail's bitmap disagree with its CSS box so the stroke was drawn well
+away from the pointer. `viewport()` reads the client box of `body` in quirks mode and of
+`documentElement` otherwise, which is right in both.
 
 Applied three different ways, because the three layers are different kinds of thing:
 
@@ -813,5 +844,10 @@ phase's behaviour verified in a loaded unpacked build.
 
 ## 12. Known gaps
 
-Nothing outstanding. The fullscreen gap that stood here — a fullscreen element painting over the
-overlay — is fixed in §7.5.
+The fullscreen gap that stood here — a fullscreen element painting over the overlay — is fixed in
+§7.5.
+
+Everything else outstanding lives in [`docs/backlog/`](backlog/README.md), one file per finding,
+from the full-repo review of 2026-08-27. **13 of the 17 are still open.** The four that contradicted
+this spec are fixed and their reasoning has been folded into it: BUG-01 into §6.1, BUG-02 into §7.4,
+BUG-03 into §6, BUG-09 into §5.

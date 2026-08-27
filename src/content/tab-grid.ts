@@ -7,6 +7,7 @@ import { containsPoint } from "../shared/geometry";
 import type { Point } from "../shared/recognizer";
 import type { GridSize } from "../shared/settings";
 import type { PanelBox } from "./trail";
+import { viewport } from "./viewport";
 
 /** Kept clear of the left and right edges, so a panel's border is never clipped. */
 const MARGIN = 12;
@@ -131,7 +132,7 @@ export class TabGrid {
   readonly #panel = document.createElement("div");
   readonly #grid = document.createElement("div");
   readonly #caption = document.createElement("div");
-  readonly #size: { tile: number; panel: number };
+  #size: { tile: number; panel: number } = SIZES.normal;
   readonly #cheatPanel = document.createElement("div");
   readonly #cheatsheet = document.createElement("div");
   #visible = false;
@@ -147,7 +148,6 @@ export class TabGrid {
   #scale = 1;
 
   constructor(root: ShadowRoot, size: GridSize) {
-    this.#size = SIZES[size] ?? SIZES.normal;
     // Toggled with `invisible`, not `hidden`: both `hidden` and `grid` set
     // `display`, so which one wins would come down to CSS source order.
     this.#root.className = "pointer-events-none invisible fixed inset-0 z-10";
@@ -164,13 +164,27 @@ export class TabGrid {
     this.#caption.className =
       "mb-3 flex items-baseline justify-between px-1 text-[11px] font-medium text-mist-400";
     this.#grid.className = "grid gap-2";
-    this.#grid.style.gridTemplateColumns = `repeat(auto-fit, minmax(${this.#size.tile}px, 1fr))`;
+    this.setSize(size);
     this.#panel.append(this.#caption, this.#grid);
     this.#cheatPanel.append(this.#cheatsheet);
     this.#topBar.append(this.#panel);
     this.#bottomBar.append(this.#cheatPanel);
     this.#root.append(this.#topBar, this.#bottomBar);
     root.append(this.#root);
+  }
+
+  /**
+   * How wide a tile wants to be, and therefore how many fit per row.
+   *
+   * Settable rather than fixed at construction, so changing the size in options
+   * reaches tabs that are already open — everything else about the overlay
+   * already follows `chrome.storage.onChanged` without a reload. The panel's own
+   * width and height are recomputed by `show()`, so only the track list has to
+   * be rewritten here.
+   */
+  setSize(size: GridSize): void {
+    this.#size = SIZES[size] ?? SIZES.normal;
+    this.#grid.style.gridTemplateColumns = `repeat(auto-fit, minmax(${this.#size.tile}px, 1fr))`;
   }
 
   /**
@@ -282,8 +296,19 @@ export class TabGrid {
     next?.node.classList.add(...HOVER);
   }
 
+  /**
+   * Clipped against the panel first, and only then against each tile.
+   *
+   * The panel scrolls its own overflow, so a tile past that clip keeps a
+   * viewport rect — one that lands in the middle of the window, which is
+   * exactly where the stroke is drawn. Testing tiles alone therefore picked
+   * tabs that were never on screen: a release over blank page, with no
+   * highlight anywhere to warn of it, switched to whatever tile happened to
+   * have been scrolled under the pointer.
+   */
   #tileAt(point: Point): Tile | undefined {
     if (!this.#visible) return undefined;
+    if (!containsPoint(this.#panel.getBoundingClientRect(), point)) return undefined;
     return this.#tiles.find(({ node }) => containsPoint(node.getBoundingClientRect(), point));
   }
 
@@ -315,12 +340,16 @@ export class TabGrid {
    * compared.
    */
   #room(): { width: number; height: number } {
+    // The layout viewport, which is what the bars span, read through
+    // `viewport()` because neither `window.innerWidth` nor
+    // `documentElement.clientWidth` is that number in every case: the first
+    // counts a classic scrollbar the bars do not reach across, and the second
+    // is the whole document on a quirks-mode page, which let this panel budget
+    // itself several times the height of the window.
+    const box = viewport();
     return {
-      // The layout viewport, which is what the bars span — `window.innerWidth`
-      // counts a classic scrollbar the bars do not reach across, so budgeting
-      // against it lets a wide panel run out past the right edge and under it.
-      width: document.documentElement.clientWidth / this.#scale - 2 * MARGIN,
-      height: document.documentElement.clientHeight / this.#scale - 2 * EDGE_GAP,
+      width: box.width / this.#scale - 2 * MARGIN,
+      height: box.height / this.#scale - 2 * EDGE_GAP,
     };
   }
 

@@ -1,6 +1,56 @@
 import type { BackgroundCommandId } from "../shared/messages";
 import { tabsOnSide } from "../shared/tabs";
 
+/**
+ * Where a window's pre-fullscreen state is remembered.
+ *
+ * Chrome reports only `"fullscreen"` while a window is there, so leaving has to
+ * be told what to go back to, and `"normal"` is not a safe guess: a maximized
+ * window that went fullscreen and came back was un-maximized, losing a state
+ * the user never asked to leave.
+ *
+ * `storage.session` rather than a module-level Map. The two gestures are one
+ * user action apart in intent and can be minutes apart in fact, and this worker
+ * does not live that long — a Map was measured forgetting between them within
+ * seconds. Session storage outlives the worker, is cleared when the browser
+ * closes, never touches the disk, and rides on the `storage` permission the
+ * extension already holds.
+ */
+export function priorStateKey(windowId: number): string {
+  return `window.priorState.${windowId}`;
+}
+
+/**
+ * Waits for a window to have actually left fullscreen.
+ *
+ * `windows.update` resolves as soon as the request is accepted, and on macOS
+ * the exit is animated, so the window is still fullscreen when the call comes
+ * back. A second state applied in that gap is dropped — which is why leaving
+ * fullscreen and asking for `maximized` cannot be one call, and why two calls
+ * back to back are not enough either. Measured: the reported state flips
+ * 56–110ms after the request, and applying `maximized` the instant it flips is
+ * honoured every time.
+ *
+ * Bounded, and gives up quietly. The window may also have been closed, in which
+ * case there is nothing to restore and nothing to report.
+ */
+async function leftFullscreen(windowId: number): Promise<void> {
+  // A poll is sequential by definition: there is nothing here to run in
+  // parallel, which is what `no-await-in-loop` is for.
+  /* eslint-disable no-await-in-loop */
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const window = await chrome.windows.get(windowId).catch(() => undefined);
+    if (!window || window.state !== "fullscreen") return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  /* eslint-enable no-await-in-loop */
+}
+
+/** Only the two states there is any point putting a window back into. */
+function restorable(state: unknown): state is "normal" | "maximized" {
+  return state === "normal" || state === "maximized";
+}
+
 /** Tabs of the sender's window, in strip order. */
 async function siblings(windowId: number): Promise<chrome.tabs.Tab[]> {
   const tabs = await chrome.tabs.query({ windowId });
@@ -104,8 +154,25 @@ export async function runTabCommand(
     }
     case "window.fullscreen": {
       const current = await chrome.windows.get(windowId);
-      const state = current.state === "fullscreen" ? "normal" : "fullscreen";
-      await chrome.windows.update(windowId, { state });
+      const key = priorStateKey(windowId);
+      if (current.state === "fullscreen") {
+        const stored: unknown = (await chrome.storage.session.get(key))[key];
+        await chrome.storage.session.remove(key);
+        // The exit is always its own call: asking to leave fullscreen and to be
+        // maximized in one update lands on `normal`, because Chrome takes the
+        // window out of fullscreen and ignores the rest.
+        await chrome.windows.update(windowId, { state: "normal" });
+        if (stored !== "maximized") return;
+        await leftFullscreen(windowId);
+        await chrome.windows.update(windowId, { state: "maximized" });
+        return;
+      }
+      // ChromeOS's locked fullscreen and a minimized window are not somewhere
+      // to put a window back, so anything else clears the note rather than
+      // keeping one that would be wrong.
+      if (restorable(current.state)) await chrome.storage.session.set({ [key]: current.state });
+      else await chrome.storage.session.remove(key);
+      await chrome.windows.update(windowId, { state: "fullscreen" });
       return;
     }
     case "zoom.in":

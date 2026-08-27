@@ -1,6 +1,6 @@
 import type { Request, Response, TabGroupSummary, TabSummary } from "../shared/messages";
 import { migrate } from "../shared/settings";
-import { runTabCommand } from "./tab-commands";
+import { priorStateKey, runTabCommand } from "./tab-commands";
 
 const NO_GROUP = -1;
 
@@ -132,6 +132,12 @@ chrome.runtime.onMessage.addListener((request: Request, sender, respond) => {
     .catch((error: unknown) => respond({ ok: false, error: String(error) }));
   // Keeps the message channel open for the async handler.
   return true;
+});
+
+// A window that is gone is never coming back to a state, and its note in
+// session storage would otherwise sit there until the browser closes.
+chrome.windows.onRemoved.addListener((windowId) => {
+  void chrome.storage.session.remove(priorStateKey(windowId));
 });
 
 chrome.runtime.onInstalled.addListener((details) => {

@@ -102,7 +102,13 @@ function swallow(event: Event): void {
 export function createView(sync: SyncSettings, local: LocalSettings, onPick: () => void): View {
   const overlay = createOverlay();
   const hud = new Hud(overlay);
-  const grid = sync.grid.enabled ? new TabGrid(overlay, sync.grid.size) : undefined;
+  // Built whether or not the grid is switched on, and asked at the moment it
+  // would be shown instead. Constructing it from `sync.grid.enabled` meant the
+  // toggle did nothing on a tab that was already open, and neither did the
+  // size, which used to be fixed at construction — while every other setting
+  // took effect immediately. An unused grid is a handful of nodes in a closed
+  // shadow root that nothing ever reveals.
+  const grid = new TabGrid(overlay, sync.grid.size);
   // Built last, and handed the grid: the stroke draws above the panels, and
   // thins out where it crosses one so the tile underneath stays readable.
   // Read through a function, not captured: `chrome.storage.onChanged` replaces
@@ -111,7 +117,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
   const trail = new Trail(
     overlay,
     () => sync.trail,
-    () => grid?.panelRects() ?? [],
+    () => grid.panelRects(),
   );
 
   let points: Point[] = [];
@@ -131,7 +137,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     const scale = (local.uiScale > 0 ? local.uiScale : 1) / (zoom > 0 ? zoom : 1);
     trail.setScale(scale);
     hud.setScale(scale);
-    grid?.setScale(scale);
+    grid.setScale(scale);
   };
 
   /**
@@ -165,7 +171,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
     clearTimeout(gridTimer);
     trail.clear();
     hud.hide();
-    grid?.hide();
+    grid.hide();
   };
 
   const pick = (tabId: number): void => {
@@ -196,7 +202,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
    * is chorded, which is why picking worked there and nowhere else.
    */
   const onPress = (event: MouseEvent): void => {
-    if (!grid?.visible || event.button !== 0) return;
+    if (!grid.visible || event.button !== 0) return;
     const tabId = grid.pickAt({ x: event.clientX, y: event.clientY });
     if (tabId === undefined) {
       console.debug("[write-click] press missed every tile", event.clientX, event.clientY);
@@ -252,7 +258,9 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
    * is drawing instead" cancels the feature the moment it is used.
    */
   const scheduleGrid = (): void => {
-    if (!grid) return;
+    // Read here rather than at construction, so switching the grid on reaches
+    // tabs that are already open.
+    if (!sync.grid.enabled) return;
     gridTimer = window.setTimeout(() => {
       void tabsPending.then((list) => {
         if (holding && list.tabs.length > 0) {
@@ -267,7 +275,8 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
 
   const refresh = (): void => {
     applyScale();
-    grid?.setGestures(sync.grid.cheatsheet ? sync.gestures : {});
+    grid.setSize(sync.grid.size);
+    grid.setGestures(sync.grid.cheatsheet ? sync.gestures : {});
   };
   refresh();
 
@@ -285,7 +294,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       points.push(point);
       trail.render(points);
       // :hover is frozen by the same capture, so the highlight is moved by hand.
-      grid?.hoverAt(point);
+      grid.hoverAt(point);
       const next = quantize(points);
       if (next === stroke) return;
       stroke = next;
@@ -296,7 +305,7 @@ export function createView(sync: SyncSettings, local: LocalSettings, onPick: () 
       // option: the click that would otherwise be needed happens while the
       // trigger button is still down, and on release Chrome opens the context
       // menu the extension has no way to suppress (docs/SPEC.md §6.2).
-      const tabId = sync.grid.pickOnRelease ? grid?.hoveredTabId : undefined;
+      const tabId = sync.grid.pickOnRelease ? grid.hoveredTabId : undefined;
       if (tabId !== undefined) {
         pick(tabId);
         return;
