@@ -57,22 +57,43 @@ function bar(edge: "top" | "bottom"): HTMLDivElement {
 }
 
 /**
- * Applied by hand rather than by `:hover`. While a mouse button is held, Blink
+ * The mark on the tile a release would land on.
+ *
+ * Applied by hand rather than by `:hover`: while a mouse button is held, Blink
  * captures events to the node that received the press, and hover stops
  * following the cursor with it.
  *
- * Loud on purpose. A tinted border and a 10% wash read fine on the display this
- * was designed on and were reported as no highlight at all on another — and the
- * one thing this mark has to do is say "let go here and you land on this tab",
- * across every panel, every backdrop blur and every screen. The outer ring is a
- * shadow rather than a border so the tile keeps its metrics and nothing on the
- * row shifts as the highlight moves.
+ * Written as inline style rather than as classes, which is not the house style
+ * and is deliberate. A tile already carries `border-white/5 bg-white/[0.03]`,
+ * and a highlight class for the same property has the same specificity — which
+ * of the two wins is decided by the order Tailwind happens to emit them in,
+ * something this file does not control and cannot see. Inline style beats every
+ * class in every order. It also needs no `@property` registration, which is the
+ * other thing that behaves differently inside a closed shadow root.
+ *
+ * Loud on purpose. A tinted border and a 10% wash read on the display this was
+ * designed on and were reported as no highlight at all on another, and the one
+ * thing this mark has to do is say "let go here and you land on this tab" —
+ * across every backdrop, every panel and every screen. The ring is a shadow
+ * rather than a border so the tile keeps its metrics and nothing on the row
+ * shifts as the highlight moves along it.
  */
-const HOVER = [
-  "border-emerald-300",
-  "bg-emerald-400/25",
-  "shadow-[0_0_0_2px_rgba(110,231,183,0.55)]",
-] as const;
+const HOVER_STYLE = {
+  borderColor: "#6ee7b7",
+  backgroundColor: "rgba(16, 185, 129, 0.28)",
+  boxShadow: "0 0 0 2px rgba(110, 231, 183, 0.55)",
+} as const;
+
+/** Puts the mark on a tile, or takes it off. Only the three properties above. */
+function mark(node: HTMLElement, on: boolean): void {
+  for (const [property, value] of Object.entries(HOVER_STYLE)) {
+    node.style.setProperty(
+      // `borderColor` -> `border-color`: setProperty wants the CSS spelling.
+      property.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`),
+      on ? value : "",
+    );
+  }
+}
 
 /**
  * The tile for the tab already in front.
@@ -335,18 +356,23 @@ export class TabGrid {
   /**
    * The one place the highlight moves, whether a pointer or a wheel moved it.
    *
-   * The current tab's tile already carries these classes; taking them off it on
-   * the way out would strip its own styling. Leaving it unhighlightable also
-   * keeps a release over it from re-activating the tab already in front — and a
+   * The current tab's tile is never marked: that keeps a release over it from
+   * re-activating the tab already in front, and it leaves the accent to the
+   * tile that would actually do something — and a
    * wheel that lands back on it says "no switch", which is the right answer for
    * a notch up followed by a notch down.
    */
   #highlight(tile: Tile | undefined): void {
     const next = tile && !tile.current ? tile : undefined;
     if (next === this.#hovered) return;
-    this.#hovered?.node.classList.remove(...HOVER);
+    // Every move of the highlight, both ends of it. A highlight that is set by
+    // a notch and cleared by the pointer jitter that same notch produced looks
+    // identical to one that was never set at all, and the two have nothing in
+    // common to fix.
+    console.debug("[write-click] highlight", this.#hovered?.tabId, "->", next?.tabId);
+    if (this.#hovered) mark(this.#hovered.node, false);
     this.#hovered = next;
-    next?.node.classList.add(...HOVER);
+    if (next) mark(next.node, true);
   }
 
   /**
