@@ -1,6 +1,6 @@
 # STORE-02 — Fix the captures before composing slides
 
-- **Status:** ongoing
+- **Status:** done
 - **Area:** `scripts/shots.ts`, `shots/fixtures/page.html`, `docs/store-assets.md`
 - **Found:** 2026-08-27, repo review of `shots/out/en/`
 
@@ -50,3 +50,24 @@ Copy is a `copy.json` question, not a capture question — see `store-01-slide-p
 
 `docs/store-assets.md` still records the promo tiles as not done: 440×280 is **required** for the
 listing, 1400×560 is optional and only used if featured.
+
+## What was done
+
+- **`1-gesture`** — the fixture's lower right is now paper: the readout sits in an empty band across
+  the middle of the window, and the stroke is drawn clear of the cards and the body text.
+- **`2-grid`** — the last two tabs of the strip are a named group, so the grid shows a group heading
+  and the coloured edge on each tile in the run. Rows land whole.
+- **`3-options`** — the amber context-menu warning is gone from this frame on its own: UX-02
+  replaced the three dropdowns with one question, a glyph and a pad. Added `8-gestures-window` for
+  the gesture rows at listing size.
+- **The cheatsheet** — `6-cheatsheet`, cut from the bottom of the window mid-gesture. Wider than the
+  panel on purpose: the list alone is a ribbon six times as wide as it is tall, and where it sits is
+  half of what the picture says.
+- **Welcome** — `7-welcome` whole, and `9-welcome-trigger` cropped to the trigger card.
+
+**Not done: the second window in the grid.** Nine tiles plus two window headings and a group heading
+overflow the panel's height budget at this window size, and a clipped row is the symptom this file
+opened with. The grid's `allWindows` stays off in the harness. A capture of it needs either a
+shorter strip or a taller window, and both change what shots 1 and 2 are showing.
+
+The promo tiles remain outstanding in `docs/store-assets.md`.

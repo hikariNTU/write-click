@@ -11,7 +11,8 @@ writing and Google changes them without much noise.
 | Small promo tile   | 440×280             | Yes               | Shown in search results and category pages                |
 | Marquee promo tile | 1400×560            | No                | Only used if featured                                     |
 
-Only the screenshots are generated so far. The promo tiles are still to do.
+The screenshots and the listing images they compose into are generated. The promo tiles are still
+to do: 440×280 is required for the listing, 1400×560 is optional and only used if featured.
 
 ## The captures
 
@@ -30,24 +31,74 @@ fact rather than a remembered one: at each release, ask whether anything in that
 entry changes what one of these shows, and re-capture only those. A listing edit is reviewed but
 needs no version bump, so a re-capture can be submitted on its own.
 
-| #   | File         | Shows                                                               | Captured at |
-| --- | ------------ | ------------------------------------------------------------------- | ----------- |
-| 1   | `1-gesture`  | A stroke mid-draw, with the readout naming what it matched          | —           |
-| 2   | `2-grid`     | The tab grid open, a tile under the pointer, the gesture list below | —           |
-| 3   | `3-options`  | The settings page, side nav and the first cards                     | —           |
-| 4   | `4-gestures` | The gestures card, cropped                                          | —           |
-| 5   | `5-overlay`  | The overlay card, cropped                                           | —           |
+| #   | File                | Shows                                                               | Captured at |
+| --- | ------------------- | ------------------------------------------------------------------- | ----------- |
+| 1   | `1-gesture`         | A stroke mid-draw, with the readout naming what it matched          | 1.0.0       |
+| 2   | `2-grid`            | The tab grid open, a tile under the pointer, one named group        | 1.0.0       |
+| 3   | `3-options`         | The settings page, side nav, the trigger card and its pad           | 1.0.0       |
+| 4   | `4-gestures`        | The gestures card, cropped                                          | 1.0.0       |
+| 5   | `5-overlay`         | The overlay card, cropped                                           | 1.0.0       |
+| 6   | `6-cheatsheet`      | The bottom of the window mid-gesture: the stroke and the cheatsheet | 1.0.0       |
+| 7   | `7-welcome`         | The welcome page as a whole window                                  | 1.0.0       |
+| 8   | `8-gestures-window` | The settings page scrolled to the gesture rows, at listing size     | 1.0.0       |
+| 9   | `9-welcome-trigger` | The welcome page's trigger card, cropped                            | 1.0.0       |
 
 1 and 2 carry the listing: between them they are the whole extension. 1 draws
 `URD` — close the tabs to the right — because its readout says something a static feature list
 cannot: how many tabs it would _actually_ close, counted with the same filter the background uses.
 
-3 is a full window at listing size. 4 and 5 are cropped to their card and kept at 2×, for the
-README, where they sit at whatever width the column is.
+3, 7 and 8 are full windows at listing size. 4, 5, 6 and 9 are cut to one region and kept at 2×.
+A crop is not only a README convenience: a region 624 CSS pixels wide is 1248 real pixels, so it
+fills the width of a slide while still being downscaled — which is how the sentence naming the
+trigger comes out large enough to read rather than merely recognise. 4 and 5 stay README material,
+where they sit at whatever width the column is.
+
+**Captured with reduced motion on.** The mouse glyph animates its press on a three second loop, and
+an untimed screenshot lands wherever it lands: a stub of a stroke, or a button that happens to be
+unlit. `prefers-reduced-motion` is a state the extension ships, and it is the frame worth keeping —
+the lit button, the raised keycap and the finished stroke, held still.
 
 **A capture is not a listing image.** These are bare screenshots. Composing one with a headline on a
-background is a separate step and deliberately not built yet: the copy is the part that gets
-rewritten fifteen times, and rewriting it should not mean re-capturing the set.
+background is the second stage below: the copy is the part that gets rewritten fifteen times, and
+rewriting it must not mean re-capturing the set.
+
+## The slides
+
+```bash
+npm run shots:slides   # shots/out/<locale>/ -> shots/submit/<locale>/
+```
+
+`scripts/slides.ts` renders each file in `shots/slides/` at 1280×800, once per listing language.
+`shots/submit/` is emptied on every run, so a slide that was renamed or dropped cannot linger as an
+uploadable PNG, and a slide asking for a capture that is not in `shots/out/` fails the run instead
+of rendering a gap.
+
+A slide is a bare HTML file: an empty `<h1>`, an empty `<p>`, and one or more
+`<figure><img data-shot="…">`. It carries no words and no locale of its own. The copy lives in
+`copy.json`, keyed slide → locale, and the capture is resolved at render time against the listing
+being built — the interface inside the frame is in the listing's own language, since the extension
+ships its whole interface in both.
+
+**`copy.json` is governed by [`docs/wording.md`](wording.md)**, including its new section on listing
+copy. A headline may be written to persuade; it may not overstate, drop the terminology table, or
+let the Chinese read as a translated English sentence.
+
+| #   | Slide          | Says                                             | Frames              |
+| --- | -------------- | ------------------------------------------------ | ------------------- |
+| 1   | `1-draw`       | The readout names and counts before the release  | `1-gesture`         |
+| 2   | `2-grid`       | Hold the trigger and every tab becomes a tile    | `2-grid`            |
+| 3   | `3-cheatsheet` | The gesture list stays on screen while drawing   | `6-cheatsheet`      |
+| 4   | `4-yours`      | Every gesture is rebindable by drawing           | `8-gestures-window` |
+| 5   | `5-welcome`    | The trigger is named for this device, on install | `9-welcome-trigger` |
+
+They read in that order, and each names one thing that is true of the capture beside it.
+
+**No slide holds three frames.** Three 1280×800 captures side by side put the extension's own 13px
+interface text at about four pixels, which is a texture rather than a screenshot. Where a slide
+needs to show more, the capture is cut tighter rather than shrunk further.
+
+**Staleness works the same as for a capture.** A slide is stale when its capture is, and re-running
+the composition is cheap; re-capturing is the expensive half, which is why the two stages are split.
 
 ## How the harness works
 

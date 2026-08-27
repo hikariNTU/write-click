@@ -5,9 +5,9 @@ stroke table, tab grid behaviour, storage shape, phase plan. If code and spec di
 bug. Behaviour changes update the spec in the same commit.
 
 **Then read [`docs/backlog/README.md`](docs/backlog/README.md).** It is the findings list from the
-full-repo review of 2026-08-27, and **5 of its 17 items are still open**, one of them deferred by decision — all nine bugs are
-fixed, the command catalogue is filled in, and the trigger now teaches itself on a welcome page;
-what remains is features, store assets and interface work. Check it before
+full-repo review of 2026-08-27, and **3 of its 17 items are still open**, one of them deferred by decision — all nine bugs are
+fixed, the command catalogue is filled in, the trigger now teaches itself on a welcome page, and the
+store captures compose into listing images; what remains is two features and one interface item. Check it before
 starting new work, and before assuming something is a fresh discovery. Fixing an item means flipping
 its `Status` line to `done` and ticking the index in the same commit.
 

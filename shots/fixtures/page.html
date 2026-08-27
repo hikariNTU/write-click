@@ -150,11 +150,18 @@
         font-size: 1.02rem;
         margin: 0;
       }
+      /*
+         The gap above the cards is set so the middle of the window is empty
+         paper. The readout is anchored dead centre of the viewport (§6.4), so
+         whatever sits at y = height/2 is what it lands on — and a listing image
+         whose readout covers a heading reads as a collision rather than as a
+         readout.
+      */
       .cards {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
-        margin-top: 1.5rem;
+        margin-top: 5.5rem;
       }
       .card {
         padding: 1rem;
@@ -180,9 +187,16 @@
         color: var(--muted);
         margin: 0;
       }
+      /*
+         One column, not two: the right half of the lower page is left as paper
+         so a captured stroke can be read as a shape. Over body text the tail of
+         a gesture is a green line through a paragraph, which is what the
+         extension really looks like in use but not what a store visitor can
+         parse at thumbnail size.
+      */
       .cols {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 27rem);
         gap: 2rem;
       }
       code {

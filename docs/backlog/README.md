@@ -1,6 +1,6 @@
 # Backlog — open findings
 
-> **STATUS: ONGOING — 5 of 17 open.** The list came out of a full-repo review on **2026-08-27**,
+> **STATUS: ONGOING — 3 of 17 open.** The list came out of a full-repo review on **2026-08-27**,
 > against `8da32d3`. **Every bug is done.** BUG-01, BUG-02, BUG-03 and BUG-09 went first, then
 > BUG-04 through BUG-08; each was verified against a real loaded `dist/` where it had a visible
 > symptom — 7 of 7 checks on the first pass, 6 of 6 on the second, BUG-04 with a negative control.
@@ -41,10 +41,10 @@ cold — the evidence, the cause, and the shape of the fix.
 
 ## Store listing
 
-| ID                                     | Status  | Finding                                                                                                         |
-| -------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
-| [STORE-01](store-01-slide-pipeline.md) | ongoing | Compose listing images from the captures. `danmaku-ninja` has a working reference.                              |
-| [STORE-02](store-02-capture-fixes.md)  | ongoing | Reshoot before composing: a clipped tile row, a warning box in frame, nothing showing groups or the cheatsheet. |
+| ID                                     | Status   | Finding                                                                                                        |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| [STORE-01](store-01-slide-pipeline.md) | **done** | Compose listing images from the captures. `npm run shots:slides`, five slides per listing.                     |
+| [STORE-02](store-02-capture-fixes.md)  | **done** | Reshot: the readout is clear of the copy, the grid shows a group, and the cheatsheet has a capture of its own. |
 
 ## Interface
 
@@ -66,8 +66,8 @@ cold — the evidence, the cause, and the shape of the fix.
 ~~5. **FEAT-01 + UX-02** — the trigger confusion, which is the one thing costing first-run users.~~
 done.
 
-6. **STORE-01 + STORE-02** — needed before the listing can be finished; the promo tiles are still
-   outstanding in `docs/store-assets.md` too.
+~~6. **STORE-01 + STORE-02** — needed before the listing can be finished.~~ done. The promo tiles
+are still outstanding in `docs/store-assets.md`: 440×280 is required, 1400×560 optional.
 
 7. Everything else, in whatever order the appetite runs. FEAT-02 needs a design decision in SPEC §6
    before it can start at all.

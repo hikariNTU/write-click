@@ -1,0 +1,149 @@
+/*
+ * One listing image, 1280×800.
+ *
+ * The captures inside are real screenshots and stay real: composed onto a
+ * background with a line of copy, never redrawn and never mocked up. Everything
+ * visible inside a frame is something the extension actually put on screen.
+ *
+ * One idea per image — a heading, a sentence, and the picture proving it. The
+ * store shows these as thumbnails first, so the heading has to carry at a
+ * glance and the capture has to be the largest thing on the slide. That is also
+ * why no slide holds more than two frames: three 1280×800 captures side by side
+ * put the extension's own 13px interface text at about four pixels, which is a
+ * texture rather than a screenshot.
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  width: 1280px;
+  height: 800px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 56px 64px 0;
+  /* The extension's own surface: mist-950 under an emerald wash, which is the
+     colour the trail, the readout and the tiles are already drawn in. */
+  background:
+    radial-gradient(58% 48% at 6% 0%, rgba(16, 185, 129, 0.22) 0%, transparent 62%),
+    radial-gradient(50% 42% at 98% 6%, rgba(56, 189, 248, 0.16) 0%, transparent 60%),
+    radial-gradient(66% 58% at 88% 100%, rgba(52, 211, 153, 0.14) 0%, transparent 64%), #08090b;
+  color: #f4f5f6;
+  font:
+    400 16px/1.5 -apple-system,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Fixed, so five slides seen in a row do not jump. */
+  height: 132px;
+  flex: none;
+}
+
+h1 {
+  font-size: 46px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+
+h1 em {
+  font-style: normal;
+  background: linear-gradient(96deg, #34d399 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+p {
+  font-size: 20px;
+  line-height: 1.4;
+  color: #9aa0a6;
+  max-width: 76ch;
+}
+
+/*
+ * The captures, whole. Scaled to fit rather than cropped: a listing image that
+ * cuts off the panel leaves out the thing being pointed at, and the crop always
+ * takes the corner the interesting thing lives in.
+ */
+.stage {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 48px;
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  justify-content: center;
+}
+
+figure {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  /* Sized by the stage's height, and hugging its image on the other axis: a
+     fixed-height frame around a 16:10 capture is a black band above and below
+     it, which reads as part of the picture. Height rather than width because a
+     percentage `max-height` on the image resolves against a figure whose own
+     height is auto — that is to say, against nothing, which let a 1280×800
+     capture render full width and be cropped by the frame it sits in. */
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.05) inset,
+    0 34px 80px rgba(0, 0, 0, 0.66);
+  background: #000;
+  line-height: 0;
+}
+
+/*
+ * Sized by whichever edge runs out first. `width: 100%` alone overflows the
+ * stage for anything taller than about 2:1 — the frame then slides up under the
+ * copy and takes a line of it off the top of the image.
+ */
+figure img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+/* Two captures side by side, each keeping its own aspect. */
+.pair figure,
+.wide figure {
+  height: auto;
+  max-height: 100%;
+}
+
+.pair figure {
+  max-width: calc(50% - 11px);
+}
+
+.pair figure img,
+.wide figure img {
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * A capture that is much wider than it is tall — the gesture list, cut from the
+ * bottom edge of a window — would otherwise sit as a ribbon in the middle of an
+ * empty stage. Given the full width, it is read at close to the size it is on
+ * screen.
+ */
+.wide figure {
+  width: 100%;
+  max-width: 100%;
+}

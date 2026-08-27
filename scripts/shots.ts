@@ -74,6 +74,16 @@ const AFTER: readonly Site[] = [
   { host: "notes.example.com", title: "Notes — this week", hue: 250 },
 ];
 
+/**
+ * The last two tabs of the strip, grouped and named.
+ *
+ * The grid draws a group as a heading and a coloured edge on each tile in it,
+ * and a strip with no group leaves both invisible — which is a screenshot that
+ * says the grid is a flat list of titles. Two tabs is enough for the run to
+ * read as a run.
+ */
+const GROUP = { title: "Reference", color: "blue", size: 2 } as const;
+
 const page = (site: Site): string =>
   `http://${site.host}/page.html?title=${encodeURIComponent(site.title)}&hue=${site.hue}`;
 
@@ -95,6 +105,17 @@ const GRID = {
   // in the store screenshot.
   allWindows: false,
 } as const;
+
+/**
+ * The bottom of the window while the trigger is held: the tail of the stroke,
+ * the page under it, and the gesture list docked along the bottom edge.
+ *
+ * Cut wider than the panel itself on purpose. The list alone is a ribbon about
+ * six times as wide as it is tall, and a ribbon on a 1280×800 listing image is
+ * a line of text in a field of background — where it is on screen, and what it
+ * is next to, is half of what the picture is saying.
+ */
+const CHEATSHEET_BAND = { x: 96, y: 352, width: 1088, height: 440 } as const;
 
 /** One folder per locale the extension ships, since the listing takes a set per language. */
 const LOCALES: readonly Locale[] = ["en", "zh_TW"];
@@ -161,6 +182,12 @@ async function launch(dir: string): Promise<BrowserContext> {
     headless: true,
     viewport: { width: WIDTH, height: HEIGHT },
     deviceScaleFactor: SCALE,
+    // The mouse glyph on the trigger card animates its press on a three second
+    // loop, and a screenshot lands wherever it lands: a stub of a stroke, or a
+    // button that happens to be unlit. Reduced motion is not a workaround here
+    // but a state the extension ships — the lit button, the raised keycap and
+    // the finished stroke, held still — so it is also the frame worth keeping.
+    reducedMotion: "reduce",
     args: [
       `--disable-extensions-except=${dist}`,
       `--load-extension=${dist}`,
@@ -227,8 +254,36 @@ function file(locale: Locale, name: string): string {
 
 /** A full window, downscaled from 2× to the size the dashboard asks for. */
 async function shoot(target: Page, locale: Locale, name: string): Promise<void> {
-  const raw = await target.screenshot();
+  const raw = await target.screenshot({ animations: "disabled" });
   await sharp(raw).resize(WIDTH, HEIGHT, { fit: "cover" }).png().toFile(file(locale, name));
+  console.log(`  ${locale}/${name}.png`);
+}
+
+/**
+ * A band of the window, cut out of the 2× frame.
+ *
+ * Everything the extension draws on a page lives in a closed shadow root, so
+ * there is no selector to clip to the way `shootRegion` clips to an options
+ * card. The overlay's panels are docked to known edges (§6.4) and the window is
+ * a fixed size, so the band is written down here in CSS pixels and multiplied
+ * up — checked by eye once, like every other framing decision in this file.
+ */
+async function shootBand(
+  target: Page,
+  locale: Locale,
+  name: string,
+  band: { x: number; y: number; width: number; height: number },
+): Promise<void> {
+  const raw = await target.screenshot({ animations: "disabled" });
+  await sharp(raw)
+    .extract({
+      left: band.x * SCALE,
+      top: band.y * SCALE,
+      width: band.width * SCALE,
+      height: band.height * SCALE,
+    })
+    .png()
+    .toFile(file(locale, name));
   console.log(`  ${locale}/${name}.png`);
 }
 
@@ -259,6 +314,11 @@ async function shootRegion(
   const y = Math.max(0, box.y - pad);
   await target.screenshot({
     path: file(locale, name),
+    // Finished rather than frozen mid-cycle. The mouse glyph on the trigger
+    // card animates a stroke on a loop, and a screenshot taken at an arbitrary
+    // moment catches a stub of it, which reads as a rendering fault rather than
+    // as a drawing.
+    animations: "disabled",
     clip: {
       x,
       y,
@@ -399,13 +459,21 @@ async function strip(context: BrowserContext, sw: Worker): Promise<Page> {
   await shot.bringToFront();
 
   const opened = await sw.evaluate(
-    async ({ title, before, after }) => {
+    async ({ title, before, after, group }) => {
       // Found by title rather than by URL: `tabs.query` matches URLs as match
       // patterns, which do not see a query string, and the query string is the
       // only thing telling these pages apart.
       const all = await chrome.tabs.query({});
       const self = all.find((tab) => tab.title === title);
       if (self?.id === undefined) throw new Error("the shot tab is not open");
+
+      // A fresh profile is a first install, and a first install opens the
+      // welcome page (§10.3). It is captured deliberately later on; left where
+      // Chrome put it, it is an eighth tab in a seven-tab strip.
+      const greeting = chrome.runtime.getURL("welcome.html");
+      for (const tab of all) {
+        if (tab.url === greeting && tab.id !== undefined) await chrome.tabs.remove(tab.id);
+      }
 
       // Pinned to the shot tab's own window. Left to `currentWindow`, the tabs
       // land in whichever window Chrome considers focused, and the grid lists
@@ -422,9 +490,27 @@ async function strip(context: BrowserContext, sw: Worker): Promise<Page> {
         await chrome.tabs.create({ url, windowId, index: before.length + 1 + at, active: false });
       }
       await chrome.tabs.update(self.id, { active: true });
-      return (await chrome.tabs.query({ windowId })).length;
+
+      // The tail of the strip, grouped. Done here rather than in a step of its
+      // own because a group is a property of the strip: `tabs.group` wants tab
+      // ids from the window they were created in, and this is where those ids
+      // are known.
+      const laid = await chrome.tabs.query({ windowId });
+      const tail = laid
+        .slice(-group.size)
+        .map((tab) => tab.id)
+        .filter((id) => id !== undefined);
+      const [head, ...rest] = tail;
+      if (head !== undefined && tail.length === group.size) {
+        const groupId = await chrome.tabs.group({
+          tabIds: [head, ...rest],
+          createProperties: { windowId },
+        });
+        await chrome.tabGroups.update(groupId, { title: group.title, color: group.color });
+      }
+      return laid.length;
     },
-    { title: SHOT.title, before: BEFORE.map(page), after: AFTER.map(page) },
+    { title: SHOT.title, before: BEFORE.map(page), after: AFTER.map(page), group: GROUP },
   );
 
   const want = BEFORE.length + 1 + AFTER.length;
@@ -466,15 +552,19 @@ async function capture(
 
   // URD — close the tabs to the right. It is the command whose readout says
   // something a static list cannot: how many tabs it would actually close.
-  // Drawn in the lower half: the readout is centred, and a stroke through it
-  // hides the half of itself that says what shape was drawn.
+  //
+  // Drawn low and to the right, over the paper the fixture keeps clear there.
+  // The readout is centred, so a stroke through the middle hides the half of
+  // itself that says what shape was drawn; and a stroke over a paragraph is
+  // honest about what this looks like in use but unreadable at thumbnail size,
+  // which is the size a listing image is judged at first.
   await draw(
     shot,
-    { x: 455, y: 690 },
+    { x: 690, y: 784 },
     [
-      { x: 0, y: -170, bow: 9 },
-      { x: 235, y: 6, bow: -11 },
-      { x: 8, y: 168, bow: 8 },
+      { x: 0, y: -140, bow: 9 },
+      { x: 226, y: 6, bow: -11 },
+      { x: 8, y: 138, bow: 8 },
     ],
     7,
   );
@@ -508,7 +598,20 @@ async function capture(
   // Past holdMs, and past the reveal transition that follows it.
   await shot.waitForTimeout(600);
   await shoot(shot, locale, "2-grid");
+
+  // 6. The gesture list on its own, cut from the same held gesture. It is the
+  //    answer to "how would I ever remember these", and in the grid shot it is
+  //    a strip along the bottom edge that reads as decoration.
+  await shootBand(shot, locale, "6-cheatsheet", CHEATSHEET_BAND);
   await release(shot);
+
+  // The settings back at their shipped defaults before they are photographed:
+  // shot 2 turned the readout off to keep it out of the grid frame, and a
+  // settings page showing a switch the extension does not ship off is a
+  // screenshot of somebody else's configuration.
+  await settings(sw, {
+    sync: { grid: { ...GRID, enabled: true }, trail: { ...TRAIL, showLabel: true } },
+  });
 
   // 3, 4, 5. The options page. Plain DOM, so these crop by selector.
   const options = await context.newPage();
@@ -516,9 +619,47 @@ async function capture(
   await options.waitForTimeout(600);
 
   await shoot(options, locale, "3-options");
+
+  // 8. The same page, scrolled to the gesture rows, as a whole window.
+  //    The cropped card below is README material: a tall crop scaled to fit a
+  //    listing image puts 13px interface text at about four pixels, and a
+  //    window at listing size is read at close to the size it really is.
+  //    Aligned to the top of the card rather than merely brought into view:
+  //    `scrollIntoViewIfNeeded` stops as soon as the element's bottom is on
+  //    screen, and the bottom of this card is its unassigned commands — a
+  //    window full of the word "unassigned" says the opposite of what the
+  //    shipped defaults are.
+  //    Jumped rather than scrolled: the page carries `scroll-smooth`, so a
+  //    `scrollIntoView` here is an animation the screenshot can catch halfway.
+  await options.evaluate(() => {
+    const card = document.querySelector("#gestures");
+    if (!card) throw new Error("the gestures card is not on the page");
+    const top = card.getBoundingClientRect().top + window.scrollY - 20;
+    window.scrollTo({ top, behavior: "instant" });
+  });
+  await options.waitForTimeout(400);
+  await shoot(options, locale, "8-gestures-window");
+
   await shootRegion(options, locale, "4-gestures", "#gestures");
   await shootRegion(options, locale, "5-overlay", "#overlay");
   await options.close();
+
+  // 7. The welcome page, which is what a new install actually opens. It names
+  //    the trigger for the machine it is running on, lists the strokes that
+  //    already work, and carries a pad to try one in — the whole of first run
+  //    in one frame.
+  const welcome = await context.newPage();
+  await welcome.goto(`chrome-extension://${id}/welcome.html`);
+  await welcome.waitForTimeout(600);
+  await shoot(welcome, locale, "7-welcome");
+
+  // 9. The trigger card off that page, on its own.
+  //    The whole window puts a 624px column in the middle of 1280 and then a
+  //    listing image scales all of it down; the card alone fills the slide,
+  //    and the 2× capture is still above its own pixel count at that width —
+  //    so the sentence naming the button is read rather than recognised.
+  await shootRegion(welcome, locale, "9-welcome-trigger", "#trigger");
+  await welcome.close();
 
   await intact(sw);
 }

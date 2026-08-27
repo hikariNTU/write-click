@@ -64,6 +64,22 @@ happen; it does not comment on it.
   | overlay    | 畫面     |
   | page zoom  | 頁面縮放 |
 
+## Store listing and listing images
+
+The register above covers everything a reader sees, including copy that ships as
+a picture: `docs/store-listing.md` and the headlines in `shots/slides/copy.json`.
+
+- A listing headline may be written to persuade. It may not be written to
+  overstate: every claim on a slide has to be true of the capture beside it.
+- The bans hold. No exclamation marks, no rhetorical questions standing in for a
+  fact, no 你 in the Chinese, and the terminology tables are not relaxed because
+  the words are on a slide instead of in a card.
+- **The Chinese is written, not translated.** Copy that reads as an English
+  sentence with Chinese words in it — stacked 的, 將 and 即 where a verb would
+  do, clause order borrowed from the English — fails this even when every term
+  in it is correct. Write the Chinese line for a Chinese reader and let it
+  diverge from the English one.
+
 ## Mechanics
 
 - Every user-visible string goes through `t()`. No exceptions: placeholders,

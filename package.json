@@ -19,7 +19,8 @@
     "test": "node --import @oxc-node/core/register --test 'src/**/*.test.ts'",
     "assets": "node ./scripts/sync-icons.mjs && node ./scripts/render-icons.mjs",
     "bump": "node ./scripts/bump.mjs",
-    "shots": "node --import @oxc-node/core/register ./scripts/shots.ts"
+    "shots": "node --import @oxc-node/core/register ./scripts/shots.ts",
+    "shots:slides": "node --import @oxc-node/core/register ./scripts/slides.ts"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.7.1",

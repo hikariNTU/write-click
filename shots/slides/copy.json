@@ -1,0 +1,72 @@
+{
+  "_comment": [
+    "Listing image copy, per locale.",
+    "",
+    "docs/wording.md governs this file the same as it governs the message",
+    "catalogues: state facts plainly, sentence case, fixed terminology, no",
+    "rhetorical questions, no exclamation marks, and third-person objective",
+    "Chinese without 你. A listing image is a user-visible string that happens",
+    "to be rendered as a picture.",
+    "",
+    "The captures inside the frames are in the listing's own language too. The",
+    "extension ships its whole interface in both, so an English screenshot on a",
+    "Chinese listing would be a choice rather than a saving.",
+    "",
+    "One idea per slide, and the five read in order: what the readout says while",
+    "a stroke is drawn, what the trigger opens, what stays on screen while",
+    "drawing, what can be reassigned, and what a first install states.",
+    "",
+    "*asterisks* mark the phrase that takes the accent gradient. One per",
+    "heading at most: two accents is no accent."
+  ],
+  "1-draw": {
+    "en": {
+      "h1": "The count is on screen *before the release*",
+      "p": "Hold the trigger and draw. The readout names the command the stroke currently matches, and counts what it will affect: four tabs, to the right of this one."
+    },
+    "zh_TW": {
+      "h1": "還沒放開，*就知道會關掉幾個*",
+      "p": "按住觸發鍵畫一筆，指令提示會即時說出對應的指令，連影響範圍都先算好：右側四個分頁。"
+    }
+  },
+  "2-grid": {
+    "en": {
+      "h1": "Hold the trigger and *every tab becomes a tile*",
+      "p": "Each tile carries the title, the site and the icon. Release over one to switch to that tab, with no click and no context menu after it."
+    },
+    "zh_TW": {
+      "h1": "按住觸發鍵，*分頁一次全攤開*",
+      "p": "每一格都有標題、網站和圖示。在想去的那一格上放開就切過去，過程中不產生點擊，也不會開啟右鍵選單。"
+    }
+  },
+  "3-cheatsheet": {
+    "en": {
+      "h1": "The gesture list stays *on screen while drawing*",
+      "p": "The cheatsheet is docked to the bottom edge for as long as the trigger is held, and lists the strokes currently assigned rather than the ones that shipped."
+    },
+    "zh_TW": {
+      "h1": "畫的時候，*手勢清單就在畫面上*",
+      "p": "觸發鍵按著不放，手勢清單就固定在畫面下緣，列的是目前指派的手勢，不是出廠設定。"
+    }
+  },
+  "4-yours": {
+    "en": {
+      "h1": "Every gesture is *rebindable by drawing*",
+      "p": "One stroke per command, drawn in the settings page with the code the page itself uses. Trail colour, overlay size and the sites left out are on the same page."
+    },
+    "zh_TW": {
+      "h1": "每個手勢，*都能重畫*",
+      "p": "一個指令配一組筆畫，在設定頁直接用滑鼠畫，辨識方式和網頁上完全相同。軌跡顏色、畫面大小、停用的網站也都在同一頁。"
+    }
+  },
+  "5-welcome": {
+    "en": {
+      "h1": "It names the trigger for *this device*, on install",
+      "p": "The context menu behaves differently on each platform, so the trigger is chosen per device. The page that opens on install states which one applies here."
+    },
+    "zh_TW": {
+      "h1": "裝好就先說明，*這台該按哪一顆*",
+      "p": "右鍵選單的行為每個平台都不一樣，所以觸發鍵依裝置各自設定。安裝時開啟的頁面會直接寫出這台適用的按鍵。"
+    }
+  }
+}

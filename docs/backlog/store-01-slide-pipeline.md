@@ -1,6 +1,6 @@
 # STORE-01 — Compose listing images from the captures
 
-- **Status:** ongoing
+- **Status:** done
 - **Area:** new `scripts/slides.ts`, new `shots/slides/`, `docs/store-assets.md`
 - **Found:** 2026-08-27, repo review
 
@@ -54,3 +54,18 @@ How it is put together:
 ## Related
 
 `store-02-capture-fixes.md` — what to reshoot before composing anything.
+
+## What it took
+
+Built as described, with three decisions the reference did not have to make:
+
+- **The capture is named, not linked.** `danmaku-ninja` keeps one language of screenshot for every
+  listing; this extension ships its whole interface in two, so a slide carries `data-shot="2-grid"`
+  and the renderer resolves it against the listing being built.
+- **No `.trio`.** Three 1280×800 captures across a slide put 13px interface text at about four
+  pixels. Where a slide needed to show more, the capture was cut tighter instead — a 624 CSS pixel
+  crop is 1248 real pixels and still downscales into a slide.
+- **`copy.json` is under `docs/wording.md`**, which gained a section for listing copy: a headline
+  may persuade, but the terminology table holds and the Chinese is written rather than translated.
+
+Five slides, two listings, in `shots/submit/`.

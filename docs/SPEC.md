@@ -979,10 +979,10 @@ The fullscreen gap that stood here — a fullscreen element painting over the ov
 §7.5.
 
 Everything else outstanding lives in [`docs/backlog/`](backlog/README.md), one file per finding,
-from the full-repo review of 2026-08-27. **5 of the 17 are still open, and none of them is a bug**:
-what is left is features, store assets and interface work. FEAT-04 folded the catalogue additions
-into §5 and the manifest shortcut with them; FEAT-01 and UX-02 added §10.3 and rewrote the trigger
-section of §10.1. Every fix that contradicted this spec has
+from the full-repo review of 2026-08-27. **3 of the 17 are still open, and none of them is a bug**:
+what is left is two features and one interface item. FEAT-04 folded the catalogue additions into §5
+and the manifest shortcut with them; FEAT-01 and UX-02 added §10.3 and rewrote the trigger section
+of §10.1; STORE-01 and STORE-02 are store assets and live in `docs/store-assets.md`, not here. Every fix that contradicted this spec has
 had its reasoning folded in: BUG-01 into §6.1, BUG-02 into §7.4, BUG-03 into §6, BUG-04 into §3.4,
 BUG-05 and BUG-06 into §10.1, BUG-09 into §5. BUG-07 and BUG-08 were internal and changed nothing
 this spec describes.
