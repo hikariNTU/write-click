@@ -1,5 +1,5 @@
 import type { Request, Response, TabGroupSummary, TabSummary } from "../shared/messages";
-import { migrate } from "../shared/settings";
+import { loadSettings, migrate, saveLocal } from "../shared/settings";
 import { priorStateKey, runTabCommand } from "./tab-commands";
 
 const NO_GROUP = -1;
@@ -14,6 +14,8 @@ function summarize(tab: chrome.tabs.Tab, ownWindowId: number): TabSummary | unde
     favIconUrl: tab.favIconUrl,
     active: tab.active === true,
     pinned: tab.pinned === true,
+    audible: tab.audible === true,
+    muted: tab.mutedInfo?.muted === true,
     windowId: tab.windowId,
     ownWindow: tab.windowId === ownWindowId,
   };
@@ -114,6 +116,8 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
         groups: await groupsOf(tabs),
       };
     }
+    case "page.info":
+      return { ok: true, url: tab.url ?? "", title: tab.title ?? "" };
     // Page zoom is not readable from a content script: devicePixelRatio folds
     // it together with the display's scale factor. The overlay needs it to hold
     // its size while the page around it grows.
@@ -152,4 +156,19 @@ chrome.windows.onRemoved.addListener((windowId) => {
 chrome.runtime.onInstalled.addListener((details) => {
   console.info("[write-click] installed", details.reason);
   void migrate();
+});
+
+/**
+ * The one keyboard shortcut, and it ships with no key of its own: every
+ * combination worth having is taken by Chrome or by a site, and a shortcut the
+ * extension chose for the user is a shortcut they have to find and undo. It is
+ * assigned from chrome://extensions/shortcuts.
+ *
+ * Turning gestures off is what someone reaches for when a stroke is fighting a
+ * web app, and reaching for it with the mouse means drawing a gesture — which
+ * is the thing that is not working.
+ */
+chrome.commands?.onCommand.addListener((command) => {
+  if (command !== "toggle-enabled") return;
+  void loadSettings().then(async ({ local }) => saveLocal({ enabled: !local.enabled }));
 });

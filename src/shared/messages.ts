@@ -15,6 +15,10 @@ export interface TabSummary {
   favIconUrl?: string;
   active: boolean;
   pinned: boolean;
+  /** Making sound right now. Chrome keeps this true for a couple of seconds after it stops. */
+  audible: boolean;
+  /** Silenced, whether or not it has anything to play. */
+  muted: boolean;
   windowId: number;
   /** The window the gesture is being drawn in, which the grid lists first. */
   ownWindow: boolean;
@@ -38,12 +42,19 @@ export type Request =
   | { type: "command"; id: BackgroundCommandId }
   | { type: "tabs.list"; allWindows: boolean }
   | { type: "tabs.activate"; tabId: number }
-  | { type: "tabs.zoom" };
+  | { type: "tabs.zoom" }
+  /**
+   * The tab's own address and title, which a frame cannot read for itself: a
+   * cross-origin sub-frame sees only its own document, and copying an ad
+   * frame's URL is never what the gesture meant.
+   */
+  | { type: "page.info" };
 
 export type Response =
   | { ok: true }
   | { ok: true; tabs: TabSummary[]; groups: Record<number, TabGroupSummary> }
   | { ok: true; zoom: number }
+  | { ok: true; url: string; title: string }
   | { ok: false; error: string };
 
 export function isBackgroundCommand(id: CommandId): id is BackgroundCommandId {

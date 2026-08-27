@@ -140,22 +140,39 @@ gesture stays armed and the trail sticks on screen until the next click.
 
 ## 5. Commands
 
-| Command id        | Action                                           | Runs in    | Default stroke |
-| ----------------- | ------------------------------------------------ | ---------- | -------------- |
-| `tab.prev`        | Activate previous tab, wrapping                  | background | `L`            |
-| `tab.next`        | Activate next tab, wrapping                      | background | `R`            |
-| `tab.first`       | Activate the leftmost tab                        | background | `LRL`          |
-| `tab.last`        | Activate the rightmost tab                       | background | `RLR`          |
-| `tab.close`       | Close the active tab                             | background | `RD`           |
-| `tab.reopen`      | `chrome.sessions.restore()`                      | background | `LU`           |
-| `tab.closeRight`  | Close every unpinned tab right of the active one | background | `URD`          |
-| `tab.closeLeft`   | Close every unpinned tab left of the active one  | background | `ULD`          |
-| `window.minimize` | Minimize the current window                      | background | `LD`           |
-| `page.top`        | Scroll to top                                    | content    | `RU`           |
-| `page.down`       | Scroll down one viewport                         | content    | `U`            |
-| `page.up`         | Scroll up one viewport                           | content    | `D`            |
-| `page.end`        | Scroll to bottom                                 | content    | _(unbound)_    |
-| `app.options`     | Open this extension's settings page              | background | `DLUR`         |
+| Command id             | Action                                           | Runs in    | Default stroke |
+| ---------------------- | ------------------------------------------------ | ---------- | -------------- |
+| `tab.prev`             | Activate previous tab, wrapping                  | background | `L`            |
+| `tab.next`             | Activate next tab, wrapping                      | background | `R`            |
+| `tab.first`            | Activate the leftmost tab                        | background | `LRL`          |
+| `tab.last`             | Activate the rightmost tab                       | background | `RLR`          |
+| `tab.close`            | Close the active tab                             | background | `RD`           |
+| `tab.reopen`           | `chrome.sessions.restore()`                      | background | `LU`           |
+| `tab.closeRight`       | Close every unpinned tab right of the active one | background | `URD`          |
+| `tab.closeLeft`        | Close every unpinned tab left of the active one  | background | `ULD`          |
+| `window.minimize`      | Minimize the current window                      | background | `LD`           |
+| `page.top`             | Scroll to top                                    | content    | `RU`           |
+| `page.down`            | Scroll down one viewport                         | content    | `U`            |
+| `page.up`              | Scroll up one viewport                           | content    | `D`            |
+| `page.end`             | Scroll to bottom                                 | content    | _(unbound)_    |
+| `tab.moveLeft`         | Move the tab one place left in the strip         | background | _(unbound)_    |
+| `tab.moveRight`        | Move the tab one place right in the strip        | background | _(unbound)_    |
+| `tab.moveToStart`      | Move the tab to the head of the strip            | background | _(unbound)_    |
+| `tab.moveToEnd`        | Move the tab to the end of the strip             | background | _(unbound)_    |
+| `tab.closeDuplicates`  | Close every tab whose page is already open       | background | _(unbound)_    |
+| `tab.muteAll`          | Mute every tab in the window                     | background | _(unbound)_    |
+| `tab.group`            | Put the tab in a new group                       | background | _(unbound)_    |
+| `tab.ungroup`          | Take the tab out of its group                    | background | _(unbound)_    |
+| `group.collapseOthers` | Collapse every group but the tab's own           | background | _(unbound)_    |
+| `open.history`         | Open `chrome://history/`                         | background | _(unbound)_    |
+| `open.downloads`       | Open `chrome://downloads/`                       | background | _(unbound)_    |
+| `open.bookmarks`       | Open `chrome://bookmarks/`                       | background | _(unbound)_    |
+| `open.extensions`      | Open `chrome://extensions/`                      | background | _(unbound)_    |
+| `page.viewSource`      | Open `view-source:` for the page                 | background | _(unbound)_    |
+| `page.copyUrl`         | Copy the tab's address                           | content    | _(unbound)_    |
+| `page.copyTitle`       | Copy the tab's title                             | content    | _(unbound)_    |
+| `page.print`           | `window.print()`                                 | content    | _(unbound)_    |
+| `app.options`          | Open this extension's settings page              | background | `DLUR`         |
 
 The scheme: a single flick steps sideways through tabs, doubling back (`LRL`, `RLR`) runs to that
 end of the strip, and a leading `R`/`L` with a `D` tail closes something. Order matters, so `RD` and
@@ -170,6 +187,13 @@ be reachable by a slip of the hand, and the short strokes are spent anyway.
 Back and forward take `DL` and `DR`, mirroring the direction they travel. Every other gesture product
 puts them on a plain `L`/`R`; those are spent on tab switching here.
 
+There is **one keyboard shortcut**, `toggle-enabled`, declared in the manifest with no key of its
+own. Turning gestures off is what someone reaches for when a stroke is fighting a web app, and
+reaching for it with the mouse means drawing a gesture — the thing that is not working. It ships
+unassigned because every combination worth having is taken by Chrome or by a site, and a shortcut
+chosen on the user's behalf is one they have to find and undo. It is assigned from
+`chrome://extensions/shortcuts`.
+
 Most of the catalogue ships **unbound**. There is no short stroke left that does not collide, and
 inventing bindings nobody asked for is worse than leaving them for the options page. `page.end` is in
 the same position.
@@ -180,6 +204,28 @@ no API for either.
 
 Rules:
 
+- Moving a tab clamps to its own half of the strip. Chrome keeps the pinned tabs in a block at the
+  head and rejects a move that would put an unpinned tab among them, so `tab.moveLeft` and friends
+  compute the range they are allowed and stop at its edge rather than throwing.
+- `tab.closeDuplicates` keeps the **leftmost** copy of each page and never closes a pinned tab, though
+  a pinned tab still claims its page — so an unpinned copy of a pinned tab is a duplicate. Sameness
+  is origin, path and query: the fragment is dropped, because `#comments` and `#top` are two places
+  in one document. A tab that has not loaded has no URL and can never match. The rule lives in
+  `duplicateTabs()` in `src/shared/tabs.ts`, beside `tabsOnSide()` and for the same reason.
+- Chrome's own pages open through `tabs.create`, which is the only way in: navigating an existing tab
+  to a `chrome://` URL is refused, creating one with it is not. The URLs are written in canonical
+  form, since `tabs.create` does not resolve `chrome://history` the way the omnibox does.
+- `page.viewSource` only acts on a page that was fetched over HTTP, which is all `view-source:`
+  accepts.
+- `tab.ungroup` on a tab that is in no group is an error rather than a no-op, so it checks first.
+  `groupId` is `-1` for an ungrouped tab and absent on a browser with no tab groups; neither is
+  something to ungroup.
+- `page.copyUrl` and `page.copyTitle` take the address and title **from the service worker**, not
+  from `location`. Page commands run in the frame that drew the gesture, and a cross-origin sub-frame
+  sees only its own document — copying an ad frame's URL is never what the gesture meant.
+- The clipboard write tries `navigator.clipboard.writeText` first and falls back to an off-screen
+  textarea with `execCommand("copy")`. The fallback is deprecated and is still the only thing that
+  works in a frame that permissions policy refuses the Clipboard API to.
 - Tab commands never touch pinned tabs in the bulk closers.
 - `window.minimize` uses `chrome.windows.update`, which needs no extra permission.
 - `window.fullscreen` remembers what the window was before, in `chrome.storage.session`, and puts it
@@ -241,6 +287,12 @@ ownWindow, groupId }` per tab, plus the groups those tabs belong to. Which windo
 - A tab with no usable favicon, or one whose favicon fails to load, falls back to a bundled glyph.
   The glyph is what is drawn first and the favicon replaces it on `load`, so the slot is never an
   empty square while the image is still being fetched.
+- A tile carries its **audio state**: a speaker for a tab making sound, a crossed speaker for one
+  that is muted, in a trailing slot shared with the active dot so the two cannot fight over the same
+  margin. Which tab is making the noise is most of the reason for opening a picker, and it was the
+  one thing the tab strip showed that this did not. A muted tab is marked whether or not it has
+  anything to play, matching the strip: `muted` is a state the user set, `audible` is one the page
+  is in.
 - Hovering a tile highlights it. **Left-click while the trigger is still held** activates that tab
   and sets `cancelled`, so the pending stroke is discarded when the trigger is released.
 - Moving off every tile and releasing the trigger falls through to normal stroke matching.
@@ -864,8 +916,9 @@ The fullscreen gap that stood here — a fullscreen element painting over the ov
 §7.5.
 
 Everything else outstanding lives in [`docs/backlog/`](backlog/README.md), one file per finding,
-from the full-repo review of 2026-08-27. **8 of the 17 are still open, and none of them is a bug**:
-what is left is features, store assets and interface work. Every fix that contradicted this spec has
+from the full-repo review of 2026-08-27. **7 of the 17 are still open, and none of them is a bug**:
+what is left is features, store assets and interface work. FEAT-04 folded the catalogue additions
+into §5 and the manifest shortcut with them. Every fix that contradicted this spec has
 had its reasoning folded in: BUG-01 into §6.1, BUG-02 into §7.4, BUG-03 into §6, BUG-04 into §3.4,
 BUG-05 and BUG-06 into §10.1, BUG-09 into §5. BUG-07 and BUG-08 were internal and changed nothing
 this spec describes.

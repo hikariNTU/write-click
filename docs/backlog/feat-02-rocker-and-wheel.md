@@ -1,6 +1,14 @@
 # FEAT-02 — Rocker and wheel gestures
 
-- **Status:** ongoing — currently a declared v1 non-goal (SPEC §1)
+- **Status:** ongoing — **deferred on 2026-08-27**, deliberately, not for want of appetite. Both
+  gestures fight the tab grid, which is held open under exactly the same trigger. A wheel tick over
+  the grid is how someone scrolls the panel to reach a tile that is past the clip, and spending it on
+  a tab switch instead takes a working interaction away to add another one. The rocker has the same
+  problem from the other side: the grid is picked with a click of the other button while the trigger
+  is still held, which is a rocker press by any definition. Neither ships until there is an answer to
+  that — the obvious one being that the grid swallows the wheel and the second button while it is on
+  screen, and the gesture only sees them when it is not. That is a design decision, not a patch, and
+  it belongs in SPEC §6 before any of this is written.
 - **Priority:** high; the two most-cited features of the category
 - **Area:** `src/content/trigger-runtime.ts`, `src/shared/settings.ts`
 - **Found:** 2026-08-27, repo review

@@ -2,6 +2,9 @@
   "cmd_app_options": {
     "message": "Open write-click settings"
   },
+  "cmd_group_collapseOthers": {
+    "message": "Collapse other tab groups"
+  },
   "cmd_nav_back": {
     "message": "Back"
   },
@@ -11,11 +14,32 @@
   "cmd_nav_stop": {
     "message": "Stop loading"
   },
+  "cmd_open_bookmarks": {
+    "message": "Open bookmark manager"
+  },
+  "cmd_open_downloads": {
+    "message": "Open downloads"
+  },
+  "cmd_open_extensions": {
+    "message": "Open extensions"
+  },
+  "cmd_open_history": {
+    "message": "Open history"
+  },
+  "cmd_page_copyTitle": {
+    "message": "Copy page title"
+  },
+  "cmd_page_copyUrl": {
+    "message": "Copy page address"
+  },
   "cmd_page_down": {
     "message": "Scroll down one screen"
   },
   "cmd_page_end": {
     "message": "Scroll to bottom"
+  },
+  "cmd_page_print": {
+    "message": "Print page"
   },
   "cmd_page_top": {
     "message": "Scroll to top"
@@ -23,8 +47,14 @@
   "cmd_page_up": {
     "message": "Scroll up one screen"
   },
+  "cmd_page_viewSource": {
+    "message": "View page source"
+  },
   "cmd_tab_close": {
     "message": "Close tab"
+  },
+  "cmd_tab_closeDuplicates": {
+    "message": "Close duplicate tabs"
   },
   "cmd_tab_closeLeft": {
     "message": "Close tabs to the left"
@@ -44,8 +74,26 @@
   "cmd_tab_first": {
     "message": "Leftmost tab"
   },
+  "cmd_tab_group": {
+    "message": "Put tab in a new group"
+  },
   "cmd_tab_last": {
     "message": "Rightmost tab"
+  },
+  "cmd_tab_moveLeft": {
+    "message": "Move tab left"
+  },
+  "cmd_tab_moveRight": {
+    "message": "Move tab right"
+  },
+  "cmd_tab_moveToEnd": {
+    "message": "Move tab to the end of the strip"
+  },
+  "cmd_tab_moveToStart": {
+    "message": "Move tab to the start of the strip"
+  },
+  "cmd_tab_muteAll": {
+    "message": "Mute every tab in this window"
   },
   "cmd_tab_new": {
     "message": "New tab"
@@ -71,6 +119,9 @@
   "cmd_tab_togglePin": {
     "message": "Pin or unpin tab"
   },
+  "cmd_tab_ungroup": {
+    "message": "Remove tab from its group"
+  },
   "cmd_window_fullscreen": {
     "message": "Toggle fullscreen"
   },
@@ -89,11 +140,17 @@
   "cmd_zoom_reset": {
     "message": "Reset zoom"
   },
+  "command_toggleEnabled": {
+    "message": "Turn gestures on or off"
+  },
   "extDescription": {
     "message": "Draw mouse gestures to switch, close and reopen tabs, and to move around the page."
   },
   "extName": {
     "message": "Write Click"
+  },
+  "grid_audible": {
+    "message": "Playing audio"
   },
   "grid_cheatsheet": {
     "message": "Gestures"
@@ -106,6 +163,9 @@
   },
   "grid_hint": {
     "message": "Click a tile to switch"
+  },
+  "grid_muted": {
+    "message": "Muted"
   },
   "grid_tabs_one": {
     "message": "$COUNT$ tab",

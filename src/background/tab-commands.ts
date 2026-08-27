@@ -1,5 +1,27 @@
 import type { BackgroundCommandId } from "../shared/messages";
-import { tabsOnSide } from "../shared/tabs";
+import { duplicateTabs, tabsOnSide } from "../shared/tabs";
+
+/**
+ * Chrome's own pages, as a map rather than four near-identical cases.
+ *
+ * These are the canonical URLs, not the shorthands the omnibox accepts:
+ * `tabs.create` does not resolve `chrome://history` to the trailing-slash form
+ * the way typing it does.
+ */
+const CHROME_PAGES = {
+  "open.history": "chrome://history/",
+  "open.downloads": "chrome://downloads/",
+  "open.bookmarks": "chrome://bookmarks/",
+  "open.extensions": "chrome://extensions/",
+} as const;
+
+/**
+ * A tab's group id is `-1` when it is in no group, and absent altogether on a
+ * browser with no tab groups. Neither is something to ungroup.
+ */
+function inGroup(groupId: number | undefined): boolean {
+  return groupId !== undefined && groupId !== -1;
+}
 
 /**
  * Where a window's pre-fullscreen state is remembered.
@@ -73,6 +95,26 @@ async function closeSide(
     .map((tab) => tab.id)
     .filter((id): id is number => id !== undefined);
   if (doomed.length > 0) await chrome.tabs.remove(doomed);
+}
+
+/**
+ * Where a tab is allowed to sit. Chrome keeps the pinned tabs in a block at the
+ * head of the strip and rejects a move that would put an unpinned tab among
+ * them, so a move command clamps to its own half rather than throwing.
+ */
+function movableRange(tabs: readonly chrome.tabs.Tab[], pinned: boolean): [number, number] {
+  const pinnedCount = tabs.filter((tab) => tab.pinned).length;
+  return pinned ? [0, Math.max(pinnedCount - 1, 0)] : [pinnedCount, Math.max(tabs.length - 1, 0)];
+}
+
+/**
+ * Opens one of Chrome's own pages beside the current tab.
+ *
+ * `tabs.create` is the only way in: navigating an existing tab to a `chrome://`
+ * URL is refused, `tabs.create` is not.
+ */
+async function openPage(sender: chrome.tabs.Tab, url: string): Promise<void> {
+  await chrome.tabs.create({ windowId: sender.windowId, index: sender.index + 1, url });
 }
 
 export async function runTabCommand(
@@ -210,6 +252,79 @@ export async function runTabCommand(
     }
     case "tab.closeLeft": {
       await closeSide(windowId, sender.index, "left");
+      return;
+    }
+    case "tab.moveLeft":
+    case "tab.moveRight": {
+      if (sender.id === undefined) return;
+      const tabs = await siblings(windowId);
+      const [low, high] = movableRange(tabs, sender.pinned === true);
+      const step = id === "tab.moveRight" ? 1 : -1;
+      const index = sender.index + step;
+      if (index < low || index > high) return;
+      await chrome.tabs.move(sender.id, { index });
+      return;
+    }
+    case "tab.moveToStart":
+    case "tab.moveToEnd": {
+      if (sender.id === undefined) return;
+      const tabs = await siblings(windowId);
+      const [low, high] = movableRange(tabs, sender.pinned === true);
+      await chrome.tabs.move(sender.id, { index: id === "tab.moveToStart" ? low : high });
+      return;
+    }
+    case "tab.closeDuplicates": {
+      const tabs = await siblings(windowId);
+      const doomed = duplicateTabs(tabs)
+        .map((tab) => tab.id)
+        .filter((tabId): tabId is number => tabId !== undefined);
+      if (doomed.length > 0) await chrome.tabs.remove(doomed);
+      return;
+    }
+    case "tab.muteAll": {
+      const tabs = await siblings(windowId);
+      await Promise.all(
+        tabs
+          .filter((tab) => tab.id !== undefined && tab.mutedInfo?.muted !== true)
+          .map(async (tab) => chrome.tabs.update(tab.id as number, { muted: true })),
+      );
+      return;
+    }
+    case "tab.group": {
+      if (sender.id === undefined) return;
+      await chrome.tabs.group({ tabIds: [sender.id], createProperties: { windowId } });
+      return;
+    }
+    case "tab.ungroup": {
+      // Ungrouping a tab that is in no group is an error, not a no-op.
+      if (sender.id === undefined || !inGroup(sender.groupId)) return;
+      await chrome.tabs.ungroup(sender.id);
+      return;
+    }
+    case "group.collapseOthers": {
+      const api = chrome.tabGroups as typeof chrome.tabGroups | undefined;
+      if (!api) return;
+      const groups = await api.query({ windowId });
+      await Promise.all(
+        groups
+          .filter((group) => group.id !== sender.groupId && !group.collapsed)
+          // A group can be dissolved between the query and the update.
+          .map(async (group) => api.update(group.id, { collapsed: true }).catch(() => undefined)),
+      );
+      return;
+    }
+    case "open.history":
+    case "open.downloads":
+    case "open.bookmarks":
+    case "open.extensions": {
+      await openPage(sender, CHROME_PAGES[id]);
+      return;
+    }
+    case "page.viewSource": {
+      // Only a page that was fetched has a source to view, and `view-source:`
+      // refuses everything else outright.
+      if (!sender.url?.startsWith("http")) return;
+      await openPage(sender, `view-source:${sender.url}`);
       return;
     }
     default: {

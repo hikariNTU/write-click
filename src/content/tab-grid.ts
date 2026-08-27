@@ -1,7 +1,7 @@
 import { COMMANDS } from "../shared/commands";
 import type { CommandId } from "../shared/commands";
 import { formatNumber, t } from "../shared/i18n";
-import { FALLBACK_FAVICON, strokeChipsHtml } from "../shared/icons";
+import { FALLBACK_FAVICON, strokeChipsHtml, UI_ICONS } from "../shared/icons";
 import type { TabGroupSummary, TabSummary } from "../shared/messages";
 import { containsPoint } from "../shared/geometry";
 import type { Point } from "../shared/recognizer";
@@ -501,13 +501,35 @@ export class TabGrid {
     text.append(title, host);
     tile.append(icon, text);
 
+    // One trailing slot for both marks, so the audio badge and the active dot
+    // cannot fight over `ml-auto`.
+    const marks = document.createElement("div");
+    marks.className = "ml-auto flex shrink-0 items-center gap-1.5";
+
+    // Which tab is making the noise is most of the reason for opening a picker
+    // at all, and it is the one thing the strip shows that this did not. A
+    // muted tab is marked whether or not it has anything to play, matching the
+    // strip: `muted` is a state the user set, `audible` is one the page is in.
+    const sound = tab.muted ? "muted" : tab.audible ? "audible" : undefined;
+    if (sound) {
+      const badge = document.createElement("div");
+      badge.className = `grid h-3.5 w-3.5 place-items-center [&>svg]:h-3.5 [&>svg]:w-3.5 ${
+        sound === "muted" ? "text-mist-500" : "text-emerald-300"
+      }`;
+      badge.innerHTML = UI_ICONS[sound];
+      badge.title = t(sound === "muted" ? "grid_muted" : "grid_audible");
+      marks.append(badge);
+    }
+
     if (tab.active) {
       // Colour alone would carry this for most people and not for everyone.
       const dot = document.createElement("div");
-      dot.className = "ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-mist-300";
+      dot.className = "h-1.5 w-1.5 shrink-0 rounded-full bg-mist-300";
       dot.title = t(current ? "grid_current" : "grid_current_other");
-      tile.append(dot);
+      marks.append(dot);
     }
+
+    if (marks.childElementCount > 0) tile.append(marks);
 
     return tile;
   }

@@ -1,6 +1,8 @@
 # FEAT-04 — Command catalogue gaps
 
-- **Status:** ongoing
+- **Status:** done — 2026-08-27. Eighteen commands added, all unbound, plus the `toggle-enabled`
+  manifest shortcut. Ten of them verified against a real loaded `dist/`: moving, close-duplicates,
+  group and ungroup, mute-all, `chrome://history/`, `view-source:`, and both clipboard copies.
 - **Priority:** medium — each item is small; together they are most of what a competitor lists
 - **Area:** `src/shared/commands.ts`, `src/background/tab-commands.ts`
 - **Found:** 2026-08-27, repo review
@@ -11,7 +13,13 @@ Each ships **unbound**, per the rule in SPEC §5.
 ## Clipboard
 
 - `page.copyUrl`, `page.copyTitle` — content commands, `navigator.clipboard.writeText`.
-  (Link and image URLs belong with `feat-03-context-targets.md`.)
+  (Link and image URLs belong with `feat-03-context-targets.md`, still open.)
+
+Two things this turned out to need. The text comes from the service worker rather than `location`,
+because a page command runs in the frame that drew the gesture and a cross-origin sub-frame sees only
+its own document. And the Clipboard API is not always reachable — a frame without
+`allow="clipboard-write"` is refused by permissions policy — so there is an `execCommand` fallback,
+deprecated and still the only thing that works there.
 
 ## Chrome's own pages
 
@@ -48,6 +56,10 @@ Each ships **unbound**, per the rule in SPEC §5.
 
 No keyboard shortcut exists for anything. At minimum a toggle for `local.enabled`, which is the
 switch someone reaches for when a gesture is fighting a web app.
+
+Shipped as `toggle-enabled` with **no suggested key**: every combination worth having is taken by
+Chrome or by a site, and one chosen on the user's behalf is one they have to find and undo. It is
+assigned from `chrome://extensions/shortcuts`.
 
 ## Still correctly absent
 

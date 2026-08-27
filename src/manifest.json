@@ -26,6 +26,11 @@
       "all_frames": true
     }
   ],
+  "commands": {
+    "toggle-enabled": {
+      "description": "__MSG_command_toggleEnabled__"
+    }
+  },
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true

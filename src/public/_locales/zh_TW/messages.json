@@ -2,6 +2,9 @@
   "cmd_app_options": {
     "message": "開啟 write-click 設定"
   },
+  "cmd_group_collapseOthers": {
+    "message": "收合其他分頁群組"
+  },
   "cmd_nav_back": {
     "message": "上一頁"
   },
@@ -11,11 +14,32 @@
   "cmd_nav_stop": {
     "message": "停止載入"
   },
+  "cmd_open_bookmarks": {
+    "message": "開啟書籤管理員"
+  },
+  "cmd_open_downloads": {
+    "message": "開啟下載內容"
+  },
+  "cmd_open_extensions": {
+    "message": "開啟擴充功能"
+  },
+  "cmd_open_history": {
+    "message": "開啟瀏覽記錄"
+  },
+  "cmd_page_copyTitle": {
+    "message": "複製網頁標題"
+  },
+  "cmd_page_copyUrl": {
+    "message": "複製網頁網址"
+  },
   "cmd_page_down": {
     "message": "向下捲動一頁"
   },
   "cmd_page_end": {
     "message": "捲動至底部"
+  },
+  "cmd_page_print": {
+    "message": "列印網頁"
   },
   "cmd_page_top": {
     "message": "捲動至頂端"
@@ -23,8 +47,14 @@
   "cmd_page_up": {
     "message": "向上捲動一頁"
   },
+  "cmd_page_viewSource": {
+    "message": "檢視網頁原始碼"
+  },
   "cmd_tab_close": {
     "message": "關閉分頁"
+  },
+  "cmd_tab_closeDuplicates": {
+    "message": "關閉重複的分頁"
   },
   "cmd_tab_closeLeft": {
     "message": "關閉左側所有分頁"
@@ -44,8 +74,26 @@
   "cmd_tab_first": {
     "message": "最左側分頁"
   },
+  "cmd_tab_group": {
+    "message": "將分頁加入新群組"
+  },
   "cmd_tab_last": {
     "message": "最右側分頁"
+  },
+  "cmd_tab_moveLeft": {
+    "message": "將分頁左移"
+  },
+  "cmd_tab_moveRight": {
+    "message": "將分頁右移"
+  },
+  "cmd_tab_moveToEnd": {
+    "message": "將分頁移至最後"
+  },
+  "cmd_tab_moveToStart": {
+    "message": "將分頁移至最前"
+  },
+  "cmd_tab_muteAll": {
+    "message": "靜音此視窗所有分頁"
   },
   "cmd_tab_new": {
     "message": "開啟新分頁"
@@ -71,6 +119,9 @@
   "cmd_tab_togglePin": {
     "message": "釘選或取消釘選分頁"
   },
+  "cmd_tab_ungroup": {
+    "message": "將分頁移出群組"
+  },
   "cmd_window_fullscreen": {
     "message": "切換全螢幕"
   },
@@ -89,11 +140,17 @@
   "cmd_zoom_reset": {
     "message": "重設縮放比例"
   },
+  "command_toggleEnabled": {
+    "message": "開啟或關閉手勢"
+  },
   "extDescription": {
     "message": "以滑鼠手勢切換、關閉與復原分頁，並在頁面中捲動。"
   },
   "extName": {
     "message": "Write Click 手勢"
+  },
+  "grid_audible": {
+    "message": "正在播放音訊"
   },
   "grid_cheatsheet": {
     "message": "手勢清單"
@@ -106,6 +163,9 @@
   },
   "grid_hint": {
     "message": "點選項目即可切換分頁"
+  },
+  "grid_muted": {
+    "message": "已靜音"
   },
   "grid_tabs_one": {
     "message": "$COUNT$ 個分頁",

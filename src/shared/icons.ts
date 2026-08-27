@@ -44,6 +44,22 @@ import translate from "../icons/material/translate.svg?raw";
 import tabClose from "../icons/material/tab_close.svg?raw";
 import alignBottom from "../icons/material/vertical_align_bottom.svg?raw";
 import alignTop from "../icons/material/vertical_align_top.svg?raw";
+import bookmarks from "../icons/material/bookmarks.svg?raw";
+import collapseAll from "../icons/material/collapse_all.svg?raw";
+import code from "../icons/material/code.svg?raw";
+import east from "../icons/material/east.svg?raw";
+import extension from "../icons/material/extension.svg?raw";
+import firstPage from "../icons/material/first_page.svg?raw";
+import groupAdd from "../icons/material/group_add.svg?raw";
+import groupRemove from "../icons/material/group_remove.svg?raw";
+import history from "../icons/material/history.svg?raw";
+import lastPage from "../icons/material/last_page.svg?raw";
+import link from "../icons/material/link.svg?raw";
+import playlistRemove from "../icons/material/playlist_remove.svg?raw";
+import print from "../icons/material/print.svg?raw";
+import title from "../icons/material/title.svg?raw";
+import west from "../icons/material/west.svg?raw";
+import volumeUp from "../icons/material/volume_up.svg?raw";
 import type { CommandId } from "../shared/commands";
 import brand from "../icons/write-click.svg?raw";
 import type { Direction } from "./recognizer";
@@ -97,6 +113,27 @@ export const COMMAND_ICONS: Record<CommandId, string> = {
   "page.up": prepare(doubleUp),
   "page.down": prepare(doubleDown),
   "page.top": prepare(alignTop),
+  // Compass arrows move a tab; the chevrons above only change which one is
+  // active, and the two pairs have to be told apart at a glance.
+  "tab.moveLeft": prepare(west),
+  "tab.moveRight": prepare(east),
+  "tab.moveToStart": prepare(firstPage),
+  "tab.moveToEnd": prepare(lastPage),
+  "tab.closeDuplicates": prepare(playlistRemove),
+  // The same glyph as the per-tab mute: one is the other applied to everything,
+  // and the labels carry the difference.
+  "tab.muteAll": prepare(mute),
+  "tab.group": prepare(groupAdd),
+  "tab.ungroup": prepare(groupRemove),
+  "group.collapseOthers": prepare(collapseAll),
+  "open.history": prepare(history),
+  "open.downloads": prepare(download),
+  "open.bookmarks": prepare(bookmarks),
+  "open.extensions": prepare(extension),
+  "page.viewSource": prepare(code),
+  "page.copyUrl": prepare(link),
+  "page.copyTitle": prepare(title),
+  "page.print": prepare(print),
   "page.end": prepare(alignBottom),
 };
 
@@ -128,6 +165,8 @@ export const UI_ICONS = {
   copy: prepare(duplicate),
   export: prepare(download),
   import: prepare(upload),
+  audible: prepare(volumeUp),
+  muted: prepare(mute),
 } as const;
 
 /** Stands in when a tab has no favicon, or its favicon fails to load. */

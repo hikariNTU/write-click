@@ -63,6 +63,22 @@ const ICONS = [
   "download",
   "upload",
   "package_2",
+  "bookmarks",
+  "collapse_all",
+  "code",
+  "east",
+  "extension",
+  "first_page",
+  "group_add",
+  "group_remove",
+  "history",
+  "last_page",
+  "link",
+  "playlist_remove",
+  "print",
+  "title",
+  "west",
+  "volume_up",
 ];
 
 const from = new URL("../node_modules/@material-symbols/svg-700/rounded/", import.meta.url);
