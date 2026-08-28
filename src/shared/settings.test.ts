@@ -76,7 +76,7 @@ test("a key trigger does not keep the default's button fields", async () => {
 test("nothing stored gives the defaults, both areas", async () => {
   stub({}, {});
   const { sync, local }: { sync: SyncSettings; local: LocalSettings } = await loadSettings();
-  assert.equal(sync.version, 7);
+  assert.equal(sync.version, 8);
   assert.equal(local.version, 2);
   assert.equal(local.uiScale, 1);
 });
@@ -88,7 +88,7 @@ test("migrating binds app.options without resurrecting a cleared gesture", async
   await migrate();
 
   const gestures = sync.gestures as Record<string, string>;
-  assert.equal(sync.version, 7);
+  assert.equal(sync.version, 8);
   assert.equal(gestures.DLUR, "app.options");
   // The whole point: a default map merged back in would have returned R here.
   assert.equal(gestures.R, undefined);

@@ -473,7 +473,7 @@ function languageCard(): HTMLElement {
   return section;
 }
 
-/* ------------------------------------------------------------------ chords */
+/* ------------------------------------------------------------------ rocker */
 
 /**
  * Every command, in catalogue order, for a slot that holds exactly one.
@@ -491,59 +491,87 @@ function commandOptions(): { value: CommandId; label: Localized }[] {
 }
 
 /**
- * The two shortcuts that need no stroke. Their own card rather than a corner of
- * the trigger card: only the wheel is held under the trigger at all, and a
- * rocker is a pair of buttons the trigger card has nothing to say about.
+ * A held button and a clicked one. Its own card rather than a corner of the
+ * trigger card: a rocker is a pair of buttons, and the trigger card has nothing
+ * to say about the second one.
  */
-function chordsCard(): HTMLElement {
-  const section = card(t("options_chords_title"), t("options_chords_desc"), UI_ICONS.chords);
+function rockerCard(): HTMLElement {
+  const section = card(t("options_rocker_title"), t("options_rocker_desc"), UI_ICONS.rocker);
   const commands = commandOptions();
 
   section.append(
     row(
-      t("options_chords_rocker"),
+      t("options_rocker_enabled"),
       toggle(sync.rocker.enabled, (value) => {
         void patchSync({ rocker: { ...sync.rocker, enabled: value } });
       }),
-      t("options_chords_rocker_hint"),
+      t("options_rocker_hint"),
     ),
     row(
-      t("options_chords_rocker_back"),
+      t("options_rocker_back"),
       select(commands, sync.rocker.back, (value) => {
         void patchSync({ rocker: { ...sync.rocker, back: value } });
       }),
     ),
     row(
-      t("options_chords_rocker_forward"),
+      t("options_rocker_forward"),
       select(commands, sync.rocker.forward, (value) => {
         void patchSync({ rocker: { ...sync.rocker, forward: value } });
       }),
     ),
+  );
+  return section;
+}
+
+/* ------------------------------------------------------------------- wheel */
+
+/** A standing note about the card it sits in, rather than about one row of it. */
+const BANNER =
+  "rounded-xl border border-amber-300/20 bg-amber-400/[0.06] px-3 py-2.5 " +
+  "text-[11px] leading-relaxed text-amber-100/80";
+
+/**
+ * The wheel, under a held trigger.
+ *
+ * Split from the rocker, which it was first shipped alongside, because the two
+ * have almost nothing in common past "no stroke needed": the wheel is turned
+ * under the trigger and answers to the tab grid, and the rocker is a second
+ * button that answers to nobody.
+ *
+ * The two command slots are the part that has to be honest. While the tab grid
+ * is switched on it takes every notch — that is the whole design (§3.7) — so
+ * the slots below cannot run, and a page of settings that lets you pick a
+ * command that will never fire is a page that lies. They are disabled and
+ * dimmed instead, with the banner saying which switch frees them.
+ */
+function wheelCard(): HTMLElement {
+  const section = card(t("options_wheel_title"), t("options_wheel_desc"), UI_ICONS.wheel);
+  const commands = commandOptions();
+  const claimed = sync.grid.enabled;
+
+  section.append(
     row(
-      t("options_chords_wheel"),
+      t("options_wheel_enabled"),
       toggle(sync.wheel.enabled, (value) => {
         void patchSync({ wheel: { ...sync.wheel, enabled: value } });
       }),
-      t("options_chords_wheel_hint"),
-    ),
-    row(
-      t("options_chords_wheel_up"),
-      select(commands, sync.wheel.up, (value) => {
-        void patchSync({ wheel: { ...sync.wheel, up: value } });
-      }),
-    ),
-    row(
-      t("options_chords_wheel_down"),
-      select(commands, sync.wheel.down, (value) => {
-        void patchSync({ wheel: { ...sync.wheel, down: value } });
-      }),
-    ),
-    el(
-      "div",
-      "border-t border-white/5 pt-3 text-[11px] leading-relaxed text-mist-500",
-      t("options_chords_grid_note"),
+      claimed ? t("options_wheel_hint_grid") : t("options_wheel_hint"),
     ),
   );
+
+  const up = select(commands, sync.wheel.up, (value) => {
+    void patchSync({ wheel: { ...sync.wheel, up: value } });
+  });
+  const down = select(commands, sync.wheel.down, (value) => {
+    void patchSync({ wheel: { ...sync.wheel, down: value } });
+  });
+  for (const slot of [up, down]) slot.disabled = claimed;
+
+  const slots = el("div", claimed ? "opacity-40" : "");
+  slots.append(row(t("options_wheel_up"), up), row(t("options_wheel_down"), down));
+
+  if (claimed) section.append(el("div", `mb-1 mt-2 ${BANNER}`, t("options_wheel_grid_note")));
+  section.append(slots);
   return section;
 }
 
@@ -857,7 +885,8 @@ const SECTIONS: readonly {
     glyph: UI_ICONS.gestures,
     card: gesturesCard,
   },
-  { id: "chords", titleKey: "options_chords_title", glyph: UI_ICONS.chords, card: chordsCard },
+  { id: "rocker", titleKey: "options_rocker_title", glyph: UI_ICONS.rocker, card: rockerCard },
+  { id: "wheel", titleKey: "options_wheel_title", glyph: UI_ICONS.wheel, card: wheelCard },
   { id: "overlay", titleKey: "options_overlay_title", glyph: UI_ICONS.overlay, card: overlayCard },
   { id: "sites", titleKey: "options_sites_title", glyph: UI_ICONS.sites, card: sitesCard },
   { id: "backup", titleKey: "options_backup_title", glyph: UI_ICONS.backup, card: backupCard },

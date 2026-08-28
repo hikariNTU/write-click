@@ -27,7 +27,7 @@ export interface WheelSettings {
 
 /** Shared across devices. */
 export interface SyncSettings {
-  version: 7;
+  version: 8;
   language: LanguageSetting;
   gestures: Record<string, CommandId>;
   grid: {
@@ -76,7 +76,7 @@ export interface LocalSettings {
 
 export function defaultSyncSettings(): SyncSettings {
   return {
-    version: 7,
+    version: 8,
     language: "auto",
     gestures: { ...DEFAULT_GESTURES },
     grid: {
@@ -93,7 +93,7 @@ export function defaultSyncSettings(): SyncSettings {
     rocker: { enabled: false, back: "nav.back", forward: "nav.forward" },
     // Up is the previous tab: the wheel steps through the strip the way it
     // steps through a list, first at the top.
-    wheel: { enabled: false, up: "tab.prev", down: "tab.next" },
+    wheel: { enabled: true, up: "tab.prev", down: "tab.next" },
     trail: { show: true, color: "#34d399", width: 4, showLabel: true },
     disabledOrigins: [],
   };
@@ -214,17 +214,24 @@ export async function migrate(): Promise<void> {
   const local = (await chrome.storage.local.get(null)) as { version?: number };
   const defaults = defaultSyncSettings();
 
-  if (stored.version !== 7) {
+  if (stored.version !== 8) {
     // v1 sized the grid by a fixed column count; v2 sizes it by tile width.
     // v3 added the language override, which defaults to following the browser.
     // v4 added picking on release.
     // v6 added listing every window, which existing profiles get switched on:
     // it is the same picker with more in it, and it is a toggle away.
-    // v7 added the rocker and the wheel. Both arrive switched off, whatever
-    // else the profile carries: they change what a plain click and a plain
-    // scroll do, and an update is not a moment to change that for somebody.
+    // v7 added the rocker and the wheel. The rocker arrives switched off,
+    // whatever else the profile carries: it changes what a plain click does,
+    // and an update is not a moment to change that for somebody.
+    // v8 switches the wheel on for everyone, which is a deliberate exception to
+    // that rule. With the tab grid on — its own default — a notch under the
+    // trigger moves the grid's highlight and nothing else: the page does not
+    // scroll away under a held gesture, no command runs, and letting go without
+    // the grid open leaves no trace. There is nothing there to surprise
+    // somebody with, and off by default meant the picker had a wheel nobody
+    // found.
     const rocker = { ...defaults.rocker, ...stored.rocker };
-    const wheel = { ...defaults.wheel, ...stored.wheel };
+    const wheel = { ...defaults.wheel, ...stored.wheel, enabled: true };
     const grid = { ...defaults.grid, ...stored.grid };
     delete (grid as { columns?: number }).columns;
 
@@ -243,7 +250,7 @@ export async function migrate(): Promise<void> {
       grid,
       rocker,
       wheel,
-      version: 7,
+      version: 8,
     });
   }
 

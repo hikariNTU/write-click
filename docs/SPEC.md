@@ -134,7 +134,7 @@ already held. Right held plus left clicked runs `rocker.back`; left held plus ri
 
 ### 3.7 The wheel
 
-`wheel.enabled`, **off by default**. A notch turned while the trigger is held **moves the tab grid's
+`wheel.enabled`, **on by default**. A notch turned while the trigger is held **moves the tab grid's
 highlight one tab**, and releasing the trigger switches to the tab it landed on (§6.3). Hold, wheel
 up twice, let go: two tabs back, with both of them named on screen on the way past.
 
@@ -142,6 +142,11 @@ This is the whole feature. The wheel is not a second way to run a command, it is
 is already on screen is driven without moving the mouse — which is also what settles the conflict
 FEAT-02 was deferred over. The panel does not fight the wheel for it; the panel is what the wheel is
 for.
+
+**On by default**, which the rocker is not. With the tab grid on — also a default — a notch under
+the trigger moves the highlight and does nothing else: the page does not scroll away under a held
+gesture, no command runs, and letting go without the grid open leaves no trace. There is nothing
+there to surprise anyone with, and shipped off it was a wheel on a picker that nobody found.
 
 - Only while a gesture is in progress. With nothing held the wheel is the page's.
 - **A notch opens the grid early.** The hold delay (§6) exists so a quick flick never flashes the
@@ -768,7 +773,7 @@ not a bug to fix.
 ```ts
 interface SyncSettings {
   // chrome.storage.sync
-  version: 7;
+  version: 8;
   language: "auto" | Locale; // §10.2
   gestures: Record<string, CommandId>; // stroke -> command
   grid: {
@@ -798,9 +803,10 @@ interface LocalSettings {
 `version` is bumped whenever a shape changes, with a migration in the service worker's
 `onInstalled`, which runs on both install and update. v2 replaced the grid's `columns` with `size`;
 v3 added the language override; v4 added `pickOnRelease`; v5 added `app.options` to the default map;
-v6 added `allWindows`; v7 added the rocker and the wheel. Local v2 added `uiScale`. Both of v7's
-additions arrive switched off whatever else a profile carries: an update is not a moment to change
-what somebody's plain click does.
+v6 added `allWindows`; v7 added the rocker and the wheel, both switched off; v8 switches the wheel
+on for everyone. Local v2 added `uiScale`. The rocker stays off whatever else a profile carries —
+an update is not a moment to change what somebody's plain click does — and the wheel is the
+deliberate exception, for the reason §3.7 gives.
 
 Reads merge defaults **one level deep**. Storage is written per top-level key, so a stored `grid`
 written before a field existed would otherwise replace the whole default object and leave that field
@@ -891,8 +897,15 @@ Every handler is exhaustive over the union; adding a member must break the build
 ## 10.1 Options page
 
 `src/options.html` + `src/options.ts`, opened in a tab. Every control writes on change; there is no
-save button. Sections: language, trigger, gestures, rocker and wheel, overlay, disabled sites,
+save button. Sections: language, trigger, gestures, rocker, wheel, overlay, disabled sites,
 backup, reset.
+
+The rocker and the wheel are two cards, not one. They were shipped as one — both are "no stroke
+needed" — and share nothing else: the wheel is turned under the trigger and answers to the tab grid,
+the rocker is a second button that answers to nobody. **The wheel's two command slots are disabled
+and dimmed while the tab grid is switched on**, under a banner naming the switch that frees them.
+The grid takes every notch while it is up (§3.7), so those slots cannot fire, and a settings page
+that lets you choose a command that will never run is a settings page that lies.
 
 Icons are bundled with the module, which runs after the first paint, so every glyph the static
 shell shows has an empty box of its final size waiting for it in the markup — `paintIcon` fills the

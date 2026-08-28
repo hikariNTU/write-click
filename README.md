@@ -91,20 +91,21 @@ stroke was underway is thrown away.
 
 ## Rocker and wheel
 
-Two shortcuts that need no stroke, both off until you switch them on in settings. Each changes what
-an ordinary click or an ordinary scroll does, which is not something to do to somebody's mouse
-without being asked.
+Two shortcuts that need no stroke. They are two separate cards in settings, because they have
+almost nothing in common past that.
 
-**Rocker** — hold one mouse button and click the other. Right held plus left clicked goes back, left
-held plus right clicked goes forward, and either slot takes any command in the catalogue. The click
-is swallowed, and so is the context menu that would follow it. Keep holding and click again to walk
-further back.
+**Rocker** — off until you switch it on: it changes what an ordinary click does, which is not
+something to do to somebody's mouse without being asked. Hold one mouse button and click the other.
+Right held plus left clicked goes back, left held plus right clicked goes forward, and either slot
+takes any command in the catalogue. The click is swallowed, and so is the context menu that would
+follow it. Keep holding and click again to walk further back.
 
-**Wheel** — turn the wheel while the trigger is held and the tab grid moves its highlight one tab per
-notch. Hold, wheel up twice, let go: two tabs back, with both of them named on screen on the way
-past. The page underneath stays where it is, and a notch brings the panel up early rather than
-waiting out the hold delay. With the tab grid switched off there is nothing to highlight, so the
-wheel steps through tabs directly instead — those two commands are the ones in settings.
+**Wheel** — on out of the box. Turn the wheel while the trigger is held and the tab grid moves its
+highlight one tab per notch. Hold, wheel up twice, let go: two tabs back, with both of them named on
+screen on the way past. The page underneath stays where it is, and a notch brings the panel up early
+rather than waiting out the hold delay. With the tab grid switched off there is nothing to
+highlight, so the wheel steps through tabs directly instead — those two commands are the ones in
+settings, and they sit dimmed under a banner for as long as the grid is the one taking the notches.
 
 The grid takes the second mouse button too: that press is how a tile is picked, so no rocker fires
 while the panel is up.

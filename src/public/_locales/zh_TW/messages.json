@@ -318,39 +318,6 @@
   "options_backup_title": {
     "message": "備份"
   },
-  "options_chords_desc": {
-    "message": "兩種不必畫筆畫的操作。預設關閉，開啟後才生效：兩者都會改變一般點擊與捲動的行為。"
-  },
-  "options_chords_grid_note": {
-    "message": "分頁格線出現時，這兩者都歸格線所有：第二個滑鼠鍵用來選取項目，滾輪則在項目之間移動選取。上方兩個滾輪指令僅在關閉分頁格線時執行。"
-  },
-  "options_chords_rocker": {
-    "message": "搖桿"
-  },
-  "options_chords_rocker_back": {
-    "message": "按住右鍵，點左鍵"
-  },
-  "options_chords_rocker_forward": {
-    "message": "按住左鍵，點右鍵"
-  },
-  "options_chords_rocker_hint": {
-    "message": "按住一個滑鼠鍵，再點另一個。該次點擊會被攔下，隨之而來的右鍵選單也是。"
-  },
-  "options_chords_title": {
-    "message": "搖桿與滾輪"
-  },
-  "options_chords_wheel": {
-    "message": "滾輪"
-  },
-  "options_chords_wheel_down": {
-    "message": "滾輪向下（未使用分頁格線時）"
-  },
-  "options_chords_wheel_hint": {
-    "message": "按住觸發鍵時轉動滾輪：分頁格線每格一次移動選取項目，放開觸發鍵即切換至該分頁。底下的頁面不會跟著捲動。"
-  },
-  "options_chords_wheel_up": {
-    "message": "滾輪向上（未使用分頁格線時）"
-  },
   "options_gestures_clear": {
     "message": "清除"
   },
@@ -469,6 +436,24 @@
   },
   "options_resetDone": {
     "message": "所有設定已重設為預設值。"
+  },
+  "options_rocker_back": {
+    "message": "按住右鍵，點左鍵"
+  },
+  "options_rocker_desc": {
+    "message": "按住一個滑鼠鍵，再點另一個。預設關閉，開啟後才生效：它會改變一般點擊的行為。"
+  },
+  "options_rocker_enabled": {
+    "message": "啟用搖桿"
+  },
+  "options_rocker_forward": {
+    "message": "按住左鍵，點右鍵"
+  },
+  "options_rocker_hint": {
+    "message": "該次點擊會被攔下，隨之而來的右鍵選單也是。"
+  },
+  "options_rocker_title": {
+    "message": "搖桿"
   },
   "options_saved": {
     "message": "已儲存"
@@ -623,6 +608,30 @@
   },
   "options_warn_menu_suppressed": {
     "message": "本平台的右鍵選單於按下按鍵時即開啟，因此未搭配輔助鍵的右鍵會完全攔截該選單。Shift 加右鍵仍可開啟選單。若需保留選單，請選擇一個輔助鍵。"
+  },
+  "options_wheel_desc": {
+    "message": "按住觸發鍵時轉動滾輪。底下的頁面不會跟著捲動。"
+  },
+  "options_wheel_down": {
+    "message": "滾輪向下"
+  },
+  "options_wheel_enabled": {
+    "message": "啟用滾輪"
+  },
+  "options_wheel_grid_note": {
+    "message": "分頁格線已開啟，滾輪歸它所有：每一格都用來移動選取項目。要改為執行下列兩個指令，請到「覆蓋層」關閉分頁格線。"
+  },
+  "options_wheel_hint": {
+    "message": "每格執行一次下列其中一個指令。"
+  },
+  "options_wheel_hint_grid": {
+    "message": "每格將分頁格線的選取移動一個分頁，放開觸發鍵即切換至該分頁。"
+  },
+  "options_wheel_title": {
+    "message": "滾輪"
+  },
+  "options_wheel_up": {
+    "message": "滾輪向上"
   },
   "popup_enabledHere": {
     "message": "於本網站啟用"

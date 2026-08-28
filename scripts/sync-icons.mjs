@@ -56,6 +56,7 @@ const ICONS = [
   "settings",
   "swipe",
   "swap_horiz",
+  "swap_vert",
   "tab_close",
   "tab_close_right",
   "translate",
